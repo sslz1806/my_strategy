@@ -399,14 +399,14 @@ def get_all_stocks(date):
     # ---------------------- 3. 流通市值过大或者国小 ----------------------
     mktvalue_data = stk_get_daily_mktvalue_pt(
         symbols=filtered_symbols,
-        fields='a_mv',
+        fields=['a_mv','a_mv_ex_ltd'],
         trade_date=current_date.strftime('%Y-%m-%d'),
         df=True
     )
         # 过滤条件：市值25亿<=tot_mv<=1000亿
     final_symbols =  mktvalue_data [
-        (mktvalue_data ['a_mv'] >= 20e8) & 
-        (mktvalue_data ['a_mv'] <= 1000e8)
+        (mktvalue_data ['a_mv_ex_ltd'] >= 30e8) & 
+        (mktvalue_data ['a_mv_ex_ltd'] <= 1000e8)
     ]['symbol'].tolist()
     return final_symbols
 
