@@ -251,9 +251,9 @@ def update_min_data_by_day_data(day_data,min_data_dir='15min_stock_data_dir',n=1
     from stock_api import stock_api
     api = stock_api()
     # 没有目录则创建
+    min_data_dir = os.path.join(DATA_ROOT_DIR, min_data_dir)   
     if not os.path.exists(min_data_dir):
         os.makedirs(min_data_dir)
-    min_data_dir = os.path.join(DATA_ROOT_DIR, min_data_dir)    
     # 1.从目录中获取已存在的分钟数据日期trading_date=%Y-%m-%d文件列表
     existing_dates = []
     for item in os.listdir(min_data_dir):

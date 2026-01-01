@@ -5559,3 +5559,21 @@ Hint: Try setting `strict=False` to allow passing data with mixed types.
 2025-12-26 22:26:07,604 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/trade_cal HTTP/1.1" 200 736
 2025-12-26 22:26:11,007 - INFO - 已获取 20251210 的股票数据
 2025-12-26 22:26:15,356 - INFO - 已获取 20251217 的股票数据
+2025-12-30 00:17:40,447 - DEBUG - Starting new HTTPS connection (1): 115.159.100.200:443
+2025-12-30 00:17:40,607 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/trade_cal HTTP/1.1" 200 863
+2025-12-30 00:17:44,186 - INFO - 已获取 20251212 的股票数据
+2025-12-30 00:17:44,437 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/stock_st HTTP/1.1" 200 None
+2025-12-30 00:17:53,666 - ERROR - 20251230: 执行出错: 20251230 无备份日线数据
+2025-12-30 00:17:57,909 - ERROR - 20251230: 执行出错: 20251230 无复权因子数据
+2025-12-30 00:17:58,393 - ERROR - 20251230: 执行出错: 20251230 无每日基础指标数据
+2025-12-30 19:06:28,091 - DEBUG - Starting new HTTPS connection (1): 115.159.100.200:443
+2025-12-30 19:06:28,243 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/trade_cal HTTP/1.1" 200 863
+2025-12-30 19:06:31,112 - INFO - 已获取 20251211 的股票数据
+2025-12-30 19:06:31,117 - INFO - 已获取 20251210 的股票数据
+2025-12-30 19:06:35,377 - DEBUG - Starting new HTTPS connection (1): 115.159.100.200:443
+2025-12-30 19:06:35,380 - INFO - 已获取 20251217 的股票数据
+2025-12-30 19:06:35,405 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/stock_st HTTP/1.1" 200 None
+2025-12-31 19:34:32,335 - DEBUG - Starting new HTTPS connection (1): 115.159.100.200:443
+2025-12-31 19:34:32,503 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/trade_cal HTTP/1.1" 200 895
+2025-12-31 19:34:35,910 - INFO - 已获取 20251210 的股票数据
+2025-12-31 19:34:35,911 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/stk_limit HTTP/1.1" 200 None
