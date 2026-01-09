@@ -17,10 +17,12 @@ def get_logger(
     log_file: Optional[str] = None,
     level: int = logging.INFO,
     file_format: Dict[str, str] = {'format': '%(asctime)s- %(levelname)s- %(message)s', 'datefmt': '%Y%m%d %H:%M:%S'},
-    console_format: Dict[str, str] = {'format': '%(message)s'}
+    console_format: Dict[str, str] = {'format': '%(message)s'},
+    inherit: bool = True # 默认继承程序已有的日志配置
 ) -> logging.Logger:
     """
-    极简版：字典参数控制日志格式，有外部配置则复用，无则新建
+    
+    极简版：字典参数控制日志格式，有外部配置则复用，无则新建.如果inherit=False,则强制重新配置日志.
     :param log_file: 可选，日志文件路径（None则仅控制台输出）
     :param level: 日志级别，默认INFO
     :param file_format: 文件格式配置，默认带时间/级别前缀
@@ -28,6 +30,9 @@ def get_logger(
     :return: 根logger对象
     """
     root_logger = logging.getLogger()
+    if not inherit:
+        # 清空已有处理器，强制重新配置
+        root_logger.handlers = []
     
     # 核心判断：根logger无有效处理器时才配置
     if not any(
@@ -175,11 +180,13 @@ def mark_limit_status(stock_data: pl.DataFrame,db_days=2) -> pl.DataFrame:
     # 断板标记：最近3天（不含当天）有涨停，且当天未涨停也未炸板
     def mark_db(group: pl.DataFrame) -> pl.DataFrame:
         is_limit_up = group["is_limit_up"].to_list()
+        is_broken_limit = group["is_broken_limit"].to_list()
         status = []
         for i in range(len(is_limit_up)):
             # 最近3或2天（不含当天）有涨停
-            recent = is_limit_up[max(0, i-db_days):i]
-            if not is_limit_up[i] and not group["is_broken_limit"][i] and any(recent):
+            recent_limit = is_limit_up[max(0, i-db_days):i]
+            recent_broken = is_broken_limit[max(0, i-db_days):i]
+            if not is_limit_up[i] and not group["is_broken_limit"][i] and (any(recent_limit)):
                 status.append("断板")
             # 如果昨天炸板过，今天也算断板
             # elif not is_limit_up[i] and not group["is_broken_limit"][i] and i>0 and group["is_broken_limit"][i-1]:
@@ -292,6 +299,33 @@ def add_sma(stock_data: pl.DataFrame, window: int = 5,column:str="close") -> pl.
         pl.col(column).rolling_mean(window,min_samples=1).over("code").alias(f"sma_{window}")
     ])
 
+
+def cal_limit_avg_turnover(stock_data: pl.DataFrame, window: int = 10, turnover_col: str = "turn_over") -> pl.DataFrame:
+    """
+    计算过去window天(不含当日)的涨停日平均换手率。
+
+    要求: 数据中已包含布尔列is_limit_up(可由mark_limit_status生成)和换手率列turnover_col。
+    逻辑: 仅对窗口内涨停日累计换手率与涨停日数量并求均值,若窗口内无涨停则返回0。
+    """
+    stock_data = stock_data.sort(["code", "trading_date"])
+
+    # 仅保留涨停日的换手率,其他日记为0
+    turnover_on_limit = pl.when(pl.col("is_limit_up")).then(pl.col(turnover_col)).otherwise(0.0)
+    limit_cnt = pl.col("is_limit_up").cast(pl.Int64)
+
+    # 窗口累计(不含当日,所以整体后移1天)
+    rolling_turnover = turnover_on_limit.rolling_sum(window_size=window, min_samples=1).over("code").shift(1)
+    rolling_limit_cnt = limit_cnt.rolling_sum(window_size=window, min_samples=1).over("code").shift(1)
+
+    avg_turnover = (
+        pl.when(rolling_limit_cnt > 0)
+        .then(rolling_turnover / rolling_limit_cnt)
+        .otherwise(0.0)
+    ).fill_nan(0.0).fill_null(0.0)
+
+    return stock_data.with_columns(avg_turnover.alias(f"avg_limit_turnover_{window}"))
+
+ 
 # 计算字段与前N日均值的比(如量比这个指标=今日volumn/前N日volumn均值)
 def add_pre_n_ratio(stock_data: pl.DataFrame, field: str='volume', n: int = 5) -> pl.DataFrame:
     """

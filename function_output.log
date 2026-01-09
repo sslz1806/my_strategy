@@ -5577,3 +5577,1284 @@ Hint: Try setting `strict=False` to allow passing data with mixed types.
 2025-12-31 19:34:32,503 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/trade_cal HTTP/1.1" 200 895
 2025-12-31 19:34:35,910 - INFO - 已获取 20251210 的股票数据
 2025-12-31 19:34:35,911 - DEBUG - https://115.159.100.200:443 "POST /api/tushare/stk_limit HTTP/1.1" 200 None
+20260105 00:28:31- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:28:31- INFO- 回测结果(不风控):
+20260105 00:30:10- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:30:10- INFO- 回测结果(不风控):
+20260105 00:32:44- INFO- 将2488只股票分成13多线程批处理
+20260105 00:32:52- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260105 00:32:52- INFO- 完成批次处理，股票代码: ['SHSE.600345', 'SHSE.600348', 'SHSE.600350']...(共200只)
+20260105 00:32:52- INFO- 完成批次处理，股票代码: ['SHSE.600657', 'SHSE.600658', 'SHSE.600662']...(共200只)
+20260105 00:32:52- INFO- 完成批次处理，股票代码: ['SHSE.603006', 'SHSE.603008', 'SHSE.603009']...(共200只)
+20260105 00:32:52- INFO- 完成批次处理，股票代码: ['SHSE.600971', 'SHSE.600973', 'SHSE.600975']...(共200只)
+20260105 00:32:59- INFO- 完成批次处理，股票代码: ['SHSE.603353', 'SHSE.603355', 'SHSE.603357']...(共200只)
+20260105 00:32:59- INFO- 完成批次处理，股票代码: ['SZSE.000852', 'SZSE.000859', 'SZSE.000860']...(共200只)
+20260105 00:33:00- INFO- 完成批次处理，股票代码: ['SZSE.000301', 'SZSE.000338', 'SZSE.000400']...(共200只)
+20260105 00:33:00- INFO- 完成批次处理，股票代码: ['SZSE.002088', 'SZSE.002090', 'SZSE.002091']...(共200只)
+20260105 00:33:00- INFO- 完成批次处理，股票代码: ['SHSE.603889', 'SHSE.603890', 'SHSE.603893']...(共200只)
+20260105 00:33:02- INFO- 完成批次处理，股票代码: ['SZSE.002906', 'SZSE.002907', 'SZSE.002908']...(共88只)
+20260105 00:33:03- INFO- 完成批次处理，股票代码: ['SZSE.002331', 'SZSE.002332', 'SZSE.002333']...(共200只)
+20260105 00:33:03- INFO- 完成批次处理，股票代码: ['SZSE.002579', 'SZSE.002580', 'SZSE.002582']...(共200只)
+20260105 00:33:03- INFO- 所有批次处理完成，共合并81953条记录
+20260105 00:36:00- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:36:00- INFO- 回测结果(不风控):
+20260105 00:36:00- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 49.22%
+策略盈亏比: 1.56
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2604
+策略总收益率: 211.40%
+策略年化收益率: 213.36%
+最大回撤: -16.30%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.83
+策略超额年化收益率: 213.15%
+最终净值: 3.1140
+20260105 00:36:01- INFO- 回测结果(触及跌停风控):
+20260105 00:36:01- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 50.00%
+策略盈亏比: 1.60
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2995
+策略总收益率: 241.41%
+策略年化收益率: 243.73%
+最大回撤: -12.97%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 243.52%
+最终净值: 3.4141
+20260105 00:36:01- INFO- 回测结果(买点下移风控):
+20260105 00:36:01- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 48.71%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2584
+策略总收益率: 217.07%
+策略年化收益率: 219.09%
+最大回撤: -14.36%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.93
+策略超额年化收益率: 218.88%
+最终净值: 3.1707
+20260105 00:37:34- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:37:34- INFO- 回测结果(不风控):
+20260105 00:40:13- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 49.22%
+策略盈亏比: 1.56
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2604
+策略总收益率: 211.40%
+策略年化收益率: 213.36%
+最大回撤: -16.30%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.83
+策略超额年化收益率: 213.15%
+最终净值: 3.1140
+20260105 00:40:13- INFO- 回测结果(触及跌停风控):
+20260105 00:40:33- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 50.00%
+策略盈亏比: 1.60
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2995
+策略总收益率: 241.41%
+策略年化收益率: 243.73%
+最大回撤: -12.97%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 243.52%
+最终净值: 3.4141
+20260105 00:44:07- INFO- 回测结果(买点下移风控):
+20260105 00:44:07- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 48.71%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2584
+策略总收益率: 217.07%
+策略年化收益率: 219.09%
+最大回撤: -14.36%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.93
+策略超额年化收益率: 218.88%
+最终净值: 3.1707
+20260105 00:44:21- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:44:21- INFO- 回测结果(不风控):
+20260105 00:44:21- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 49.22%
+策略盈亏比: 1.56
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2604
+策略总收益率: 211.40%
+策略年化收益率: 213.36%
+最大回撤: -16.30%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.83
+策略超额年化收益率: 213.15%
+最终净值: 3.1140
+20260105 00:44:21- INFO- 回测结果(触及跌停风控):
+20260105 00:44:21- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 50.00%
+策略盈亏比: 1.60
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2995
+策略总收益率: 241.41%
+策略年化收益率: 243.73%
+最大回撤: -12.97%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 243.52%
+最终净值: 3.4141
+20260105 00:44:22- INFO- 回测结果(买点下移风控):
+20260105 00:44:22- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 48.71%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2584
+策略总收益率: 217.07%
+策略年化收益率: 219.09%
+最大回撤: -14.36%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.93
+策略超额年化收益率: 218.88%
+最终净值: 3.1707
+20260105 00:46:32- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:46:32- INFO- 回测结果(不风控):
+20260105 00:46:33- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 49.22%
+策略盈亏比: 1.56
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2604
+策略总收益率: 211.40%
+策略年化收益率: 213.36%
+最大回撤: -16.30%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.83
+策略超额年化收益率: 213.15%
+最终净值: 3.1140
+20260105 00:46:33- INFO- 回测结果(触及跌停风控):
+20260105 00:46:33- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 50.00%
+策略盈亏比: 1.60
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2995
+策略总收益率: 241.41%
+策略年化收益率: 243.73%
+最大回撤: -12.97%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 243.52%
+最终净值: 3.4141
+20260105 00:46:34- INFO- 回测结果(买点下移风控):
+20260105 00:46:34- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 48.71%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2584
+策略总收益率: 217.07%
+策略年化收益率: 219.09%
+最大回撤: -14.36%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.93
+策略超额年化收益率: 218.88%
+最终净值: 3.1707
+20260105 00:46:49- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:46:49- INFO- 回测结果(不风控):
+20260105 00:46:49- INFO- 
+回测时间:2025-06-03 - 2025-12-31
+策略胜率: 49.11%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.70
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2670
+策略总收益率: 117.61%
+策略年化收益率: 283.83%
+最大回撤: -16.30%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 3.43
+策略超额年化收益率: 283.53%
+最终净值: 2.1761
+20260105 00:46:49- INFO- 回测结果(触及跌停风控):
+20260105 00:46:49- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 50.00%
+策略盈亏比: 1.60
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2995
+策略总收益率: 241.41%
+策略年化收益率: 243.73%
+最大回撤: -12.97%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 243.52%
+最终净值: 3.4141
+20260105 00:46:49- INFO- 回测结果(买点下移风控):
+20260105 00:46:49- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 48.71%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2584
+策略总收益率: 217.07%
+策略年化收益率: 219.09%
+最大回撤: -14.36%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.93
+策略超额年化收益率: 218.88%
+最终净值: 3.1707
+20260105 00:47:38- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 00:47:38- INFO- 回测结果(不风控):
+20260105 00:47:42- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 49.22%
+策略盈亏比: 1.56
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2604
+策略总收益率: 211.40%
+策略年化收益率: 213.36%
+最大回撤: -16.30%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.83
+策略超额年化收益率: 213.15%
+最终净值: 3.1140
+20260105 01:00:34- INFO- 回测结果(触及跌停风控):
+20260105 01:00:34- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 50.00%
+策略盈亏比: 1.60
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2995
+策略总收益率: 241.41%
+策略年化收益率: 243.73%
+最大回撤: -12.97%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 243.52%
+最终净值: 3.4141
+20260105 01:00:34- INFO- 回测结果(买点下移风控):
+20260105 01:00:34- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 48.71%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2584
+策略总收益率: 217.07%
+策略年化收益率: 219.09%
+最大回撤: -14.36%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.93
+策略超额年化收益率: 218.88%
+最终净值: 3.1707
+20260105 01:00:38- INFO- 总调整天数: 64, 调整正确率: 55.29%, 预计平均亏损改善: 2.6926%
+20260105 01:00:38- INFO- 回测结果(不风控):
+20260105 01:00:38- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 49.22%
+策略盈亏比: 1.56
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2604
+策略总收益率: 211.40%
+策略年化收益率: 213.36%
+最大回撤: -16.30%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.83
+策略超额年化收益率: 191.58%
+最终净值: 3.1140
+20260105 01:00:38- INFO- 回测结果(触及跌停风控):
+20260105 01:00:38- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 50.00%
+策略盈亏比: 1.60
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2995
+策略总收益率: 241.41%
+策略年化收益率: 243.73%
+最大回撤: -12.97%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 221.95%
+最终净值: 3.4141
+20260105 01:00:39- INFO- 回测结果(买点下移风控):
+20260105 01:00:39- INFO- 
+回测时间:2025-01-02 - 2025-12-31
+策略胜率: 48.71%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.58 天
+每单位风险期望收益:0.2584
+策略总收益率: 217.07%
+策略年化收益率: 219.09%
+最大回撤: -14.36%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.93
+策略超额年化收益率: 197.31%
+最终净值: 3.1707
+20260105 21:41:05- INFO- 
+回测时间:2025-01-02 - 2026-01-05
+策略胜率: 49.22%
+策略盈亏比: 1.53
+每日平均开仓个数: 2.58
+平均持仓天数: 1.63 天
+每单位风险期望收益:0.2456
+策略总收益率: 203.06%
+策略年化收益率: 200.34%
+最大回撤: -16.65%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.75
+策略超额年化收益率: 177.23%
+最终净值: 3.0306
+20260105 21:41:05- INFO- 回测结果(触及跌停风控):
+20260105 21:41:05- INFO- 
+回测时间:2025-01-02 - 2026-01-05
+策略胜率: 50.11%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.63 天
+每单位风险期望收益:0.2903
+策略总收益率: 243.61%
+策略年化收益率: 240.17%
+最大回撤: -11.75%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.22
+策略超额年化收益率: 217.06%
+最终净值: 3.4361
+20260105 21:41:05- INFO- 回测结果(买点下移风控):
+20260105 21:41:05- INFO- 
+回测时间:2025-01-02 - 2026-01-05
+策略胜率: 48.71%
+策略盈亏比: 1.55
+每日平均开仓个数: 2.58
+平均持仓天数: 1.63 天
+每单位风险期望收益:0.2441
+策略总收益率: 211.13%
+策略年化收益率: 208.26%
+最大回撤: -14.57%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.87
+策略超额年化收益率: 185.15%
+最终净值: 3.1113
+20260105 22:04:57- INFO- 
+回测时间:2025-01-02 - 2026-01-05
+策略胜率: 49.22%
+策略盈亏比: 1.53
+每日平均开仓个数: 2.58
+平均持仓天数: 1.62 天
+每单位风险期望收益:0.2458
+策略总收益率: 199.13%
+策略年化收益率: 196.47%
+最大回撤: -16.79%
+最大回撤阶段: 2025-08-27 至 2025-09-26
+夏普比率: 2.72
+策略超额年化收益率: 173.36%
+最终净值: 2.9913
+20260105 22:04:57- INFO- 回测结果(触及跌停风控):
+20260105 22:04:57- INFO- 
+回测时间:2025-01-02 - 2026-01-05
+策略胜率: 50.11%
+策略盈亏比: 1.58
+每日平均开仓个数: 2.58
+平均持仓天数: 1.62 天
+每单位风险期望收益:0.2902
+策略总收益率: 238.98%
+策略年化收益率: 235.62%
+最大回撤: -11.68%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 3.18
+策略超额年化收益率: 212.51%
+最终净值: 3.3898
+20260105 22:04:57- INFO- 回测结果(买点下移风控):
+20260105 22:04:57- INFO- 
+回测时间:2025-01-02 - 2026-01-05
+策略胜率: 48.71%
+策略盈亏比: 1.55
+每日平均开仓个数: 2.58
+平均持仓天数: 1.62 天
+每单位风险期望收益:0.2443
+策略总收益率: 207.09%
+策略年化收益率: 204.29%
+最大回撤: -14.48%
+最大回撤阶段: 2025-08-12 至 2025-09-26
+夏普比率: 2.83
+策略超额年化收益率: 181.18%
+最终净值: 3.0709
+20260107 08:20:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:40- INFO- 将在 1 秒后重试...
+20260107 08:20:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:40- INFO- 将在 1 秒后重试...
+20260107 08:20:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:40- INFO- 将在 1 秒后重试...
+20260107 08:20:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:40- INFO- 将在 1 秒后重试...
+20260107 08:20:40- INFO- 将在 1 秒后重试...
+20260107 08:20:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:41- INFO- 将在 1 秒后重试...
+20260107 08:20:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:41- INFO- 将在 1 秒后重试...
+20260107 08:20:41- INFO- 将在 1 秒后重试...
+20260107 08:20:41- INFO- 将在 1 秒后重试...
+20260107 08:20:41- INFO- 将在 1 秒后重试...
+20260107 08:20:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:42- INFO- 获取 20251216 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:42- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- INFO- 获取 20251211 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:42- INFO- 将在 1 秒后重试...
+20260107 08:20:42- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:42- INFO- 将在 1 秒后重试...
+20260107 08:20:42- INFO- 将在 1 秒后重试...
+20260107 08:20:42- INFO- 将在 1 秒后重试...
+20260107 08:20:42- INFO- 获取 20251215 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:42- INFO- 将在 1 秒后重试...
+20260107 08:20:42- INFO- 获取 20251210 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:42- INFO- 获取 20251212 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:43- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:43- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:43- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:43- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:43- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:43- INFO- 将在 1 秒后重试...
+20260107 08:20:43- INFO- 将在 1 秒后重试...
+20260107 08:20:43- INFO- 将在 1 秒后重试...
+20260107 08:20:43- INFO- 将在 1 秒后重试...
+20260107 08:20:43- INFO- 将在 1 秒后重试...
+20260107 08:20:44- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:44- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:44- INFO- 获取 20251222 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:44- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:44- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:44- INFO- 获取 20251223 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- INFO- 将在 1 秒后重试...
+20260107 08:20:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- INFO- 获取 20251219 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:44- INFO- 将在 1 秒后重试...
+20260107 08:20:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:44- INFO- 将在 1 秒后重试...
+20260107 08:20:44- INFO- 将在 1 秒后重试...
+20260107 08:20:44- INFO- 获取 20251217 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:44- INFO- 将在 1 秒后重试...
+20260107 08:20:44- INFO- 获取 20251218 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:45- INFO- 将在 1 秒后重试...
+20260107 08:20:45- INFO- 将在 1 秒后重试...
+20260107 08:20:45- INFO- 将在 1 秒后重试...
+20260107 08:20:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:45- INFO- 将在 1 秒后重试...
+20260107 08:20:45- INFO- 将在 1 秒后重试...
+20260107 08:20:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:46- INFO- 获取 20251225 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- INFO- 获取 20251224 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:46- INFO- 将在 1 秒后重试...
+20260107 08:20:46- INFO- 将在 1 秒后重试...
+20260107 08:20:46- INFO- 将在 1 秒后重试...
+20260107 08:20:46- INFO- 获取 20251226 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:46- INFO- 将在 1 秒后重试...
+20260107 08:20:46- INFO- 获取 20251230 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:46- INFO- 获取 20251229 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:47- INFO- 将在 1 秒后重试...
+20260107 08:20:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:47- INFO- 将在 1 秒后重试...
+20260107 08:20:47- INFO- 将在 1 秒后重试...
+20260107 08:20:47- INFO- 将在 1 秒后重试...
+20260107 08:20:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 08:20:48- INFO- 获取 20260106 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 08:20:48- INFO- 获取 20260105 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:48- INFO- 获取 20251231 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:48- INFO- 获取 20260107 数据时出错: local variable 'e' referenced before assignment
+20260107 08:20:48- INFO- 未获取到任何股票数据
+20260107 19:11:55- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:55- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:55- INFO- 将在 1 秒后重试...
+20260107 19:11:55- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:55- INFO- 将在 1 秒后重试...
+20260107 19:11:55- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:55- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:55- INFO- 将在 1 秒后重试...
+20260107 19:11:55- INFO- 将在 1 秒后重试...
+20260107 19:11:55- INFO- 将在 1 秒后重试...
+20260107 19:11:56- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:56- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:56- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:56- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:56- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:56- INFO- 将在 1 秒后重试...
+20260107 19:11:56- INFO- 将在 1 秒后重试...
+20260107 19:11:56- INFO- 将在 1 秒后重试...
+20260107 19:11:56- INFO- 将在 1 秒后重试...
+20260107 19:11:56- INFO- 将在 1 秒后重试...
+20260107 19:11:57- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:57- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:57- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:57- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:57- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:57- INFO- 获取 20251215 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:57- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- INFO- 获取 20251212 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:57- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:57- INFO- 将在 1 秒后重试...
+20260107 19:11:57- INFO- 将在 1 秒后重试...
+20260107 19:11:57- INFO- 将在 1 秒后重试...
+20260107 19:11:57- INFO- 将在 1 秒后重试...
+20260107 19:11:57- INFO- 获取 20251210 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:57- INFO- 将在 1 秒后重试...
+20260107 19:11:57- INFO- 获取 20251216 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:57- INFO- 获取 20251211 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:58- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:58- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:58- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:58- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:58- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:58- INFO- 将在 1 秒后重试...
+20260107 19:11:58- INFO- 将在 1 秒后重试...
+20260107 19:11:58- INFO- 将在 1 秒后重试...
+20260107 19:11:58- INFO- 将在 1 秒后重试...
+20260107 19:11:58- INFO- 将在 1 秒后重试...
+20260107 19:11:59- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:59- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:59- INFO- 获取 20251217 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:59- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:59- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- INFO- 获取 20251222 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:59- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- INFO- 将在 1 秒后重试...
+20260107 19:11:59- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- INFO- 获取 20251219 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:59- INFO- 将在 1 秒后重试...
+20260107 19:11:59- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:59- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:11:59- INFO- 将在 1 秒后重试...
+20260107 19:11:59- INFO- 获取 20251223 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:59- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:11:59- INFO- 获取 20251218 数据时出错: local variable 'e' referenced before assignment
+20260107 19:11:59- INFO- 将在 1 秒后重试...
+20260107 19:11:59- INFO- 将在 1 秒后重试...
+20260107 19:12:00- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:00- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:00- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:00- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:00- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:00- INFO- 将在 1 秒后重试...
+20260107 19:12:00- INFO- 将在 1 秒后重试...
+20260107 19:12:00- INFO- 将在 1 秒后重试...
+20260107 19:12:00- INFO- 将在 1 秒后重试...
+20260107 19:12:00- INFO- 将在 1 秒后重试...
+20260107 19:12:01- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:01- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:01- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:01- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:01- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:01- INFO- 获取 20251230 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:01- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:01- INFO- 获取 20251226 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:01- INFO- 将在 1 秒后重试...
+20260107 19:12:01- INFO- 将在 1 秒后重试...
+20260107 19:12:01- INFO- 将在 1 秒后重试...
+20260107 19:12:01- INFO- 将在 1 秒后重试...
+20260107 19:12:01- INFO- 获取 20251225 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:01- INFO- 获取 20251229 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:01- INFO- 获取 20251224 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:02- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:02- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:02- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:02- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:02- INFO- 将在 1 秒后重试...
+20260107 19:12:02- INFO- 将在 1 秒后重试...
+20260107 19:12:02- INFO- 将在 1 秒后重试...
+20260107 19:12:02- INFO- 将在 1 秒后重试...
+20260107 19:12:03- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:03- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:03- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:03- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:03- INFO- 获取 20260107 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:03- INFO- 获取 20251231 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:03- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:03- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:12:03- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:03- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:12:03- INFO- 获取 20260105 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:03- INFO- 获取 20260106 数据时出错: local variable 'e' referenced before assignment
+20260107 19:12:03- INFO- 未获取到任何股票数据
+20260107 19:14:15- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:15- INFO- 将在 1 秒后重试...
+20260107 19:14:15- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:15- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:15- INFO- 将在 1 秒后重试...
+20260107 19:14:15- INFO- 将在 1 秒后重试...
+20260107 19:14:15- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:15- INFO- 将在 1 秒后重试...
+20260107 19:14:15- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:15- INFO- 将在 1 秒后重试...
+20260107 19:14:16- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:16- INFO- 将在 1 秒后重试...
+20260107 19:14:16- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:16- INFO- 将在 1 秒后重试...
+20260107 19:14:16- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:16- INFO- 将在 1 秒后重试...
+20260107 19:14:16- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:16- INFO- 将在 1 秒后重试...
+20260107 19:14:16- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:16- INFO- 将在 1 秒后重试...
+20260107 19:14:17- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:17- INFO- 获取 20251210 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:17- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:17- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- INFO- 获取 20251211 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:17- INFO- 将在 1 秒后重试...
+20260107 19:14:17- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:17- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- INFO- 获取 20251212 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:17- INFO- 将在 1 秒后重试...
+20260107 19:14:17- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:17- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:17- INFO- 将在 1 秒后重试...
+20260107 19:14:17- INFO- 获取 20251216 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:17- INFO- 获取 20251215 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:17- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:17- INFO- 将在 1 秒后重试...
+20260107 19:14:17- INFO- 将在 1 秒后重试...
+20260107 19:14:18- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:18- INFO- 将在 1 秒后重试...
+20260107 19:14:18- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:18- INFO- 将在 1 秒后重试...
+20260107 19:14:18- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:18- INFO- 将在 1 秒后重试...
+20260107 19:14:18- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:18- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:18- INFO- 将在 1 秒后重试...
+20260107 19:14:18- INFO- 将在 1 秒后重试...
+20260107 19:14:19- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:19- INFO- 获取 20251217 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:19- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- INFO- 将在 1 秒后重试...
+20260107 19:14:19- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:19- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- INFO- 获取 20251218 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:19- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:19- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- INFO- 获取 20251219 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:19- INFO- 将在 1 秒后重试...
+20260107 19:14:19- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:19- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:19- INFO- 将在 1 秒后重试...
+20260107 19:14:19- INFO- 获取 20251222 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:19- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- INFO- 获取 20251223 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:19- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:19- INFO- 将在 1 秒后重试...
+20260107 19:14:19- INFO- 将在 1 秒后重试...
+20260107 19:14:20- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:20- INFO- 将在 1 秒后重试...
+20260107 19:14:20- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:20- INFO- 将在 1 秒后重试...
+20260107 19:14:20- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:20- INFO- 将在 1 秒后重试...
+20260107 19:14:20- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:20- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:20- INFO- 将在 1 秒后重试...
+20260107 19:14:20- INFO- 将在 1 秒后重试...
+20260107 19:14:21- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:21- INFO- 获取 20251224 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:21- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- INFO- 将在 1 秒后重试...
+20260107 19:14:21- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:21- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- INFO- 获取 20251225 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:21- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:21- INFO- 获取 20251226 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:21- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- INFO- 将在 1 秒后重试...
+20260107 19:14:21- INFO- 将在 1 秒后重试...
+20260107 19:14:21- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:21- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:21- INFO- 获取 20251229 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:21- INFO- 获取 20251230 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:21- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:21- INFO- 将在 1 秒后重试...
+20260107 19:14:22- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:22- INFO- 将在 1 秒后重试...
+20260107 19:14:22- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:22- INFO- 将在 1 秒后重试...
+20260107 19:14:22- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:22- INFO- 将在 1 秒后重试...
+20260107 19:14:22- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:22- INFO- 将在 1 秒后重试...
+20260107 19:14:23- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:23- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:23- INFO- 获取 20251231 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:23- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:23- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:23- INFO- 获取 20260105 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:23- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:23- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 19:14:23- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:23- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 19:14:23- INFO- 获取 20260106 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:23- INFO- 获取 20260107 数据时出错: local variable 'e' referenced before assignment
+20260107 19:14:23- INFO- 未获取到任何股票数据
+20260107 21:03:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:44- INFO- 将在 1 秒后重试...
+20260107 21:03:44- INFO- 将在 1 秒后重试...
+20260107 21:03:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:44- INFO- 将在 1 秒后重试...
+20260107 21:03:44- INFO- 将在 1 秒后重试...
+20260107 21:03:44- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:44- INFO- 将在 1 秒后重试...
+20260107 21:03:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:45- INFO- 将在 1 秒后重试...
+20260107 21:03:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:45- INFO- 将在 1 秒后重试...
+20260107 21:03:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:45- INFO- 将在 1 秒后重试...
+20260107 21:03:45- INFO- 将在 1 秒后重试...
+20260107 21:03:45- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:45- INFO- 将在 1 秒后重试...
+20260107 21:03:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- INFO- 获取 20251210 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- INFO- 获取 20251211 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:46- INFO- 将在 1 秒后重试...
+20260107 21:03:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- INFO- 将在 1 秒后重试...
+20260107 21:03:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:46- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:46- INFO- 获取 20251212 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:46- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- INFO- 获取 20251216 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:46- INFO- 将在 1 秒后重试...
+20260107 21:03:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- INFO- 获取 20251215 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:46- INFO- 将在 1 秒后重试...
+20260107 21:03:46- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:46- INFO- 将在 1 秒后重试...
+20260107 21:03:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:47- INFO- 将在 1 秒后重试...
+20260107 21:03:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:47- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:47- INFO- 将在 1 秒后重试...
+20260107 21:03:47- INFO- 将在 1 秒后重试...
+20260107 21:03:47- INFO- 将在 1 秒后重试...
+20260107 21:03:47- INFO- 将在 1 秒后重试...
+20260107 21:03:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:48- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:48- INFO- 获取 20251222 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:48- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- INFO- 获取 20251219 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:48- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- INFO- 将在 1 秒后重试...
+20260107 21:03:48- INFO- 将在 1 秒后重试...
+20260107 21:03:48- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:48- INFO- 将在 1 秒后重试...
+20260107 21:03:48- INFO- 获取 20251217 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:48- INFO- 将在 1 秒后重试...
+20260107 21:03:48- INFO- 将在 1 秒后重试...
+20260107 21:03:48- INFO- 获取 20251218 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:48- INFO- 获取 20251223 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:49- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:49- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:49- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:49- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:49- INFO- 将在 1 秒后重试...
+20260107 21:03:49- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:49- INFO- 将在 1 秒后重试...
+20260107 21:03:49- INFO- 将在 1 秒后重试...
+20260107 21:03:49- INFO- 将在 1 秒后重试...
+20260107 21:03:49- INFO- 将在 1 秒后重试...
+20260107 21:03:50- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:50- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:50- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:50- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:50- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:50- INFO- 获取 20251229 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:50- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- INFO- 获取 20251224 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:50- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:50- INFO- 将在 1 秒后重试...
+20260107 21:03:50- INFO- 将在 1 秒后重试...
+20260107 21:03:50- INFO- 将在 1 秒后重试...
+20260107 21:03:50- INFO- 获取 20251225 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:50- INFO- 将在 1 秒后重试...
+20260107 21:03:50- INFO- 获取 20251230 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:50- INFO- 获取 20251226 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:51- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:51- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:51- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:51- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:51- INFO- 将在 1 秒后重试...
+20260107 21:03:51- INFO- 将在 1 秒后重试...
+20260107 21:03:51- INFO- 将在 1 秒后重试...
+20260107 21:03:51- INFO- 将在 1 秒后重试...
+20260107 21:03:52- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:52- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:52- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:52- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:52- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:03:52- INFO- 获取 20260105 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:52- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:52- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:52- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:03:52- INFO- 获取 20260107 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:52- INFO- 获取 20251231 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:52- INFO- 获取 20260106 数据时出错: local variable 'e' referenced before assignment
+20260107 21:03:52- INFO- 未获取到任何股票数据
+20260107 21:06:34- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:34- INFO- 将在 1 秒后重试...
+20260107 21:06:34- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:34- INFO- 将在 1 秒后重试...
+20260107 21:06:34- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:34- INFO- 将在 1 秒后重试...
+20260107 21:06:34- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:34- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:34- INFO- 将在 1 秒后重试...
+20260107 21:06:34- INFO- 将在 1 秒后重试...
+20260107 21:06:35- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:35- INFO- 将在 1 秒后重试...
+20260107 21:06:35- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:35- INFO- 将在 1 秒后重试...
+20260107 21:06:35- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:35- INFO- 将在 1 秒后重试...
+20260107 21:06:35- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:35- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:35- INFO- 将在 1 秒后重试...
+20260107 21:06:35- INFO- 将在 1 秒后重试...
+20260107 21:06:36- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:36- INFO- 获取 20251210 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:36- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- INFO- 将在 1 秒后重试...
+20260107 21:06:36- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:36- INFO- 获取 20251215 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:36- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- INFO- 将在 1 秒后重试...
+20260107 21:06:36- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:36- INFO- 获取 20251216 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:36- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- INFO- 将在 1 秒后重试...
+20260107 21:06:36- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:36- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:36- INFO- 获取 20251212 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:36- INFO- 获取 20251211 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:36- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:36- INFO- 将在 1 秒后重试...
+20260107 21:06:36- INFO- 将在 1 秒后重试...
+20260107 21:06:37- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:37- INFO- 将在 1 秒后重试...
+20260107 21:06:37- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:37- INFO- 将在 1 秒后重试...
+20260107 21:06:37- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:37- INFO- 将在 1 秒后重试...
+20260107 21:06:37- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:37- INFO- 将在 1 秒后重试...
+20260107 21:06:37- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:37- INFO- 将在 1 秒后重试...
+20260107 21:06:38- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:38- INFO- 获取 20251217 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:38- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- INFO- 将在 1 秒后重试...
+20260107 21:06:38- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:38- INFO- 获取 20251218 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:38- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- INFO- 将在 1 秒后重试...
+20260107 21:06:38- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:38- INFO- 获取 20251219 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:38- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- INFO- 将在 1 秒后重试...
+20260107 21:06:38- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:38- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:38- INFO- 获取 20251223 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:38- INFO- 获取 20251222 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:38- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:38- INFO- 将在 1 秒后重试...
+20260107 21:06:38- INFO- 将在 1 秒后重试...
+20260107 21:06:39- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:39- INFO- 将在 1 秒后重试...
+20260107 21:06:39- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:39- INFO- 将在 1 秒后重试...
+20260107 21:06:39- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:39- INFO- 将在 1 秒后重试...
+20260107 21:06:39- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:39- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:39- INFO- 将在 1 秒后重试...
+20260107 21:06:39- INFO- 将在 1 秒后重试...
+20260107 21:06:40- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:40- INFO- 获取 20251224 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- INFO- 将在 1 秒后重试...
+20260107 21:06:40- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:40- INFO- 获取 20251225 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- INFO- 将在 1 秒后重试...
+20260107 21:06:40- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:40- INFO- 获取 20251226 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- INFO- 将在 1 秒后重试...
+20260107 21:06:40- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:40- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- INFO- 获取 20251229 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:40- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:40- INFO- 获取 20251230 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:40- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:40- INFO- 将在 1 秒后重试...
+20260107 21:06:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:41- INFO- 将在 1 秒后重试...
+20260107 21:06:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:41- INFO- 将在 1 秒后重试...
+20260107 21:06:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:41- INFO- 将在 1 秒后重试...
+20260107 21:06:41- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:41- INFO- 将在 1 秒后重试...
+20260107 21:06:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:42- INFO- 获取 20251231 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:42- INFO- 获取 20260105 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:42- INFO- 获取 20260106 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:42- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:06:42- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:06:42- INFO- 获取 20260107 数据时出错: local variable 'e' referenced before assignment
+20260107 21:06:42- INFO- 未获取到任何股票数据
+20260107 21:07:29- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:07:31- INFO- 将在 1 秒后重试...
+20260107 21:07:35- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:07:35- INFO- 将在 1 秒后重试...
+20260107 21:08:10- ERROR- 操作失败 (尝试 2/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:08:18- INFO- 将在 1 秒后重试...
+20260107 21:08:19- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:08:19- INFO- 将在 1 秒后重试...
+20260107 21:08:30- ERROR- 操作失败 (尝试 3/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:08:30- ERROR- 达到最大重试次数 3，操作最终失败
+20260107 21:08:30- INFO- 获取 20251211 数据时出错: local variable 'e' referenced before assignment
+20260107 21:08:31- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:08:31- INFO- 将在 1 秒后重试...
+20260107 21:08:31- ERROR- 操作失败 (尝试 1/3): 'RootLogger' object has no attribute 'getLogger'
+20260107 21:08:31- INFO- 将在 1 秒后重试...
+20260107 21:16:44- INFO- 已获取 20251215 的股票数据
+20260107 21:16:44- INFO- 已获取 20251210 的股票数据
+20260107 21:16:44- INFO- 已获取 20251216 的股票数据
+20260107 21:16:44- INFO- 已获取 20251211 的股票数据
+20260107 21:16:44- INFO- 已获取 20251212 的股票数据
+20260107 21:16:48- INFO- 已获取 20251217 的股票数据
+20260107 21:16:48- INFO- 已获取 20251219 的股票数据
+20260107 21:16:48- INFO- 已获取 20251222 的股票数据
+20260107 21:16:48- INFO- 已获取 20251223 的股票数据
+20260107 21:16:48- INFO- 已获取 20251218 的股票数据
+20260107 21:16:52- INFO- 已获取 20251224 的股票数据
+20260107 21:16:52- INFO- 已获取 20251226 的股票数据
+20260107 21:16:52- INFO- 已获取 20251225 的股票数据
+20260107 21:16:52- INFO- 已获取 20251229 的股票数据
+20260107 21:16:53- INFO- 已获取 20251230 的股票数据
+20260107 21:16:56- INFO- 已获取 20251231 的股票数据
+20260107 21:16:56- INFO- 已获取 20260105 的股票数据
+20260107 21:16:57- INFO- 已获取 20260107 的股票数据
+20260107 21:16:57- INFO- 已获取 20260106 的股票数据
+20260107 21:16:59- INFO- 已获取 20260106 的复权因子数据
+20260107 21:16:59- INFO- 已获取 20260105 的复权因子数据
+20260107 21:16:59- INFO- 已获取 20260107 的复权因子数据
+20260107 21:17:00- INFO- 所有交易日复权因子数据获取完成，共合并16427条记录
+20260107 21:17:01- INFO- 已获取 20260107 的每日基础指标数据
+20260107 21:17:01- INFO- 已获取 20260106 的每日基础指标数据
+20260107 21:17:01- INFO- 已获取 20260105 的每日基础指标数据
+20260107 21:17:02- INFO- 所有交易日每日基础指标数据获取完成，共合并16376条记录
+20260107 21:22:24- INFO- 已获取 20251210 的股票数据
+20260107 21:22:24- INFO- 已获取 20251211 的股票数据
+20260107 21:22:24- INFO- 已获取 20251216 的股票数据
+20260107 21:22:24- INFO- 已获取 20251212 的股票数据
+20260107 21:22:24- INFO- 已获取 20251215 的股票数据
+20260107 21:22:28- INFO- 已获取 20251218 的股票数据
+20260107 21:22:28- INFO- 已获取 20251219 的股票数据
+20260107 21:22:28- INFO- 已获取 20251223 的股票数据
+20260107 21:22:28- INFO- 已获取 20251222 的股票数据
+20260107 21:22:28- INFO- 已获取 20251217 的股票数据
+20260107 21:22:31- INFO- 已获取 20251224 的股票数据
+20260107 21:22:31- INFO- 已获取 20251225 的股票数据
+20260107 21:22:31- INFO- 已获取 20251226 的股票数据
+20260107 21:22:31- INFO- 已获取 20251229 的股票数据
+20260107 21:22:31- INFO- 已获取 20251230 的股票数据
+20260107 21:22:34- INFO- 已获取 20251231 的股票数据
+20260107 21:22:34- INFO- 已获取 20260105 的股票数据
+20260107 21:22:34- INFO- 已获取 20260107 的股票数据
+20260107 21:22:34- INFO- 已获取 20260106 的股票数据
+20260107 21:22:37- INFO- 未能获取交易日历数据
+20260107 21:22:37- INFO- 未能获取交易日历数据
+20260107 21:22:37- INFO- 将5183只股票分成52多线程批处理
+20260107 21:24:10- INFO- SZSE.002049 无分钟数据，跳过
+20260107 21:24:19- INFO- SZSE.300091 无分钟数据，跳过
+20260107 21:24:20- INFO- SZSE.002055 无分钟数据，跳过
+20260107 21:24:42- INFO- SZSE.001331 无分钟数据，跳过
+20260107 21:25:01- INFO- SZSE.300658 无分钟数据，跳过
+20260107 21:25:27- INFO- SZSE.301213 无分钟数据，跳过
+20260107 21:25:50- INFO- SHSE.600058 无分钟数据，跳过
+20260107 21:27:38- INFO- SHSE.603508 无分钟数据，跳过
+20260107 21:27:39- INFO- SHSE.600721 无分钟数据，跳过
+20260107 21:28:33- INFO- SHSE.605255 无分钟数据，跳过
+20260107 21:29:21- INFO- SHSE.603828 无分钟数据，跳过
+20260107 21:30:14- INFO- SHSE.603352 无分钟数据，跳过
+20260107 21:30:14- INFO- SHSE.603402 无分钟数据，跳过
+20260107 21:30:18- INFO- 所有批次处理完成，共合并93052条记录
+20260107 21:30:18- INFO- 将5183只股票分成52多线程批处理
+20260107 21:32:36- INFO- SZSE.301213 无分钟数据，跳过
+20260107 21:32:47- INFO- SZSE.300658 无分钟数据，跳过
+20260107 21:33:02- INFO- SZSE.300087 无分钟数据，跳过
+20260107 21:33:10- INFO- SHSE.605255 无分钟数据，跳过
+20260107 21:33:12- INFO- SHSE.603828 无分钟数据，跳过
+20260107 21:33:15- INFO- SHSE.603508 无分钟数据，跳过
+20260107 21:33:22- INFO- SZSE.002049 无分钟数据，跳过
+20260107 21:33:27- INFO- SHSE.600721 无分钟数据，跳过
+20260107 21:33:31- INFO- SZSE.000670 无分钟数据，跳过
+20260107 21:33:34- INFO- SHSE.600058 无分钟数据，跳过
+20260107 21:33:55- INFO- SHSE.603352 无分钟数据，跳过
+20260107 21:33:57- INFO- 所有批次处理完成，共合并93076条记录
+20260107 21:33:57- INFO- 将5183只股票分成52多线程批处理
+20260107 21:38:57- INFO- SHSE.600058 无分钟数据，跳过
+20260107 21:39:01- INFO- SZSE.300658 无分钟数据，跳过
+20260107 21:39:07- INFO- SZSE.300087 无分钟数据，跳过
+20260107 21:39:09- INFO- SZSE.002969 无分钟数据，跳过
+20260107 21:39:22- INFO- SZSE.002049 无分钟数据，跳过
+20260107 21:39:25- INFO- SZSE.000670 无分钟数据，跳过
+20260107 21:39:26- INFO- SHSE.605255 无分钟数据，跳过
+20260107 21:39:30- INFO- SHSE.603828 无分钟数据，跳过
+20260107 21:39:31- INFO- SHSE.603778 无分钟数据，跳过
+20260107 21:44:37- INFO- SHSE.603352 无分钟数据，跳过
+20260107 21:44:37- INFO- 所有批次处理完成，共合并93095条记录
+20260108 18:47:43- INFO- 已获取 20251212 的股票数据
+20260108 18:47:43- INFO- 已获取 20251216 的股票数据
+20260108 18:47:43- INFO- 已获取 20251211 的股票数据
+20260108 18:47:43- INFO- 已获取 20251210 的股票数据
+20260108 18:47:43- INFO- 已获取 20251215 的股票数据
+20260108 18:47:48- INFO- 已获取 20251217 的股票数据
+20260108 18:47:48- INFO- 已获取 20251218 的股票数据
+20260108 18:47:48- INFO- 已获取 20251219 的股票数据
+20260108 18:47:48- INFO- 已获取 20251222 的股票数据
+20260108 18:47:48- INFO- 已获取 20251223 的股票数据
+20260108 18:47:53- INFO- 已获取 20251225 的股票数据
+20260108 18:47:53- INFO- 已获取 20251224 的股票数据
+20260108 18:47:53- INFO- 已获取 20251226 的股票数据
+20260108 18:47:53- INFO- 已获取 20251229 的股票数据
+20260108 18:47:53- INFO- 已获取 20251230 的股票数据
+20260108 18:47:58- INFO- 已获取 20260105 的股票数据
+20260108 18:47:58- INFO- 已获取 20251231 的股票数据
+20260108 18:47:58- INFO- 已获取 20260106 的股票数据
+20260108 18:47:58- INFO- 已获取 20260108 的股票数据
+20260108 18:47:58- INFO- 已获取 20260107 的股票数据
+20260108 18:48:01- INFO- 已获取 20260108 的复权因子数据
+20260108 18:48:02- INFO- 所有交易日复权因子数据获取完成，共合并5476条记录
+20260108 18:48:03- INFO- 已获取 20260108 的每日基础指标数据
+20260108 18:48:04- INFO- 所有交易日每日基础指标数据获取完成，共合并5459条记录
+20260108 18:48:04- INFO- 将5183只股票分成52多线程批处理
+20260108 18:54:24- INFO- SHSE.600058 无分钟数据，跳过
+20260108 18:54:31- INFO- SZSE.300658 无分钟数据，跳过
+20260108 18:54:35- INFO- SZSE.300087 无分钟数据，跳过
+20260108 18:54:39- INFO- SZSE.002969 无分钟数据，跳过
+20260108 18:54:59- INFO- SHSE.605255 无分钟数据，跳过
+20260108 18:55:01- INFO- SHSE.603828 无分钟数据，跳过
+20260108 18:55:03- INFO- SZSE.002049 无分钟数据，跳过
+20260108 18:55:04- INFO- SHSE.603778 无分钟数据，跳过
+20260108 18:55:19- INFO- SZSE.000670 无分钟数据，跳过
+20260108 18:55:20- INFO- SZSE.000608 无分钟数据，跳过
+20260108 18:59:25- INFO- SHSE.603352 无分钟数据，跳过
+20260108 18:59:27- INFO- 所有批次处理完成，共合并93087条记录
+20260109 20:42:58- INFO- 已获取 20251210 的股票数据
+20260109 20:42:59- INFO- 已获取 20251216 的股票数据
+20260109 20:43:00- INFO- 已获取 20251212 的股票数据
+20260109 20:43:01- INFO- 已获取 20251215 的股票数据
+20260109 20:43:04- INFO- 已获取 20251217 的股票数据
+20260109 20:43:05- INFO- 已获取 20251218 的股票数据
+20260109 20:43:14- INFO- 已获取 20251219 的股票数据
+20260109 20:43:16- INFO- 已获取 20251224 的股票数据
+20260109 20:43:17- INFO- 已获取 20251222 的股票数据
+20260109 20:43:17- INFO- 已获取 20251223 的股票数据
+20260109 20:43:31- INFO- 已获取 20251226 的股票数据
+20260109 20:43:34- INFO- 已获取 20251229 的股票数据
+20260109 20:43:35- INFO- 已获取 20251230 的股票数据
+20260109 20:43:38- INFO- 已获取 20251225 的股票数据
+20260109 20:43:39- INFO- 已获取 20260105 的股票数据
+20260109 20:43:51- ERROR- 操作失败 (尝试 1/3): 连接服务端失败: 网络连接失败，请检查网络状态
+20260109 20:43:51- INFO- 将在 1 秒后重试...
+20260109 20:43:54- INFO- 已获取 20260106 的股票数据
+20260109 20:43:55- INFO- 已获取 20260107 的股票数据
+20260109 20:43:57- INFO- 已获取 20251211 的股票数据
+20260109 20:43:57- INFO- 已获取 20251231 的股票数据
+20260109 20:44:02- INFO- 已获取 20260109 的股票数据
+20260109 20:44:06- INFO- 已获取 20260108 的股票数据
+20260109 20:44:11- INFO- 已获取 20260109 的复权因子数据
+20260109 20:44:12- INFO- 所有交易日复权因子数据获取完成，共合并5476条记录
+20260109 20:44:33- INFO- 已获取 20260109 的每日基础指标数据
+20260109 20:44:34- INFO- 所有交易日每日基础指标数据获取完成，共合并5459条记录
+20260109 20:44:35- INFO- 将5184只股票分成52多线程批处理
+20260109 20:51:16- INFO- SHSE.600058 无分钟数据，跳过
+20260109 20:51:24- INFO- SHSE.605255 无分钟数据，跳过
+20260109 20:51:30- INFO- SZSE.300658 无分钟数据，跳过
+20260109 20:51:33- INFO- SHSE.603828 无分钟数据，跳过
+20260109 20:51:37- INFO- SHSE.603778 无分钟数据，跳过
+20260109 20:51:44- INFO- SZSE.300169 无分钟数据，跳过
+20260109 20:51:46- INFO- SZSE.002969 无分钟数据，跳过
+20260109 20:54:43- INFO- SZSE.002554 无分钟数据，跳过
+20260109 20:55:04- INFO- SZSE.002049 无分钟数据，跳过
+20260109 20:55:27- INFO- SZSE.000670 无分钟数据，跳过
+20260109 20:55:29- INFO- SZSE.000608 无分钟数据，跳过
+20260109 20:55:57- INFO- SHSE.688785 无分钟数据，跳过
+20260109 20:55:57- INFO- SHSE.603352 无分钟数据，跳过
+20260109 20:55:58- INFO- 所有批次处理完成，共合并93057条记录

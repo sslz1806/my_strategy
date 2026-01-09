@@ -19,15 +19,15 @@ m_ts =tns.pro_api(mins_token)
 # print(stock_data)  
 
 mins = read_min_data(start_time=dt.datetime(2025,11,10),end_time=dt.datetime(2025,11,11))
-day = read_day_data(start_date=dt.datetime(2025,1,1),end_date=dt.datetime.today(),file_path='ts_stock_all_data')
+day = read_day_data(start_date=dt.datetime(2025,8,1),end_date=dt.datetime.today(),file_path='ts_stock_all_data')
 adj = read_day_data(start_date=dt.datetime(2025,8,1),end_date=dt.datetime(2025,10,1),file_path='ts_adj')
-mkt = read_day_data(start_date=dt.datetime(2025,1,1),end_date=dt.datetime.today(),file_path='ts_daily_basic')
+mkt = read_day_data(start_date=dt.datetime(2025,8,1),end_date=dt.datetime.today(),file_path='ts_daily_basic')
 start_date = day.select(pl.col("trading_date").max()).item()
 end_date = datetime.date.today()
-# 打印列信息
+# 打印列信息                                                                                                               
 # print(f"日数据列信息:\n {day.schema}\n个数:{len(day.columns)}")
 # print(f"分钟数据列信息:\n {mins.schema}\n个数:{len(mins.columns)}")
-
+                                   
 #%% 更新日线基础数据
 from stock_api import *
 from fun import *

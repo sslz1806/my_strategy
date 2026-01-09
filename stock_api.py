@@ -68,37 +68,36 @@ def timeout_context(seconds):
         yield timer
     finally:
         t.cancel()
-# 重试装饰器,date参数为函数的第二个
-def retry_with_timeout(max_retries=3, timeout=120):
+# 重试装饰器
+def retry_with_timeout(max_retries=3, retry_interval=1, timeout=120):
+    """
+    函数重试装饰器
+    Args:
+        max_retries: 最大重试次数
+        retry_interval: 重试间隔(秒)
+        timeout: 超时时间(秒)
+    """
     def decorator(func):
-        @wraps(func)
+        @wraps(func)  # 保留原函数的元信息
         def wrapper(*args, **kwargs):
-            date = args[0] if args else kwargs.get('trade_date')
-            
             for attempt in range(max_retries):
-                if attempt !=0:
-                    logging.info(f"开始第 {attempt + 1} 次尝试调取 {date} 的数据")
-                
                 try:
+                    # 调用被装饰的函数
                     with timeout_context(timeout) as timer:
                         return func(*args, **kwargs)    
-                            
-                except TimeoutException:
-                    logging.warning(f"{date}: 第 {attempt + 1} 次尝试超时")
-                    if attempt == max_retries - 1:
-                        error_msg = f"达到最大重试次数 ({max_retries})"
-                        logging.error(f"{date}: {error_msg}")
-                        raise TimeoutError(error_msg)
-                    continue
-                
-                    
                 except Exception as e:
-                    error_msg = f"执行出错: {str(e)}"
-                    logging.error(f"{date}: {error_msg}")
-                    raise
+                    # 记录错误信息
+                    logging.error(f"操作失败 (尝试 {attempt + 1}/{max_retries}): {str(e)}")
                     
-            return None  # 不应该到达这里
+                    # 如果不是最后一次尝试，等待后重试
+                    if attempt < max_retries - 1:
+                        logging.info(f"将在 {retry_interval} 秒后重试...")
+                        time.sleep(retry_interval)
             
+            # 所有重试都失败时抛出异常或返回失败
+            logging.error(f"达到最大重试次数 {max_retries}，操作最终失败")
+            raise e # 可以选择抛出异常让上层处理，或返回False
+        
         return wrapper
     return decorator
 
@@ -131,78 +130,10 @@ def suppress_non_error_output():
 
 
 #%% 配置日志
-logging.basicConfig(
-    level=logging.DEBUG,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[
-        logging.FileHandler('function_output.log', encoding='utf-8'),  # 日志写入文件
-        logging.StreamHandler(sys.stdout)           # 同时输出到控制台
-    ]
-)
-# 日志转换装饰器
-def print_to_log(func):
-    """将函数中的print输出重定向到日志的装饰器（支持多线程）"""
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        # 使用线程本地存储
-        thread_local = threading.local()
-        
-        # 保存原始的stdout
-        original_stdout = sys.stdout
-        
-        # 创建一个StringIO对象来捕获print输出
-        captured_output = StringIO()
-        sys.stdout = captured_output
-        
-        try:
-            # 执行函数
-            result = func(*args, **kwargs)
-            
-            # 获取捕获的输出
-            output = captured_output.getvalue().strip()
-            
-            # 如果有输出，记录到日志
-            if output:
-                # 按行分割输出，每行单独记录
-                for line in output.split('\n'):
-                    if line:  # 跳过空行
-                        logging.info(f"[{func.__name__}] {line}")
-                    
-            return result
-        except Exception as e:
-            logging.error(f"[{func.__name__}] Error: {str(e)}")
-            raise
-        finally:
-            # 恢复原始的stdout
-            sys.stdout = original_stdout
-            captured_output.close()
-    
-    return wrapper
-
+from fun import get_logger
+logging = get_logger('function_output.log',)
 import builtins
 
-def enable_print_logging(level=logging.INFO):
-    original_print = builtins.print
-    # 使用RLock允许同一线程重入
-    lock = threading.RLock()
-
-    def new_print(*args, **kwargs):
-        # 先执行print（无锁，允许并行输出到控制台）
-        original_print(*args, **kwargs)
-        
-        # 仅对日志写入加锁（减少锁范围）
-        try:
-            msg = " ".join(str(a) for a in args)
-        except Exception:
-            msg = " <print对象无法序列化> "
-        with lock:
-            logging.log(level, msg)
-    
-    builtins.print = new_print
-    return original_print
-
-# 启用（放在 logging.basicConfig 后）
-#enable_print_logging()
 #%% 因子函数
 def calculate_pct_chg(df, n_days=1, price_col='close', prev_col='pre_close'):
     """
@@ -895,6 +826,7 @@ class stock_api:
         return combined_df.drop(columns=['frequency','position'])
     
     # 批量多线程获取多个股票的n分钟数据,不包括end_time的date的数据,end_time的date需要加一天
+    #@staticmethod
     def gm_batch_get_minute_data(self,symbols,start_time='2025-10-01',end_time='2025-11-11',frequency='900s',n=15,batch_size=100, max_workers=15):
         """
         批量多线程获取多个股票的n分钟数据
@@ -953,7 +885,25 @@ class stock_api:
         final_df = pd.concat(all_results, ignore_index=True)
         logging.info(f"所有批次处理完成，共合并{len(final_df)}条记录")
         return final_df
-              
+
+    # 获取指数日线数据
+    def gm_get_index_day_data(self,index_code,start_date='2025-01-01', end_date='2025-10-31'):
+        """
+        gm_get_index_day_data 的 Docstring
+        说明: 使用掘金API获取指数的日线数据
+        :param index_code: 指数代码,格式为前缀加代码，如'SZSE.399001'(深圳成指)或'SHSE.000001'(上证指数)
+        :param start_date: 开始日期
+        :param end_date: 结束日期
+        :return: 指数日线数据的DataFrame
+        """
+        start_date = convert_date_format(start_date,to_format="%Y-%m-%d")
+        end_date = convert_date_format(end_date,to_format="%Y-%m-%d")
+        index_data = history(symbol=index_code,frequency='1d',start_time=start_date, end_time=end_date,df=True)
+        # 从bob列提取日期
+        index_data['trading_date'] = index_data['bob'].dt.strftime('%Y-%m-%d')
+        index_data = clean_stocks_data(index_data)
+        return index_data
+
     #%% 使用tushare_api
     # 获取所有股票的所有所有日期数据
     def ts_get_stocks_data(self, stock_list=None, start_date='2025-01-01', end_date='2025-10-31', max_workers=5):
@@ -991,8 +941,9 @@ class stock_api:
             #     logging.info(f"{trade_date} 无日线数据，跳过")
             #     raise ValueError(f"{trade_date} 无日线数据")
             # daily_data['trade_date'] = daily_data['trade_date'].astype(str)
-            with suppress_non_error_output():
-                daily_data = self.ts.bak_daily(trade_date=trade_date)
+            # with suppress_non_error_output():
+            #     daily_data = self.ts.bak_daily(trade_date=trade_date)
+            daily_data = self.ts.bak_daily(trade_date=trade_date)
             if daily_data is None or (not isinstance(daily_data, type(None)) and daily_data.empty):
                 logging.info(f"{trade_date} 无备份日线数据，跳过")
                 raise ValueError(f"{trade_date} 无备份日线数据")
@@ -1001,26 +952,28 @@ class stock_api:
 
             # 3.2 获取涨停数据
             get_limit = partial(self.ts.stk_limit, trade_date=trade_date)
-            with suppress_non_error_output():
-                limit_data = retry_with_timeout(max_retries=3, timeout=30)(get_limit)()
-            #limit_data = ts.stk_limit(ts_code=stock_list, trade_date=trade_date)
+            # with suppress_non_error_output():
+            #     limit_data = retry_with_timeout(max_retries=3, timeout=30)(get_limit)()
+            limit_data = self.ts.stk_limit(trade_date=trade_date)
             if limit_data.empty and 'ts_code' not in limit_data.columns:
                 raise ValueError(f"{trade_date} 无涨停数据")
             limit_data['trade_date'] = limit_data['trade_date'].astype(str)
 
             # 3.3 获取ST信息（带重试超时）
             get_st = partial(self.ts.stock_st, trade_date=trade_date)
-            with suppress_non_error_output():
-                st_data = retry_with_timeout(max_retries=3, timeout=30)(get_st)()
+            # with suppress_non_error_output():
+            #     st_data = retry_with_timeout(max_retries=3, timeout=30)(get_st)()
+            st_data = self.ts.stock_st(trade_date=trade_date)
             #st_data =ts.stock_st(ts_code=stock_list, trade_date=trade_date)
             # 如果当日无ST数据，尝试获取前几天的数据（最多尝试10次）
             count=0
             while st_data.empty and count<=10:
                 st_date = datetime.datetime.strptime(trade_date, '%Y%m%d') - datetime.timedelta(days=1)
                 st_date_str = st_date.strftime('%Y%m%d')
-                with suppress_non_error_output():
-                    st_data = retry_with_timeout(max_retries=3, timeout=30)(partial(self.ts.stock_st, trade_date=st_date_str))()
+                # with suppress_non_error_output():
+                #     st_data = retry_with_timeout(max_retries=3, timeout=30)(partial(self.ts.stock_st, trade_date=st_date_str))()
                 #st_data = daily_data[['ts_code','trade_date']]
+                st_data = self.ts.stock_st(trade_date=st_date_str)
                 count += 1
                 if not st_data.empty:
                     logging.info(f"{trade_date} 无ST数据，使用{st_date_str}的ST数据")
@@ -1409,13 +1362,20 @@ class stock_api:
 
         @retry_with_timeout(max_retries=3, timeout=30)
         def process_batch(batch, freq, start_time, end_time, m_ts):
-            with suppress_non_error_output():
-                m_ts.stk_mins_ts(
-                    ts_code=",".join(batch),
-                    freq=freq,
-                    start_time=start_time,
-                    end_time=end_time
-                )
+            # with suppress_non_error_output():
+            #     m_ts.stk_mins_ts(
+            #         ts_code=",".join(batch),
+            #         freq=freq,
+            #         start_time=start_time,
+            #         end_time=end_time
+            #     )
+            result = m_ts.stk_mins_ts(
+                ts_code=",".join(batch),
+                freq=freq,
+                start_time=start_time,
+                end_time=end_time
+            )
+            return result
         # 使用线程池执行任务
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             # 提交所有批次任务
@@ -1543,8 +1503,9 @@ class stock_api:
 
         @retry_with_timeout(max_retries=3, timeout=30)
         def process_single_date(trade_date):
-            with suppress_non_error_output():
-                df = self.ts.adj_factor(trade_date=str(trade_date))
+            # with suppress_non_error_output():
+            #     df = self.ts.adj_factor(trade_date=str(trade_date))
+            df = self.ts.adj_factor(trade_date=str(trade_date))
             if df is None or df.empty:
                 logging.info(f"{trade_date} 无复权因子数据，跳过")
                 raise ValueError(f"{trade_date} 无复权因子数据")
@@ -1615,8 +1576,9 @@ class stock_api:
 
         @retry_with_timeout(max_retries=3, timeout=30)
         def process_single_date(trade_date):
-            with suppress_non_error_output():
-                df = self.ts.daily_basic(trade_date=str(trade_date))
+            # with suppress_non_error_output():
+            #     df = self.ts.daily_basic(trade_date=str(trade_date))
+            df = self.ts.daily_basic(trade_date=str(trade_date))
             if df is None or df.empty:
                 logging.info(f"{trade_date} 无每日基础指标数据，跳过")
                 raise ValueError(f"{trade_date} 无每日基础指标数据")
@@ -1752,8 +1714,6 @@ class stock_api:
         Returns:
             pd.DataFrame: 行业历史数据
         """
-
-        
         # 获取所有行业列表
         industry_list = self.get_industry_list()
         
@@ -1782,7 +1742,6 @@ class stock_api:
             df = df[df['date'] <= end_date]
             
         return df
-
 
     def get_industry_info(self,industry_name):
         """

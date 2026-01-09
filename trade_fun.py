@@ -39,7 +39,7 @@ def calculate_time_ratio(current_time):
     return minutes / 240
 
 # 保持原有的trade函数不变，但修改参数以适应并行处理
-def trade(code_list,trade_date:dt.date,fee_rate = 0.002,need_adj=True,stop_loss_pct=0.09):
+def trade(code_list,trade_date:dt.date,fee_rate = 0.005,need_adj=True,stop_loss_pct=0.09):
     """
     并行处理的单个交易任务
     params包含: code_list, trade_date, interval参数等
@@ -176,11 +176,31 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.002,need_adj=True,stop_loss_
                 total_holding_days = round(full_days + same_day_ratio, 2)
                 adj = row['adj'] if 'adj' in row.keys() else 1
 
+                # 1. 9:30 第二天开盘大幅低开
+                if open_pct <=-7 and current_time==target_time[0]:
+                    # 如果跌停并且最高价也跌停则无法卖出
+                    if current_price<=limit_down: 
+                        if row['high']<=limit_down:
+                            continue
+                    # 否则可以卖出
+                    buy_price_fee = trade_info['buy_price']* buy_adj * (1 + fee_rate)
+                    sell_price_fee = current_price* adj * (1 - fee_rate)
+                    profit = (sell_price_fee - buy_price_fee) / buy_price_fee * 100
+                    trade_info.update({
+                        'sell_time': datetime.combine(row['trading_date'],current_time),
+                        'sell_price': current_price,
+                        'profit': profit,
+                        'holding_days':total_holding_days,
+                        'sell_reason': '大幅低开卖出'
+                    })
+                    sell_triggered = True
+                    break
+
                 # 跌停无法卖出
-                if current_price<=limit_down:
+                if current_price<=limit_down: 
                     continue
                 
-                # 1. 止损条件：价格低于买入价的90%
+                # 2. 止损条件：价格低于买入价的90%
                 if trade_info['buy_price'] and current_price <= trade_info['buy_price'] * (1-stop_loss_pct):
                     buy_price_fee = trade_info['buy_price']* buy_adj * (1 + fee_rate)
                     sell_price_fee = current_price* adj * (1 - fee_rate)
@@ -195,8 +215,8 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.002,need_adj=True,stop_loss_
                     sell_triggered = True
                     break
                     
-                # 2. 止盈/正常卖出条件：未涨停且在目标时间点
-                if current_price < limit_up * 0.975 and current_time in target_time[1:]:
+                # 3. 止盈/正常卖出条件：未涨停且在目标时间点
+                if current_price < limit_up * 0.97 and current_time in target_time[1:]:
                     buy_price_fee = trade_info['buy_price']* buy_adj * (1 + fee_rate)
                     sell_price_fee = current_price* adj * (1 - fee_rate)
                     profit = (sell_price_fee - buy_price_fee) / buy_price_fee * 100
@@ -210,20 +230,7 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.002,need_adj=True,stop_loss_
                     sell_triggered = True
                     break
 
-                # 3. 第二天开盘大幅低开
-                if open_pct <=-7 and current_time==target_time[0]:
-                    buy_price_fee = trade_info['buy_price']* buy_adj * (1 + fee_rate)
-                    sell_price_fee = current_price* adj * (1 - fee_rate)
-                    profit = (sell_price_fee - buy_price_fee) / buy_price_fee * 100
-                    trade_info.update({
-                        'sell_time': datetime.combine(row['trading_date'],current_time),
-                        'sell_price': current_price,
-                        'profit': profit,
-                        'holding_days':total_holding_days,
-                        'sell_reason': '大幅低开卖出'
-                    })
-                    sell_triggered = True
-                    break
+
             if sell_triggered: # 已经完成卖出逻辑,无需循环
                 break
 
@@ -416,7 +423,18 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
     return  pd.DataFrame(valid_results), merged_df
 
 # 取sell_date为前n个窗口的股票表现与平均水平进行对比。高于平均水平并且昨日的股票触及跌停达到一定比率，则仓位调整为min_weight
-def adjust_weight_by_near_n(回测结果, max_weight=0.4, min_weight=0, window=20, down_limit_ratio=0.35,win_rate_threshold=0.43, profit_loss_ratio_threshold=1.4):
+def adjust_weight_by_near_n(回测结果, max_weight=0.4, min_weight=0, window=20, down_limit_ratio=0.35,win_rate_threshold=0.43, profit_loss_ratio_threshold=1.3):
+    """
+    adjust_weight_by_near_n 调整仓位逻辑:
+    
+    :param 回测结果: 回测结果pl.DataFrame或pd.DataFrame，包含交易记录
+    :param max_weight: 每日的最大仓位
+    :param min_weight: 每日的最小仓位
+    :param window: 近期窗口
+    :param down_limit_ratio: 跌停比率阈值
+    :param win_rate_threshold: 胜率阈值
+    :param profit_loss_ratio_threshold: 盈亏比阈值
+    """
     import polars as pl
     if isinstance(回测结果, pd.DataFrame):
         回测结果 = pl.from_pandas(回测结果)
@@ -568,3 +586,308 @@ def mark_weight(回测结果, max_weight=0.4, min_weight=0.3):
     回测结果 = 回测结果.join(weight_df, on='trading_date', how='left')
     
     return 回测结果
+
+#%% 回测结果汇报函数
+def report_backtest_full(
+    result_df: pd.DataFrame,
+    start_date,
+    end_date,
+    profit_col: str = 'profit',
+    buy_date_col:str = 'buy_time',
+    sell_date_col: str = 'buy_time',
+    holding_days_col:str = 'holding_days',
+    benchmark_code: str = "399300.SZ",
+    risk_free_rate: float = 0.02,
+    return_method = 'compound',
+    plot = True,
+    second_y = True
+):
+    """
+    result_df 交割单:包括策略的 1.卖出信息 2.利润信息 的交割单
+    回测结果汇报函数（含净值曲线、最大回撤、夏普比率、超额收益等）
+    """
+    # 忽略
+
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+    import tinyshare as tns
+    from mapping import convert_code_format,clean_stocks_data
+    from stock_api import stock_api
+    from fun import get_logger
+    logging = get_logger(log_file='回测.log',inherit=False)
+    ts_token = 'YzAEH11Yc7jZCHjeJa63fnbpSt3k9Je3GvWn0390oiBKO95bVJjP7u5L34e2ff6b'
+    ts =tns.pro_api(ts_token)
+
+    # 1. 策略净值曲线计算
+    start_date = pd.to_datetime(start_date)
+    end_date = pd.to_datetime(end_date)
+    result_df[sell_date_col] = pd.to_datetime(result_df[sell_date_col])
+    result_df = result_df[
+        (result_df[sell_date_col] >= start_date) & 
+        (result_df[sell_date_col] <= end_date)
+    ]
+    result_df = result_df.sort_values(sell_date_col).reset_index(drop=True)
+    result_df['sell_date_date'] = pd.to_datetime(result_df[sell_date_col]).dt.date
+    result_df['buy_date_date'] = pd.to_datetime(result_df[buy_date_col]).dt.date # 提取买入日期（仅日期部分）
+    daily_returns = result_df.groupby('sell_date_date')[profit_col].mean() / 100  # 转为小数
+    net_values = (1 + daily_returns).cumprod()
+    if return_method!='compound':
+        net_values = 1 + daily_returns.cumsum()  # 单利：初始净值1 + 每日收益累计和
+    strategy_curve = net_values.copy()
+    #strategy_curve.index = pd.to_datetime(strategy_curve.index).normalize()
+
+    # 2. 获取指数净值曲线
+    api = stock_api()
+    index_data = api.gm_get_index_day_data(index_code='SHSE.000001',start_date=start_date.strftime('%Y-%m-%d'),end_date=end_date.strftime('%Y-%m-%d'))
+    # index_data = ts.index_daily(ts_code=convert_code_format(benchmark_code,format='suffix'), start_date=start_date.strftime('%Y%m%d'), end_date=end_date.strftime('%Y%m%d'))
+    # index_data = clean_stocks_data(index_data)
+    index_df = index_data
+    index_df['trading_date_date'] = pd.to_datetime(index_df['trading_date']).dt.date
+    index_df = index_df.sort_values('trading_date_date').reset_index(drop=True)
+    if not index_df.empty:
+        # if 'pct' not in index_df.columns:
+        #     index_df['pct'] = index_df['close'].pct_change()
+        # index_df['net_value'] = (1 + index_df['pct']/100).cumprod()
+        # # 将第一个交易日的净值设为1
+        # index_df.loc[index_df.index[0], 'net_value'] = 1
+
+        index_df['net_value'] = index_df['close'] / index_df['close'].iloc[0]
+        index_curve = index_df.set_index('trading_date_date')['net_value']
+    else:
+        raise ValueError("未获取到有效的指数数据")
+
+    # 3. 对齐日期
+    strategy_curve = strategy_curve.sort_index()
+    index_curve = index_curve.sort_index()
+    strategy_curve = strategy_curve.reindex(index_curve.index, method='ffill').fillna(1)
+
+    # 4. 核心指标
+    total_return = strategy_curve.iloc[-1] - 1 if len(strategy_curve) > 0 else 0
+    if len(strategy_curve) >= 2:
+        first_date = strategy_curve.index[0]
+        last_date = strategy_curve.index[-1]
+        total_days = (last_date - first_date).days
+        years = total_days / 365
+    else:
+        years = 0
+    annualized_return = (strategy_curve.iloc[-1]) ** (1 / years) - 1 if years > 0 and strategy_curve.iloc[-1] > 0 else 0
+
+    # 最大回撤
+    roll_max = strategy_curve.cummax()
+    drawdown = (strategy_curve - roll_max) / roll_max
+    max_drawdown = drawdown.min()
+    # 找到最大回撤的开始和结束时间
+    max_drawdown_end = drawdown.idxmin()
+    # 找到最大回撤开始时间（即之前的最高点）
+    max_drawdown_start = roll_max.loc[:max_drawdown_end].idxmax()
+
+    # 夏普比率
+    daily_ret = strategy_curve.pct_change().dropna()
+    daily_drawdown = daily_ret.where(daily_ret < 0, 0)
+    rf_daily = risk_free_rate / 252
+    excess_daily = daily_ret - rf_daily
+    sharpe_ratio = (excess_daily.mean() / excess_daily.std()) * np.sqrt(252) if excess_daily.std() > 0 else 0
+
+    # 超额收益
+    bench_years = (index_curve.index[-1] - index_curve.index[0]).days / 365 if len(index_curve) > 1 else 0
+    bench_annual = (index_curve.iloc[-1]) ** (1 / bench_years) - 1 if bench_years > 0 else 0
+    excess_return = annualized_return - bench_annual
+
+    # 胜率和盈亏比
+    # 筛选出结果不等于0的记录（排除盈亏平衡的情况）
+    non_zero_df = result_df[result_df[profit_col] != 0]
+
+    # 计算赢率：大于0的笔数 / 不等于0的笔数
+    win_rate = (non_zero_df[profit_col] > 0).mean()
+    avg_win = result_df[result_df[profit_col] > 0][profit_col].mean()
+    avg_loss = abs(result_df[result_df[profit_col] < 0][profit_col].mean())
+    profit_loss_ratio = avg_win / avg_loss if avg_loss != 0 else float('inf')
+
+    # 平均开仓个数
+    daily_buy_count = result_df.groupby('buy_date_date')['code'].nunique()
+    # 计算平均值（排除无买入的日期，仅统计有交易的日期）
+    avg_daily_buy_count = daily_buy_count.mean() if not daily_buy_count.empty else 0
+
+    # 平均持仓天数
+    valid_holding_days = result_df[
+        result_df[holding_days_col].notna() &  # 排除空值
+        (result_df[holding_days_col] > 0)      # 排除0或负数（异常数据）
+    ][holding_days_col]
+    avg_holding_days = valid_holding_days.mean() if not valid_holding_days.empty else 0
+
+    # 8. 将结果整理成DataFrame并返回
+    metrics_df = pd.DataFrame({
+        '指标名称': [
+            '回测开始日期', '回测结束日期', '策略胜率', '策略盈亏比',
+            '每单位风险期望收益', '策略总收益率', '策略年化收益率',
+            '最大回撤', '最大回撤开始日期', '最大回撤结束日期',
+            '夏普比率', '策略超额年化收益率',
+            '最终净值','每日平均买入股票个数', '平均持仓天数',
+        ],
+        '指标值': [
+            first_date, last_date, f"{win_rate:.2%}",
+            f"{profit_loss_ratio:.2f}", f"{win_rate*(profit_loss_ratio+1) - 1 :.4f}",
+            f"{total_return:.2%}", f"{annualized_return:.2%}", f"{max_drawdown:.2%}",
+            max_drawdown_start, max_drawdown_end,
+            f"{sharpe_ratio:.2f}", f"{excess_return:.2%}", f"{strategy_curve.iloc[-1]:.4f}",
+            f"{avg_daily_buy_count:.2f}", f"{avg_holding_days:.2f} 天"
+        ]
+    })
+
+    if not plot:
+        return metrics_df
+    # 5. 输出结果
+    logging.info(
+        f"\n回测时间:{strategy_curve.index[0]} - {strategy_curve.index[-1]}\n"
+        f"策略胜率: {win_rate:.2%}\n"
+        f"策略盈亏比: {profit_loss_ratio:.2f}\n"
+        f"每日平均开仓个数: {avg_daily_buy_count:.2f}\n"
+        f"平均持仓天数: {avg_holding_days:.2f} 天\n"
+        f"每单位风险期望收益:{win_rate*(profit_loss_ratio+1) -1 :.4f}\n"
+        f"策略总收益率: {total_return:.2%}\n"
+        f"策略年化收益率: {annualized_return:.2%}\n"
+        f"最大回撤: {max_drawdown:.2%}\n"
+        f"最大回撤阶段: {max_drawdown_start} 至 {max_drawdown_end}\n"
+        f"夏普比率: {sharpe_ratio:.2f}\n"
+        f"策略超额年化收益率: {excess_return:.2%}\n"
+        f"最终净值: {strategy_curve.iloc[-1]:.4f}"
+    )
+
+    
+    # 6. 绘制净值曲线
+    plt.figure(figsize=(14, 7))
+    plt.plot(strategy_curve.index, strategy_curve.values, label='Strategy Net Value')
+    plt.plot(index_curve.index, index_curve.values, label='Index Net Value')
+    plt.xlabel('Date')
+    plt.ylabel('Net Value')
+    plt.title('Strategy Net Value vs Index Net Value')
+    plt.legend()
+    plt.grid()
+    plt.show()
+    
+    # 7. 使用plotly绘制可交互净值曲线（新增回撤直方图）
+    # 创建图形 - 修改为3个子图：净值曲线、收益直方图、回撤直方图
+    fig = make_subplots(
+        rows=3, cols=1,
+        shared_xaxes=True,
+        vertical_spacing=0.08,
+        subplot_titles=('净值曲线对比', '策略每日收益率', '策略每日回撤'),
+        specs=[
+            [{"secondary_y": True}],  # 净值曲线（双Y轴）
+            [{"secondary_y": False}], # 收益直方图
+            [{"secondary_y": False}]  # 回撤直方图
+        ],
+        row_heights=[0.5, 0.25, 0.13]  # 调整子图高度比例
+    )
+
+    # 7.1 添加策略净值曲线（左Y轴）
+    fig.add_trace(
+        go.Scatter(
+            x=strategy_curve.index, 
+            y=strategy_curve.values, 
+            name='策略净值',
+            line=dict(color='#1f77b4', width=2),
+            hovertemplate='日期: %{x}<br>策略净值: %{y:.4f}<extra></extra>'
+        ),
+        row=1, col=1,
+        secondary_y=False
+    )
+
+    # 7.2 添加指数净值曲线（右Y轴）
+    fig.add_trace(
+        go.Scatter(
+            x=index_curve.index, 
+            y=index_curve.values, 
+            name='指数净值',
+            line=dict(color='#ff7f0e', width=2),
+            hovertemplate='日期: %{x}<br>指数净值: %{y:.4f}<extra></extra>'
+        ),
+        row=1, col=1,
+        secondary_y=second_y
+    )
+
+    # 7.3 添加每日收益率直方图
+    # 准备收益率数据和颜色
+    ret_colors = ['#d62728' if x > 0 else '#2ca02c' for x in daily_ret.values]
+    
+    fig.add_trace(
+        go.Bar(
+            x=daily_ret.index, 
+            y=daily_ret.values, 
+            name='策略每日收益率',
+            marker_color=ret_colors,
+            hovertemplate='日期: %{x}<br>收益率: %{y:.2%}<extra></extra>'
+        ),
+        row=2, col=1
+    )
+
+    # 7.4 添加每日回撤直方图
+    fig.add_trace(
+        go.Bar(
+            x=daily_drawdown.index, 
+            y=daily_drawdown.values, 
+            name='策略每日回撤',
+            marker_color='#2ca02c',  # 绿色
+            hovertemplate='日期: %{x}<br>回撤率: %{y:.2%}<extra></extra>'
+        ),
+        row=3, col=1
+    )
+
+    # 7.5 更新布局
+    fig.update_layout(
+        height=800,  # 增加高度以容纳3个子图
+        title_text="回测结果可视化",
+        title_font=dict(size=16, weight='bold'),
+        hovermode="x unified",
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1,
+            font=dict(size=12)
+        ),
+        plot_bgcolor='rgba(248,248,248,1)',  # 浅灰色背景
+        paper_bgcolor='white'
+    )
+
+    # 7.6 更新轴标签和样式
+    # 净值曲线轴标签
+    fig.update_yaxes(title_text="策略净值", secondary_y=False, row=1, col=1, 
+                     title_font=dict(size=12), tickfont=dict(size=10))
+    fig.update_yaxes(title_text="指数净值", secondary_y=True, row=1, col=1,
+                     title_font=dict(size=12), tickfont=dict(size=10))
+    
+    # 收益率轴标签
+    fig.update_yaxes(title_text="收益率", row=2, col=1,
+                     title_font=dict(size=12), tickfont=dict(size=10),
+                     tickformat='.2%')  # 百分比格式
+    
+    # 回撤轴标签
+    fig.update_yaxes(title_text="回撤率", row=3, col=1,
+                     title_font=dict(size=12), tickfont=dict(size=10),
+                     tickformat='.2%')  # 百分比格式
+    
+    # X轴样式
+    fig.update_xaxes(
+        title_text="日期", row=3, col=1,
+        tickfont=dict(size=10, family='Arial', color='gray'),
+        #tickangle=-45,
+        title_font=dict(size=12)
+    )
+
+    # 7.7 添加网格线
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(200,200,200,0.2)', row=1)
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(200,200,200,0.2)', row=2)
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(200,200,200,0.2)', row=3)
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(200,200,200,0.2)', row=1)
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(200,200,200,0.2)', row=2)
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(200,200,200,0.2)', row=3)
+
+    # 显示图形
+    fig.show()
+    
+    return metrics_df
