@@ -146,6 +146,7 @@ today_str = today.strftime("%Y-%m-%d")
 if stock_data is not None:
     if today in stock_data['trading_date'].unique():
         logging.info(f"验证成功：数据中已包含 {today_str} 的行情")
+        stocks_data = stock_data
     else:
         #stocks_data = ts_add_auction(stocks_data,m_ts)
         stocks_data = gm_add_auction(stock_data)
@@ -212,7 +213,7 @@ stocks_data = stocks_data.with_columns([
 params_dict={
     'low':-5,
     'high':-2.5,
-    'mv_min':35,
+    'mv_min':30,
     'mv_max':1000,
     'prev_limit_status':['断板','炸板'],
     'avg_limit_turnover_5_min':-1
@@ -323,7 +324,6 @@ logging.info("回测结果(触及跌停风控):")
 # 将回测结果保存到日志中
 #logging.info("\n" + back_result.to_string(index=False)) 
 #%% qmt实盘买入
-
 # 从merged_df_with_weight筛选今天的交易股票和权重
 today_trades = merged_df_with_weight.filter(pl.col("trading_date") == today)
 today_trades = today_trades.sort(pl.col("open"), descending=True) # 按照开盘价排序，优先买入开盘价较高的股票
@@ -369,7 +369,7 @@ if __name__ == "__main__":
         # 计算每单股票数量
         if allocated_cash > 0 and open_price > 0:
             order_vol = allocated_cash / open_price  # 计算理论上的订单数量
-            if order_vol < 70 : # 80股以下不下单,
+            if order_vol < 70 : # 80股以下不下单
                 logging.info(f"订单数量不足，跳过下单 {code}，理论数量: {order_vol:.2f}")
                 allocated_cash += (allocated_cash/len(code_list)-1)  # 将这部分资金重新分配到下一单
                 continue  # 跳过这单
@@ -388,8 +388,7 @@ if __name__ == "__main__":
             stock_code=convert_code_format(code,format='suffix'),  # 转换成带后缀的格式
             order_type=xtconstant.STOCK_BUY,
             order_volume=order_vol,
-            price_type=xtconstant.MARKET_PEER_PRICE_FIRST,  #MARKET_PEER_PRICE_FIRST对手方最优,LATEST_PRICE最新价
-
+            price_type=xtconstant.LATEST_PRICE,  #MARKET_PEER_PRICE_FIRST对手方最优,LATEST_PRICE最新价
             price=10.5 + i,
             strategy_name="strategy1",
             order_remark=f"async_order_{i+1}"
