@@ -207,6 +207,7 @@ today_str = (dt.date.today()).strftime("%Y-%m-%d")
 today_stocks = 信号文件[信号文件['trading_date']==today]
 today_stocks.sort_values('close_sma7_pct')
 today_stocks['name'] = api.get_stock_name(today_stocks['code'])
+today_stocks['code'] = today_stocks['code'].apply(lambda x: x.split('.')[1])
 filter_stocks = today_stocks[today_stocks['last_limit_desc']!='1天1板']
 code_list = filter_stocks['code'].to_list()
 # 提取每个code的后缀数字并打印
@@ -214,14 +215,14 @@ print('日期：{}'.format(today))
 print('今日排除首板信号股票代码:')
 for code in code_list:
     # 分割字符串，取小数点后的部分
-    suffix_number = code.split('.')[1]
+    suffix_number = code
     print(suffix_number)
 
 code_list = today_stocks['code'].to_list()
 print('今日所有信号股票代码:')
 for code in code_list:
     # 分割字符串，取小数点后的部分
-    suffix_number = code.split('.')[1]
+    suffix_number = code
     print(suffix_number)
 
 
@@ -240,7 +241,8 @@ html_content = f"""<body style="line-height:1.2;">
 {"".join([f"• {code}<br>" for code in today_stocks['code'].to_list()])}
 名称:<br>
 {"".join([f"• {name}<br>" for name in today_stocks['name'].to_list()])}
-</body>"""
+</body>
+"""
 send_email(
     subject=subject,
     body=html_content,

@@ -67,12 +67,11 @@ def convert_code_format(code,format='gm'):
                 market = code[:2].upper()
                 code_num = code[2:]
             elif len(code) == 6:
-                if code.startswith('6'):
-                    market = 'SH'  
-                elif code.startswith('0'):
-                    market = 'SZ'
-                else:
+                # code首位数字小于等于3为深圳市场，大于3为上海市场
+                if not code.isdigit():
                     raise ValueError(f"Unknown market code: {code}")
+                first_digit = int(code[0])
+                market = 'SZ' if first_digit <= 3 else 'SH'
                 code_num = code
             else:
                 raise ValueError(f"Unknown market code: {code}")

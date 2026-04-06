@@ -6,6 +6,11 @@ import polars as pl
 import pandas as pd
 import datetime as dt
 import time 
+import os
+import json
+import uuid
+from pathlib import Path
+from urllib import request, parse
 
 logging = get_logger(log_file='log\实盘.log',inherit=False)
 
@@ -365,36 +370,39 @@ if __name__ == "__main__":
     if available_cash <= 0 and 仓位<=0:
         logging.info("信号空仓")
     print(code_list)
-    for i, (code, open_price,name) in enumerate(zip(code_list, open_list,name_list)):
-        # 计算每单股票数量
-        if allocated_cash > 0 and open_price > 0:
-            order_vol = allocated_cash / open_price  # 计算理论上的订单数量
-            if order_vol < 70 : # 80股以下不下单
-                logging.info(f"订单数量不足，跳过下单 {code}，理论数量: {order_vol:.2f}")
-                allocated_cash += (allocated_cash/len(code_list)-1)  # 将这部分资金重新分配到下一单
-                continue  # 跳过这单
-            elif order_vol>=80 and order_vol<100:
-                order_vol = 100  # 最小下单数量为100股
+    add_rate = 0.006
+    if input("是否增加开盘价加0.2%作为下单价格？(y/n)") == 'y':
+        for i, (code, open_price,name) in enumerate(zip(code_list, open_list,name_list)):
+            # 计算每单股票数量
+            if allocated_cash > 0 and open_price > 0:
+                order_vol = allocated_cash / open_price  # 计算理论上的订单数量
+                if order_vol < 70 : # 80股以下不下单
+                    logging.info(f"订单数量不足，跳过下单 {code}，理论数量: {order_vol:.2f}")
+                    allocated_cash += (allocated_cash/len(code_list)-1)  # 将这部分资金重新分配到下一单
+                    continue  # 跳过这单
+                elif order_vol>=80 and order_vol<100:
+                    order_vol = 100  # 最小下单数量为100股
+                else:
+                    order_vol = int(allocated_cash / open_price / 100) * 100  # 按照100股整数倍下单
             else:
-                order_vol = int(allocated_cash / open_price / 100) * 100  # 按照100股整数倍下单
-        else:
-            logging.info(f"无法下单 {code}，分配资金: {allocated_cash:.2f}, 开盘价: {open_price:.2f}")
-            continue  # 跳过这单
-        
-        logging.info(f"第{i+1}单提交成功,代码:{code},名称：{name},订单数量：{order_vol},分配资金：{allocated_cash:.2f}")
-        # 异步下单：这行代码0.001秒就完成，只返回请求序号，不等待券商处理
-        seq = xt_trader.order_stock_async(
-            account=ID,
-            stock_code=convert_code_format(code,format='suffix'),  # 转换成带后缀的格式
-            order_type=xtconstant.STOCK_BUY,
-            order_volume=order_vol,
-            price_type=xtconstant.LATEST_PRICE,  #MARKET_PEER_PRICE_FIRST对手方最优,LATEST_PRICE最新价
-            price=10.5 + i,
-            strategy_name="strategy1",
-            order_remark=f"async_order_{i+1}"
-        )
-        seq_list.append(seq)
-        logging.info(f"第{i+1}单提交成功，请求序号：{seq}")
+                logging.info(f"无法下单 {code}，分配资金: {allocated_cash:.2f}, 开盘价: {open_price:.2f}")
+                continue  # 跳过这单
+            
+            logging.info(f"第{i+1}单提交成功,代码:{code},名称：{name},订单数量：{order_vol},分配资金：{allocated_cash:.2f}")
+            # 异步下单：这行代码0.001秒就完成，只返回请求序号，不等待券商处理
+            order_price = round(open_price * (1+add_rate), 2)
+            seq = xt_trader.order_stock_async(
+                account=ID,
+                stock_code=convert_code_format(code,format='suffix'),  # 转换成带后缀的格式
+                order_type=xtconstant.STOCK_BUY,
+                order_volume=order_vol,
+                price_type=xtconstant.MARKET_PEER_PRICE_FIRST,  #MARKET_PEER_PRICE_FIRST对手方最优,LATEST_PRICE最新价
+                price=order_price,
+                strategy_name="strategy1",
+                order_remark=f"async_order_{i+1}"
+            )
+            seq_list.append(seq)
+            logging.info(f"第{i+1}单提交成功，请求序号：{seq}")
         
 
     # 计算提交5单的耗时
