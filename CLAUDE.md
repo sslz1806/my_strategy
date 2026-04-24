@@ -19,31 +19,35 @@
 
 | 目录 | 用途 |
 |------|------|
-| **根目录** | 核心 Python 模块和主要研究 Notebook |
+| **my_utils/** | 核心接口函数包：数据处理、回测框架、API接口、可视化、实盘交易 |
+| **根目录** | 主 Notebook（策略研究与演示） |
 | **任务/** | 生产任务脚本 - 数据更新、QMT 实盘交易、邮件提醒 |
 | **因子回测/** | 因子研究框架和回测工具 |
 | **my_backtester/** | 真实资金回测框架 |
 | **信号文件/** | 交易信号 CSV 文件 |
 | **信号交割复盘/** | 交割单 HTML 复盘文件 |
+| **old/** | 废弃文件夹（原根目录文件备份） |
 | **log/** | 各类日志文件 |
 
 ---
 
 ## 核心模块说明
 
-### 根目录核心文件
+### my_utils/ 接口函数包
 
-| 文件 | 功能描述 |
+所有核心工具函数已打包到 `my_utils/` 目录，通过 `from my_utils import xxx` 或 `from my_utils.xxx import xxx` 导入：
+
+| 模块 | 功能描述 |
 |------|----------|
-| **fun.py** | 核心工具库：本地数据接口(polars)、polars特征计算函数(涨停/炸板/断板标记、几天几板描述、均线计算)、日志设置 |
-| **trade_fun.py** | 理论回测框架：自定义交易逻辑函数、风控函数、并行回测处理 |
-| **pd_fun.py** | Pandas 版本的特征函数：涨停/炸板/断板标记、几天几板描述、均线计算 |
-| **stock_api.py** | 外部数据源接口：Tushare、掘金、AkShare，用于数据更新 |
-| **stock_db.py** | MySQL 数据库接口：连接池、数据读写（支持 Polars）较少使用 |
-| **mapping.py** | 数据清洗与转换：列名映射、股票代码格式转换、日期处理 |
-| **my_qmt.py** | QMT 实盘交易接口：连接 miniQMT、下单、持仓查询、交易回调 |
-| **email_fun.py** | 邮件通知系统：QQ 邮箱 SMTP、支持 HTML 和附件 |
-| **stock_plot.py** | 股票数据可视化函数 |
+| **my_utils/fun.py** | 核心工具库：本地数据接口(polars)、polars特征计算函数(涨停/炸板/断板标记、几天几板描述、均线计算)、日志设置 |
+| **my_utils/trade_fun.py** | 理论回测框架：自定义交易逻辑函数、风控函数、并行回测处理 |
+| **my_utils/pd_fun.py** | Pandas 版本的特征函数：涨停/炸板/断板标记、几天几板描述、均线计算 |
+| **my_utils/stock_api.py** | 外部数据源接口：Tushare、掘金、AkShare，用于数据更新 |
+| **my_utils/stock_db.py** | MySQL 数据库接口：连接池、数据读写（支持 Polars）较少使用 |
+| **my_utils/mapping.py** | 数据清洗与转换：列名映射、股票代码格式转换、日期处理 |
+| **my_utils/my_qmt.py** | QMT 实盘交易接口：连接 miniQMT、下单、持仓查询、交易回调 |
+| **my_utils/email_fun.py** | 邮件通知系统：QQ 邮箱 SMTP、支持 HTML 和附件 |
+| **my_utils/stock_plot.py** | 股票数据可视化函数 |
 
 ### 任务目录 (任务/)
 
@@ -83,13 +87,13 @@
 | 功能 | 文件路径 |
 |------|----------|
 | 策略演示 | [回测demo.ipynb](回测demo.ipynb),[连板策略.ipynb](连板策略.ipynb) |
-| 读取本地polars数据 | [fun.py](fun.py) |
-| 计算涨停,均线等相关特征 | [fun.py](fun.py) |
-| 交易信号理论回测 | [trade_fun.py](trade_fun.py) |
+| 读取本地polars数据 | [my_utils/fun.py](my_utils/fun.py) |
+| 计算涨停,均线等相关特征 | [my_utils/fun.py](my_utils/fun.py) |
+| 交易信号理论回测 | [my_utils/trade_fun.py](my_utils/trade_fun.py) |
 | 真实资金回测 | [my_backtester/my_backtester.py](my_backtester/my_backtester.py) |
 | 因子分析 | [因子回测/alpha.py](因子回测/alpha.py), [因子回测/因子回测框架.ipynb](因子回测/因子回测框架.ipynb), [因子回测/情绪因子.ipynb](因子回测/情绪因子.ipynb) |
-| QMT 实盘交易 | [my_qmt.py](my_qmt.py) |
-| 邮件通知 | [email_fun.py](email_fun.py) |
+| QMT 实盘交易 | [my_utils/my_qmt.py](my_utils/my_qmt.py) |
+| 邮件通知 | [my_utils/email_fun.py](my_utils/email_fun.py) |
 | 数据更新 | [任务/数据更新.py](任务/数据更新.py) |
 
 
@@ -102,6 +106,9 @@
 - **数据存储**: 本地 Parquet 文件（E:\working\stock_data,在fun.py中有读取接口
 - **编码风格**: 遵循 PEP 8
 - **Notebook**: 用于策略研究，生产代码用 .py 文件
+- **日志文件**: 必须放在对应文件夹的 `log/` 子目录中
+  - 例如：`因子回测/小市值策略.py` 的日志 → `因子回测/log/小市值策略.log`
+  - 例如：`任务/数据更新.py` 的日志 → `任务/log/数据更新.log`
 
 ---
 

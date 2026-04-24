@@ -3,7 +3,7 @@ import polars as pl
 import statsmodels.api as sm
 import sys
 sys.path.append('D://桌面/策略')
-from stock_api import *
+from my_utils.stock_api import *
 import pandas as pd
 import numpy as np
 api = stock_api()

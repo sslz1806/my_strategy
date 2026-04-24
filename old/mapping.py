@@ -25,6 +25,12 @@ column_mapping = {
         'price':'close',
         'trade_time':'datetime',
         'pct_change':'pct',
+        # 掘金API字段映射
+        'sec_name': 'name',
+        'turn_rate': 'turnover_rate',
+        'is_suspended': 'is_suspended',
+        'a_mv': 'total_mv',
+        'a_mv_ex_ltd': 'mv_A_free_float',
     }
 
 

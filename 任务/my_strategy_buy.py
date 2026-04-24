@@ -1,7 +1,7 @@
 #%% 初始化数据
 import sys
 sys.path.append(r'C:\Users\20561\Desktop\策略')
-from fun import *
+from my_utils.fun import *
 import polars as pl
 import pandas as pd
 import datetime as dt
@@ -12,27 +12,23 @@ import uuid
 from pathlib import Path
 from urllib import request, parse
 
-logging = get_logger(log_file='log\实盘.log',inherit=False)
+logging = get_logger(log_file='log/实盘.log',inherit=False)
 
-start_date = dt.date(2025,12,1)
+start_date = dt.date(2025,12,1) 
 end_date = dt.datetime.today()
 #end_date = dt.date(2026,2,12)
 
 # 获取指定日期的日线数据
-stock_data = read_day_data(start_date=start_date,end_date=end_date,file_path='ts_stock_all_data')
-stock_data = stock_data.drop_nulls(subset=['open','close','pre_close','limit_up','limit_down'])
-market_value = read_day_data(start_date=start_date,end_date=end_date,file_path='ts_daily_basic')
-market_value = market_value.with_columns([
-   ( pl.col('free_share')*pl.col('close')/1e4).alias('free_float_mv')
+stock_data = read_day_data(start_date=start_date,end_date=end_date,file_path='gm_stock_all_data')
+# 将市值列除以1e8进行缩放
+stock_data = stock_data.with_columns([
+   (pl.col('mv_A_free_float') / 1e8).alias('mv_A_free_float'),
+   (pl.col('total_mv') / 1e8).alias('total_mv')
 ])
-stock_data = stock_data.join(market_value.select(['code','trading_date','free_float_mv']),on=['code','trading_date'],how='left')
-# stock_data.schema
-# 去掉没用的列
-stock_data = stock_data.drop(['change','total_share','attack','activity','pe','float_share','buying','selling','swing','strength','avg_turnover'])
 
 #%% 添加最新一天数据
-from mapping import *
-from stock_api import *
+from my_utils.mapping import *
+from my_utils.stock_api import *
 api = stock_api()
 
 def gm_add_auction(stock_data):
@@ -107,7 +103,7 @@ def gm_add_auction(stock_data):
             )
 
         # 7.填充缺失值,[free_float_mv,name,type_name,type,industry]这些列如果有缺失,则用前一交易日的填充（核心修正）
-        need_cols = ['free_float_mv', 'name', 'type_name', 'type', 'industry']
+        need_cols = ['free_float_mv', 'name', 'type_name', 'type', 'industry','mv_A_free_float','total_mv','is_st']
         for col in need_cols:
             if col in concat_data.columns:
                 concat_data = concat_data.with_columns(
@@ -174,8 +170,7 @@ stocks_data = mark_limit_status(stocks_data)
 stocks_data = mark_limit_desc(stocks_data)
 # 记录最近的一次涨停描述：last_limit_desc
 stocks_data = mark_last_limit_desc(stocks_data)
-# 统计10天内涨停平均换手率
-stocks_data = cal_limit_avg_turnover(stocks_data, window=5)
+
 
 # 2.均线特征
 # 计算均线:sma_{window}
@@ -192,6 +187,7 @@ stocks_data = stocks_data.with_columns(
     ((pl.col("close") - pl.col("sma_7")) / pl.col("sma_7") * 100).alias("close_sma7_pct"), #乖离率
     (pl.col("amount")*100 / pl.col("volume")).alias("vwap"),
     ((pl.col("low") <= pl.col("limit_down")*1.01)).alias("touch_limit_down"), # 是否触及跌停
+    (pl.col("close")/pl.col("pre_close")-1).alias("pct")
 )
 stocks_data = cal_n_lowest(stocks_data)
 
@@ -229,10 +225,12 @@ stocks_data = stocks_data.with_columns(
     # 构建筛选条件表达式
     signal = pl.when(
         # 非st,创业,科创
-        ~(pl.col("type").is_not_null() & (pl.col("type") == "ST")) &
+        ~(pl.col("is_st")) &
         ~(pl.col("code").str.split(".").list[1].str.starts_with("30") | 
-          pl.col("code").str.split(".").list[1].str.starts_with("688")) &
-
+          pl.col("code").str.split(".").list[1].str.starts_with("688") |
+            pl.col("code").str.split(".").list[1].str.starts_with("90") |
+            pl.col("code").str.split(".").list[1].str.starts_with("20")   
+        ) &
         # 1. 昨日or断板or炸板（使用组内移位后的数据）
         (pl.col("prev_limit_status").is_in(params_dict['prev_limit_status'])) &
 
@@ -248,8 +246,8 @@ stocks_data = stocks_data.with_columns(
         (pl.col("last_limit_desc").is_not_null()) &
 
         # 5. 自由流通值区间
-        (pl.col("free_float_mv") >= params_dict["mv_min"]) & 
-        (pl.col("free_float_mv") <= params_dict["mv_max"]) &
+        (pl.col("mv_A_free_float") >= params_dict["mv_min"]) & 
+        (pl.col("mv_A_free_float") <= params_dict["mv_max"]) &
 
         # 6. 最近的涨停平均换手率
         #(pl.col("avg_limit_turnover_5") >= params_dict["avg_limit_turnover_5_min"]) &
@@ -266,7 +264,7 @@ stocks_data = stocks_data.with_columns(
 logging.info(f"回测信号参数: {params_dict}")
 
 #%% 添加回测,判断风控
-from trade_fun import *
+from my_utils.trade_fun import *
 start_date_str = start_date.strftime("%Y-%m-%d")
 end_date_str = end_date.strftime("%Y-%m-%d")
 #end_date_str = '2025-11-17'
@@ -275,9 +273,9 @@ logging.info(f"回测时间区间: {start_date_str} 至 {end_date_str}")
 result_df,merged_df = cal_trade_info(信号文件,trade_fun=trade,start_date=start_date_str,end_date=end_date_str)
 
 
-from trade_fun import report_backtest_full
-from fun import *
-from trade_fun import adjust_weight_by_near_n, adjust_weight_by_consecutive_losses # 触及跌停调仓
+from my_utils.trade_fun import report_backtest_full
+from my_utils.fun import *
+from my_utils.trade_fun import adjust_weight_by_near_n, adjust_weight_by_consecutive_losses # 触及跌停调仓
 
 # 1.仓位控制风控(merged_df_with_weight)
 merged_df_with_weight = adjust_weight_by_near_n(merged_df,return_column='weight_touch_limit_down') 
@@ -345,8 +343,8 @@ for i, (code, name) in enumerate(zip(code_list, name_list)):
 
 #%% qmt下单买入
 if __name__ == "__main__":
-    from my_qmt import *
-    from mapping import convert_code_format
+    from my_utils.my_qmt import *
+    from my_utils.mapping import convert_code_format
     import time 
     asset = xt_trader.query_stock_asset(ID)
     # 正确的日志写法：将所有内容合并为一个字符串
@@ -383,7 +381,8 @@ if __name__ == "__main__":
                 elif order_vol>=80 and order_vol<100:
                     order_vol = 100  # 最小下单数量为100股
                 else:
-                    order_vol = int(allocated_cash / open_price / 100) * 100  # 按照100股整数倍下单
+                    order_vol = round(allocated_cash / open_price / 100) * 100  # 四舍五入取整，按100股倍数下单
+
             else:
                 logging.info(f"无法下单 {code}，分配资金: {allocated_cash:.2f}, 开盘价: {open_price:.2f}")
                 continue  # 跳过这单
@@ -396,7 +395,7 @@ if __name__ == "__main__":
                 stock_code=convert_code_format(code,format='suffix'),  # 转换成带后缀的格式
                 order_type=xtconstant.STOCK_BUY,
                 order_volume=order_vol,
-                price_type=xtconstant.MARKET_PEER_PRICE_FIRST,  #MARKET_PEER_PRICE_FIRST对手方最优,LATEST_PRICE最新价
+                price_type=xtconstant.FIX_PRICE,  #MARKET_PEER_PRICE_FIRST对手方最优,LATEST_PRICE最新价
                 price=order_price,
                 strategy_name="strategy1",
                 order_remark=f"async_order_{i+1}"

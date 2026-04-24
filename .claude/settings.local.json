@@ -1,0 +1,15 @@
+{
+  "env": {
+    "CONDA_PREFIX": "E:\\working\\anaconda3\\envs\\quant",
+    "CONDA_DEFAULT_ENV": "quant",
+    "CONDA_SHLVL": "1"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(conda info:*)",
+      "Bash(conda env:*)",
+      "Skill(update-config)",
+      "Skill(update-config:*)"
+    ]
+  }
+}

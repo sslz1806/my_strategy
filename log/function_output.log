@@ -343,3 +343,1598 @@
 20260403 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002328', 'SZSE.002330', 'SZSE.002331']...(共200只)
 20260403 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002584', 'SZSE.002585', 'SZSE.002587']...(共200只)
 20260403 09:27:17- INFO- 所有批次处理完成，共合并74201条记录
+20260407 09:27:05- INFO- 将2449只股票分成13多线程批处理
+20260407 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600657', 'SHSE.600658', 'SHSE.600662']...(共200只)
+20260407 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.603009', 'SHSE.603010', 'SHSE.603011']...(共200只)
+20260407 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600345', 'SHSE.600348', 'SHSE.600350']...(共200只)
+20260407 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260407 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600976', 'SHSE.600977', 'SHSE.600979']...(共200只)
+20260407 09:27:16- INFO- 完成批次处理，股票代码: ['SHSE.603355', 'SHSE.603357', 'SHSE.603358']...(共200只)
+20260407 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.000887', 'SZSE.000888', 'SZSE.000890']...(共200只)
+20260407 09:27:17- INFO- 完成批次处理，股票代码: ['SHSE.603906', 'SHSE.603912', 'SHSE.603915']...(共200只)
+20260407 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002109', 'SZSE.002110', 'SZSE.002111']...(共200只)
+20260407 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.000411', 'SZSE.000415', 'SZSE.000417']...(共200只)
+20260407 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.002960', 'SZSE.002961', 'SZSE.002965']...(共49只)
+20260407 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002628', 'SZSE.002631', 'SZSE.002632']...(共200只)
+20260407 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002357', 'SZSE.002358', 'SZSE.002361']...(共200只)
+20260407 09:27:19- INFO- 所有批次处理完成，共合并70941条记录
+20260408 09:27:03- INFO- 将2474只股票分成13多线程批处理
+20260408 09:27:08- INFO- 完成批次处理，股票代码: ['SHSE.600655', 'SHSE.600657', 'SHSE.600658']...(共200只)
+20260408 09:27:08- INFO- 完成批次处理，股票代码: ['SHSE.600343', 'SHSE.600345', 'SHSE.600348']...(共200只)
+20260408 09:27:08- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260408 09:27:08- INFO- 完成批次处理，股票代码: ['SHSE.600975', 'SHSE.600976', 'SHSE.600977']...(共200只)
+20260408 09:27:08- INFO- 完成批次处理，股票代码: ['SHSE.603005', 'SHSE.603006', 'SHSE.603008']...(共200只)
+20260408 09:27:13- INFO- 完成批次处理，股票代码: ['SHSE.603339', 'SHSE.603341', 'SHSE.603345']...(共200只)
+20260408 09:27:14- INFO- 完成批次处理，股票代码: ['SHSE.603888', 'SHSE.603889', 'SHSE.603890']...(共200只)
+20260408 09:27:14- INFO- 完成批次处理，股票代码: ['SZSE.000158', 'SZSE.000159', 'SZSE.000301']...(共200只)
+20260408 09:27:14- INFO- 完成批次处理，股票代码: ['SZSE.000859', 'SZSE.000860', 'SZSE.000862']...(共200只)
+20260408 09:27:14- INFO- 完成批次处理，股票代码: ['SZSE.002091', 'SZSE.002092', 'SZSE.002093']...(共200只)
+20260408 09:27:15- INFO- 完成批次处理，股票代码: ['SZSE.002927', 'SZSE.002928', 'SZSE.002929']...(共74只)
+20260408 09:27:16- INFO- 完成批次处理，股票代码: ['SZSE.002333', 'SZSE.002334', 'SZSE.002335']...(共200只)
+20260408 09:27:16- INFO- 完成批次处理，股票代码: ['SZSE.002590', 'SZSE.002593', 'SZSE.002595']...(共200只)
+20260408 09:27:16- INFO- 所有批次处理完成，共合并74134条记录
+20260409 09:27:03- INFO- 将2501只股票分成13多线程批处理
+20260409 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600970', 'SHSE.600971', 'SHSE.600973']...(共200只)
+20260409 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600340', 'SHSE.600343', 'SHSE.600345']...(共200只)
+20260409 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260409 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600653', 'SHSE.600654', 'SHSE.600655']...(共200只)
+20260409 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.603001', 'SHSE.603002', 'SHSE.603005']...(共200只)
+20260409 09:28:44- INFO- 将2501只股票分成13多线程批处理
+20260409 09:28:50- INFO- 完成批次处理，股票代码: ['SHSE.600970', 'SHSE.600971', 'SHSE.600973']...(共200只)
+20260409 09:28:50- INFO- 完成批次处理，股票代码: ['SHSE.600340', 'SHSE.600343', 'SHSE.600345']...(共200只)
+20260409 09:28:50- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260409 09:28:50- INFO- 完成批次处理，股票代码: ['SHSE.600653', 'SHSE.600654', 'SHSE.600655']...(共200只)
+20260409 09:28:50- INFO- 完成批次处理，股票代码: ['SHSE.603001', 'SHSE.603002', 'SHSE.603005']...(共200只)
+20260409 09:28:56- INFO- 完成批次处理，股票代码: ['SHSE.603331', 'SHSE.603333', 'SHSE.603336']...(共200只)
+20260409 09:28:56- INFO- 完成批次处理，股票代码: ['SHSE.603877', 'SHSE.603878', 'SHSE.603881']...(共200只)
+20260409 09:28:56- INFO- 完成批次处理，股票代码: ['SZSE.000822', 'SZSE.000823', 'SZSE.000825']...(共200只)
+20260409 09:28:56- INFO- 完成批次处理，股票代码: ['SZSE.000070', 'SZSE.000078', 'SZSE.000088']...(共200只)
+20260409 09:28:56- INFO- 完成批次处理，股票代码: ['SZSE.002068', 'SZSE.002073', 'SZSE.002074']...(共200只)
+20260409 09:28:57- INFO- 将2501只股票分成13多线程批处理
+20260409 09:28:58- INFO- 完成批次处理，股票代码: ['SZSE.002889', 'SZSE.002891', 'SZSE.002892']...(共101只)
+20260409 09:28:59- INFO- 完成批次处理，股票代码: ['SZSE.002567', 'SZSE.002568', 'SZSE.002570']...(共200只)
+20260409 09:28:59- INFO- 完成批次处理，股票代码: ['SZSE.002315', 'SZSE.002317', 'SZSE.002318']...(共200只)
+20260409 09:28:59- INFO- 所有批次处理完成，共合并77430条记录
+20260409 09:29:04- INFO- 完成批次处理，股票代码: ['SHSE.600653', 'SHSE.600654', 'SHSE.600655']...(共200只)
+20260409 09:29:04- INFO- 完成批次处理，股票代码: ['SHSE.600970', 'SHSE.600971', 'SHSE.600973']...(共200只)
+20260409 09:29:04- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260409 09:29:04- INFO- 完成批次处理，股票代码: ['SHSE.600340', 'SHSE.600343', 'SHSE.600345']...(共200只)
+20260409 09:29:04- INFO- 完成批次处理，股票代码: ['SHSE.603001', 'SHSE.603002', 'SHSE.603005']...(共200只)
+20260409 09:29:09- INFO- 完成批次处理，股票代码: ['SHSE.603331', 'SHSE.603333', 'SHSE.603336']...(共200只)
+20260409 09:29:09- INFO- 完成批次处理，股票代码: ['SHSE.603877', 'SHSE.603878', 'SHSE.603881']...(共200只)
+20260409 09:29:10- INFO- 完成批次处理，股票代码: ['SZSE.000070', 'SZSE.000078', 'SZSE.000088']...(共200只)
+20260409 09:29:10- INFO- 完成批次处理，股票代码: ['SZSE.002068', 'SZSE.002073', 'SZSE.002074']...(共200只)
+20260409 09:29:10- INFO- 完成批次处理，股票代码: ['SZSE.000822', 'SZSE.000823', 'SZSE.000825']...(共200只)
+20260409 09:29:12- INFO- 完成批次处理，股票代码: ['SZSE.002889', 'SZSE.002891', 'SZSE.002892']...(共101只)
+20260409 09:29:12- INFO- 完成批次处理，股票代码: ['SZSE.002315', 'SZSE.002317', 'SZSE.002318']...(共200只)
+20260409 09:29:12- INFO- 完成批次处理，股票代码: ['SZSE.002567', 'SZSE.002568', 'SZSE.002570']...(共200只)
+20260409 09:29:12- INFO- 所有批次处理完成，共合并77430条记录
+20260410 09:27:03- INFO- 将2490只股票分成13多线程批处理
+20260410 09:27:08- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260410 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600973', 'SHSE.600975', 'SHSE.600976']...(共200只)
+20260410 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600343', 'SHSE.600345', 'SHSE.600348']...(共200只)
+20260410 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600655', 'SHSE.600657', 'SHSE.600658']...(共200只)
+20260410 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.603006', 'SHSE.603008', 'SHSE.603009']...(共200只)
+20260410 09:27:13- INFO- 完成批次处理，股票代码: ['SHSE.603337', 'SHSE.603338', 'SHSE.603339']...(共200只)
+20260410 09:27:14- INFO- 完成批次处理，股票代码: ['SHSE.603886', 'SHSE.603887', 'SHSE.603888']...(共200只)
+20260410 09:27:15- INFO- 完成批次处理，股票代码: ['SZSE.000831', 'SZSE.000833', 'SZSE.000837']...(共200只)
+20260410 09:27:15- INFO- 完成批次处理，股票代码: ['SZSE.000099', 'SZSE.000100', 'SZSE.000151']...(共200只)
+20260410 09:27:15- INFO- 完成批次处理，股票代码: ['SZSE.002078', 'SZSE.002079', 'SZSE.002080']...(共200只)
+20260410 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002907', 'SZSE.002911', 'SZSE.002912']...(共90只)
+20260410 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002323', 'SZSE.002324', 'SZSE.002326']...(共200只)
+20260410 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002579', 'SZSE.002580', 'SZSE.002582']...(共200只)
+20260410 09:27:17- INFO- 所有批次处理完成，共合并79579条记录
+20260410 14:18:12- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 14:18:12- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:18:16- INFO-   get_symbols返回 5212 条记录
+20260410 14:18:16- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 14:18:16- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:18:16- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:16- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:17- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:18- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:19- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:20- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:21- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:22- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:22- WARNING-   history_n返回空数据
+20260410 14:18:22- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:18:22- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 14:18:22- INFO-   步骤4: 合并数据...
+20260410 14:18:22- INFO-   数据合并完成,最终返回 5212 条记录, 12 个字段
+20260410 14:18:22- INFO- 准备获取 3 个交易日的数据: 2025-04-07 至 2025-04-09
+20260410 14:18:22- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 14:18:22- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:18:23- INFO-   get_symbols返回 5208 条记录
+20260410 14:18:23- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 14:18:23- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:18:23- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:23- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:23- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:23- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:23- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:23- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:23- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:23- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:24- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:25- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:26- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:27- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:28- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:28- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:28- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:28- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:28- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:28- WARNING-   history_n返回空数据
+20260410 14:18:28- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:18:29- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 14:18:29- INFO-   步骤4: 合并数据...
+20260410 14:18:29- INFO-   数据合并完成,最终返回 5208 条记录, 12 个字段
+20260410 14:18:29- INFO- ✓ 2025-04-07 数据获取成功: 5208 条
+20260410 14:18:29- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 14:18:29- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:18:30- INFO-   get_symbols返回 5209 条记录
+20260410 14:18:30- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 14:18:30- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:18:30- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:30- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:30- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:30- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:30- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:31- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:32- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:33- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:34- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:35- WARNING-   history_n返回空数据
+20260410 14:18:35- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:18:36- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 14:18:36- INFO-   步骤4: 合并数据...
+20260410 14:18:36- INFO-   数据合并完成,最终返回 5209 条记录, 12 个字段
+20260410 14:18:36- INFO- ✓ 2025-04-08 数据获取成功: 5209 条
+20260410 14:18:36- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 14:18:36- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:18:37- INFO-   get_symbols返回 5212 条记录
+20260410 14:18:37- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 14:18:37- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:18:37- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:37- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:37- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:37- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:37- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:37- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:38- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:39- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:40- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:41- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:18:42- WARNING-   history_n返回空数据
+20260410 14:18:42- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:18:42- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 14:18:42- INFO-   步骤4: 合并数据...
+20260410 14:18:42- INFO-   数据合并完成,最终返回 5212 条记录, 12 个字段
+20260410 14:18:43- INFO- ✓ 2025-04-09 数据获取成功: 5212 条
+20260410 14:18:43- INFO- 批量获取完成,共 15629 条记录
+20260410 14:19:27- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 14:19:27- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:19:28- INFO-   get_symbols返回 5212 条记录
+20260410 14:19:28- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 14:19:28- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:19:28- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:28- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:28- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:29- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:30- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:31- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:32- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:33- WARNING-   history_n返回空数据
+20260410 14:19:33- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:19:34- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 14:19:34- INFO-   步骤4: 合并数据...
+20260410 14:19:34- INFO-   数据合并完成,最终返回 5212 条记录, 12 个字段
+20260410 14:19:34- INFO- 准备获取 3 个交易日的数据: 2025-04-07 至 2025-04-09
+20260410 14:19:34- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 14:19:34- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:19:35- INFO-   get_symbols返回 5208 条记录
+20260410 14:19:35- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 14:19:35- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:19:35- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:35- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:36- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:37- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:38- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:39- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:40- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:40- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:40- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:40- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:40- WARNING-   history_n返回空数据
+20260410 14:19:40- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:19:40- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 14:19:40- INFO-   步骤4: 合并数据...
+20260410 14:19:40- INFO-   数据合并完成,最终返回 5208 条记录, 12 个字段
+20260410 14:19:40- INFO- ✓ 2025-04-07 数据获取成功: 5208 条
+20260410 14:19:41- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 14:19:41- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:19:41- INFO-   get_symbols返回 5209 条记录
+20260410 14:19:41- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 14:19:41- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:19:41- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:42- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:43- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:44- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:45- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:46- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:47- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:47- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:47- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:47- WARNING-   history_n返回空数据
+20260410 14:19:47- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:19:47- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 14:19:47- INFO-   步骤4: 合并数据...
+20260410 14:19:47- INFO-   数据合并完成,最终返回 5209 条记录, 12 个字段
+20260410 14:19:47- INFO- ✓ 2025-04-08 数据获取成功: 5209 条
+20260410 14:19:48- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 14:19:48- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:19:48- INFO-   get_symbols返回 5212 条记录
+20260410 14:19:48- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 14:19:48- INFO-   步骤2: 调用history_n补充成交量/成交额/涨跌幅...
+20260410 14:19:48- WARNING-   获取第1批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:48- WARNING-   获取第2批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第3批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第4批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第5批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第6批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第7批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第8批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第9批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第10批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第11批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:49- WARNING-   获取第12批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第13批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第14批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第15批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第16批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第17批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第18批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第19批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第20批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第21批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:50- WARNING-   获取第22批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第23批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第24批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第25批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第26批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第27批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第28批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第29批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第30批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第31批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:51- WARNING-   获取第32批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第33批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第34批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第35批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第36批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第37批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第38批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第39批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第40批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第41批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:52- WARNING-   获取第42批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第43批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第44批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第45批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第46批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第47批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第48批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第49批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第50批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第51批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:53- WARNING-   获取第52批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:54- WARNING-   获取第53批价格数据失败: history_n() got an unexpected keyword argument 'symbols'
+20260410 14:19:54- WARNING-   history_n返回空数据
+20260410 14:19:54- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:19:54- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 14:19:54- INFO-   步骤4: 合并数据...
+20260410 14:19:54- INFO-   数据合并完成,最终返回 5212 条记录, 12 个字段
+20260410 14:19:54- INFO- ✓ 2025-04-09 数据获取成功: 5212 条
+20260410 14:19:54- INFO- 批量获取完成,共 15629 条记录
+20260410 14:23:13- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 14:23:13- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:23:14- INFO-   get_symbols返回 5212 条记录
+20260410 14:23:14- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 14:23:14- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 14:23:20- INFO-   history返回 10423 条记录
+20260410 14:23:20- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:23:21- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 14:23:21- INFO-   步骤4: 合并数据...
+20260410 14:23:21- ERROR- 获取 2025-04-09 掘金数据失败: 'symbol'
+20260410 14:23:21- INFO- 准备获取 3 个交易日的数据: 2025-04-07 至 2025-04-09
+20260410 14:23:21- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 14:23:21- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:23:21- INFO-   get_symbols返回 5208 条记录
+20260410 14:23:21- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 14:23:21- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 14:23:27- INFO-   history返回 10413 条记录
+20260410 14:23:27- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:23:27- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 14:23:27- INFO-   步骤4: 合并数据...
+20260410 14:23:27- ERROR- 获取 2025-04-07 掘金数据失败: 'symbol'
+20260410 14:23:27- WARNING- ✗ 2025-04-07 无数据
+20260410 14:23:28- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 14:23:28- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:23:28- INFO-   get_symbols返回 5209 条记录
+20260410 14:23:28- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 14:23:28- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 14:23:34- INFO-   history返回 10418 条记录
+20260410 14:23:34- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:23:34- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 14:23:34- INFO-   步骤4: 合并数据...
+20260410 14:23:34- ERROR- 获取 2025-04-08 掘金数据失败: 'symbol'
+20260410 14:23:34- WARNING- ✗ 2025-04-08 无数据
+20260410 14:23:35- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 14:23:35- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 14:23:35- INFO-   get_symbols返回 5212 条记录
+20260410 14:23:35- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 14:23:35- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 14:23:41- INFO-   history返回 10423 条记录
+20260410 14:23:41- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 14:23:41- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 14:23:41- INFO-   步骤4: 合并数据...
+20260410 14:23:41- ERROR- 获取 2025-04-09 掘金数据失败: 'symbol'
+20260410 14:23:41- WARNING- ✗ 2025-04-09 无数据
+20260410 14:23:42- WARNING- 所有日期均无数据返回
+20260410 15:21:03- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 15:21:03- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:21:04- INFO-   get_symbols返回 5212 条记录
+20260410 15:21:04- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 15:21:04- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 15:21:06- INFO-     已处理 100/5212 只股票
+20260410 15:21:08- INFO-     已处理 200/5212 只股票
+20260410 15:21:10- INFO-     已处理 300/5212 只股票
+20260410 15:21:13- INFO-     已处理 400/5212 只股票
+20260410 15:21:15- INFO-     已处理 500/5212 只股票
+20260410 15:21:17- INFO-     已处理 600/5212 只股票
+20260410 15:21:19- INFO-     已处理 700/5212 只股票
+20260410 15:21:21- INFO-     已处理 800/5212 只股票
+20260410 15:21:23- INFO-     已处理 900/5212 只股票
+20260410 15:21:25- INFO-     已处理 1000/5212 只股票
+20260410 15:21:27- INFO-     已处理 1100/5212 只股票
+20260410 15:21:29- INFO-     已处理 1200/5212 只股票
+20260410 15:21:32- INFO-     已处理 1300/5212 只股票
+20260410 15:21:34- INFO-     已处理 1400/5212 只股票
+20260410 15:21:36- INFO-     已处理 1500/5212 只股票
+20260410 15:21:38- INFO-     已处理 1600/5212 只股票
+20260410 15:21:40- INFO-     已处理 1700/5212 只股票
+20260410 15:21:42- INFO-     已处理 1800/5212 只股票
+20260410 15:21:44- INFO-     已处理 1900/5212 只股票
+20260410 15:21:46- INFO-     已处理 2000/5212 只股票
+20260410 15:21:49- INFO-     已处理 2100/5212 只股票
+20260410 15:21:51- INFO-     已处理 2200/5212 只股票
+20260410 15:21:53- INFO-     已处理 2300/5212 只股票
+20260410 15:21:55- INFO-     已处理 2400/5212 只股票
+20260410 15:21:57- INFO-     已处理 2500/5212 只股票
+20260410 15:21:59- INFO-     已处理 2600/5212 只股票
+20260410 15:22:01- INFO-     已处理 2700/5212 只股票
+20260410 15:22:03- INFO-     已处理 2800/5212 只股票
+20260410 15:22:06- INFO-     已处理 2900/5212 只股票
+20260410 15:22:08- INFO-     已处理 3000/5212 只股票
+20260410 15:22:10- INFO-     已处理 3100/5212 只股票
+20260410 15:22:12- INFO-     已处理 3200/5212 只股票
+20260410 15:22:14- INFO-     已处理 3300/5212 只股票
+20260410 15:22:16- INFO-     已处理 3400/5212 只股票
+20260410 15:22:18- INFO-     已处理 3500/5212 只股票
+20260410 15:22:20- INFO-     已处理 3600/5212 只股票
+20260410 15:22:23- INFO-     已处理 3700/5212 只股票
+20260410 15:22:25- INFO-     已处理 3800/5212 只股票
+20260410 15:22:27- INFO-     已处理 3900/5212 只股票
+20260410 15:22:29- INFO-     已处理 4000/5212 只股票
+20260410 15:22:31- INFO-     已处理 4100/5212 只股票
+20260410 15:22:33- INFO-     已处理 4200/5212 只股票
+20260410 15:22:35- INFO-     已处理 4300/5212 只股票
+20260410 15:22:37- INFO-     已处理 4400/5212 只股票
+20260410 15:22:40- INFO-     已处理 4500/5212 只股票
+20260410 15:22:42- INFO-     已处理 4600/5212 只股票
+20260410 15:22:44- INFO-     已处理 4700/5212 只股票
+20260410 15:22:46- INFO-     已处理 4800/5212 只股票
+20260410 15:22:48- INFO-     已处理 4900/5212 只股票
+20260410 15:22:50- INFO-     已处理 5000/5212 只股票
+20260410 15:22:52- INFO-     已处理 5100/5212 只股票
+20260410 15:22:54- INFO-     已处理 5200/5212 只股票
+20260410 15:22:55- INFO-   history返回 10423 条记录
+20260410 15:22:55- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:22:55- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 15:22:55- INFO-   步骤4: 合并数据...
+20260410 15:22:55- INFO-   数据合并完成,最终返回 10423 条记录, 14 个字段
+20260410 15:22:55- INFO- 准备获取 3 个交易日的数据: 2026-04-08 至 2026-04-10
+20260410 15:22:55- INFO- 开始获取 2026-04-08 的掘金全市场数据...
+20260410 15:22:55- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:22:56- INFO-   get_symbols返回 5264 条记录
+20260410 15:22:56- INFO-   过滤后剩余 5264 只股票(已剔除未上市/已退市)
+20260410 15:22:56- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 15:22:58- INFO-     已处理 100/5264 只股票
+20260410 15:23:00- INFO-     已处理 200/5264 只股票
+20260410 15:23:02- INFO-     已处理 300/5264 只股票
+20260410 15:23:05- INFO-     已处理 400/5264 只股票
+20260410 15:23:07- INFO-     已处理 500/5264 只股票
+20260410 15:23:09- INFO-     已处理 600/5264 只股票
+20260410 15:23:11- INFO-     已处理 700/5264 只股票
+20260410 15:23:13- INFO-     已处理 800/5264 只股票
+20260410 15:23:15- INFO-     已处理 900/5264 只股票
+20260410 15:23:17- INFO-     已处理 1000/5264 只股票
+20260410 15:23:19- INFO-     已处理 1100/5264 只股票
+20260410 15:23:22- INFO-     已处理 1200/5264 只股票
+20260410 15:23:24- INFO-     已处理 1300/5264 只股票
+20260410 15:23:26- INFO-     已处理 1400/5264 只股票
+20260410 15:23:28- INFO-     已处理 1500/5264 只股票
+20260410 15:23:30- INFO-     已处理 1600/5264 只股票
+20260410 15:23:32- INFO-     已处理 1700/5264 只股票
+20260410 15:23:34- INFO-     已处理 1800/5264 只股票
+20260410 15:23:36- INFO-     已处理 1900/5264 只股票
+20260410 15:23:39- INFO-     已处理 2000/5264 只股票
+20260410 15:23:41- INFO-     已处理 2100/5264 只股票
+20260410 15:23:43- INFO-     已处理 2200/5264 只股票
+20260410 15:23:45- INFO-     已处理 2300/5264 只股票
+20260410 15:23:47- INFO-     已处理 2400/5264 只股票
+20260410 15:23:49- INFO-     已处理 2500/5264 只股票
+20260410 15:23:51- INFO-     已处理 2600/5264 只股票
+20260410 15:23:53- INFO-     已处理 2700/5264 只股票
+20260410 15:23:56- INFO-     已处理 2800/5264 只股票
+20260410 15:23:58- INFO-     已处理 2900/5264 只股票
+20260410 15:24:00- INFO-     已处理 3000/5264 只股票
+20260410 15:24:02- INFO-     已处理 3100/5264 只股票
+20260410 15:24:04- INFO-     已处理 3200/5264 只股票
+20260410 15:24:06- INFO-     已处理 3300/5264 只股票
+20260410 15:24:08- INFO-     已处理 3400/5264 只股票
+20260410 15:24:10- INFO-     已处理 3500/5264 只股票
+20260410 15:24:12- INFO-     已处理 3600/5264 只股票
+20260410 15:24:15- INFO-     已处理 3700/5264 只股票
+20260410 15:24:17- INFO-     已处理 3800/5264 只股票
+20260410 15:24:19- INFO-     已处理 3900/5264 只股票
+20260410 15:24:21- INFO-     已处理 4000/5264 只股票
+20260410 15:24:23- INFO-     已处理 4100/5264 只股票
+20260410 15:24:25- INFO-     已处理 4200/5264 只股票
+20260410 15:24:27- INFO-     已处理 4300/5264 只股票
+20260410 15:24:29- INFO-     已处理 4400/5264 只股票
+20260410 15:24:31- INFO-     已处理 4500/5264 只股票
+20260410 15:24:34- INFO-     已处理 4600/5264 只股票
+20260410 15:24:36- INFO-     已处理 4700/5264 只股票
+20260410 15:24:38- INFO-     已处理 4800/5264 只股票
+20260410 15:24:40- INFO-     已处理 4900/5264 只股票
+20260410 15:24:42- INFO-     已处理 5000/5264 只股票
+20260410 15:24:44- INFO-     已处理 5100/5264 只股票
+20260410 15:24:46- INFO-     已处理 5200/5264 只股票
+20260410 15:24:48- INFO-   history返回 10528 条记录
+20260410 15:24:48- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:24:48- INFO-   stk_get_daily_mktvalue_pt返回 5264 条记录
+20260410 15:24:48- INFO-   步骤4: 合并数据...
+20260410 15:24:48- INFO-   数据合并完成,最终返回 10528 条记录, 14 个字段
+20260410 15:24:48- INFO- ✓ 2026-04-08 数据获取成功: 10528 条
+20260410 15:24:49- INFO- 开始获取 2026-04-09 的掘金全市场数据...
+20260410 15:24:49- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:24:49- INFO-   get_symbols返回 5265 条记录
+20260410 15:24:49- INFO-   过滤后剩余 5265 只股票(已剔除未上市/已退市)
+20260410 15:24:49- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 15:24:51- INFO-     已处理 100/5265 只股票
+20260410 15:24:53- INFO-     已处理 200/5265 只股票
+20260410 15:24:56- INFO-     已处理 300/5265 只股票
+20260410 15:24:58- INFO-     已处理 400/5265 只股票
+20260410 15:25:00- INFO-     已处理 500/5265 只股票
+20260410 15:25:02- INFO-     已处理 600/5265 只股票
+20260410 15:25:04- INFO-     已处理 700/5265 只股票
+20260410 15:25:06- INFO-     已处理 800/5265 只股票
+20260410 15:25:08- INFO-     已处理 900/5265 只股票
+20260410 15:25:10- INFO-     已处理 1000/5265 只股票
+20260410 15:25:12- INFO-     已处理 1100/5265 只股票
+20260410 15:25:14- INFO-     已处理 1200/5265 只股票
+20260410 15:25:17- INFO-     已处理 1300/5265 只股票
+20260410 15:25:19- INFO-     已处理 1400/5265 只股票
+20260410 15:25:21- INFO-     已处理 1500/5265 只股票
+20260410 15:25:23- INFO-     已处理 1600/5265 只股票
+20260410 15:25:25- INFO-     已处理 1700/5265 只股票
+20260410 15:25:27- INFO-     已处理 1800/5265 只股票
+20260410 15:25:29- INFO-     已处理 1900/5265 只股票
+20260410 15:25:31- INFO-     已处理 2000/5265 只股票
+20260410 15:25:33- INFO-     已处理 2100/5265 只股票
+20260410 15:25:36- INFO-     已处理 2200/5265 只股票
+20260410 15:25:38- INFO-     已处理 2300/5265 只股票
+20260410 15:25:40- INFO-     已处理 2400/5265 只股票
+20260410 15:25:42- INFO-     已处理 2500/5265 只股票
+20260410 15:25:44- INFO-     已处理 2600/5265 只股票
+20260410 15:25:46- INFO-     已处理 2700/5265 只股票
+20260410 15:25:48- INFO-     已处理 2800/5265 只股票
+20260410 15:25:50- INFO-     已处理 2900/5265 只股票
+20260410 15:25:53- INFO-     已处理 3000/5265 只股票
+20260410 15:25:55- INFO-     已处理 3100/5265 只股票
+20260410 15:25:57- INFO-     已处理 3200/5265 只股票
+20260410 15:25:59- INFO-     已处理 3300/5265 只股票
+20260410 15:26:01- INFO-     已处理 3400/5265 只股票
+20260410 15:26:03- INFO-     已处理 3500/5265 只股票
+20260410 15:26:05- INFO-     已处理 3600/5265 只股票
+20260410 15:26:07- INFO-     已处理 3700/5265 只股票
+20260410 15:26:09- INFO-     已处理 3800/5265 只股票
+20260410 15:26:12- INFO-     已处理 3900/5265 只股票
+20260410 15:26:14- INFO-     已处理 4000/5265 只股票
+20260410 15:26:16- INFO-     已处理 4100/5265 只股票
+20260410 15:26:18- INFO-     已处理 4200/5265 只股票
+20260410 15:26:20- INFO-     已处理 4300/5265 只股票
+20260410 15:26:22- INFO-     已处理 4400/5265 只股票
+20260410 15:26:24- INFO-     已处理 4500/5265 只股票
+20260410 15:26:26- INFO-     已处理 4600/5265 只股票
+20260410 15:26:28- INFO-     已处理 4700/5265 只股票
+20260410 15:26:31- INFO-     已处理 4800/5265 只股票
+20260410 15:26:33- INFO-     已处理 4900/5265 只股票
+20260410 15:26:35- INFO-     已处理 5000/5265 只股票
+20260410 15:26:37- INFO-     已处理 5100/5265 只股票
+20260410 15:26:39- INFO-     已处理 5200/5265 只股票
+20260410 15:26:41- INFO-   history返回 5265 条记录
+20260410 15:26:41- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:26:41- INFO-   stk_get_daily_mktvalue_pt返回 5265 条记录
+20260410 15:26:41- INFO-   步骤4: 合并数据...
+20260410 15:26:41- INFO-   数据合并完成,最终返回 5265 条记录, 14 个字段
+20260410 15:26:41- INFO- ✓ 2026-04-09 数据获取成功: 5265 条
+20260410 15:26:41- INFO- 开始获取 2026-04-10 的掘金全市场数据...
+20260410 15:26:41- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:26:42- INFO-   get_symbols返回 5268 条记录
+20260410 15:26:42- INFO-   过滤后剩余 5268 只股票(已剔除未上市/已退市)
+20260410 15:26:42- INFO-   步骤2: 调用history补充成交量/成交额/涨跌幅...
+20260410 15:26:44- INFO-     已处理 100/5268 只股票
+20260410 15:26:46- INFO-     已处理 200/5268 只股票
+20260410 15:26:48- INFO-     已处理 300/5268 只股票
+20260410 15:26:50- INFO-     已处理 400/5268 只股票
+20260410 15:26:52- INFO-     已处理 500/5268 只股票
+20260410 15:26:55- INFO-     已处理 600/5268 只股票
+20260410 15:26:57- INFO-     已处理 700/5268 只股票
+20260410 15:26:59- INFO-     已处理 800/5268 只股票
+20260410 15:27:01- INFO-     已处理 900/5268 只股票
+20260410 15:27:03- INFO-     已处理 1000/5268 只股票
+20260410 15:27:05- INFO-     已处理 1100/5268 只股票
+20260410 15:27:07- INFO-     已处理 1200/5268 只股票
+20260410 15:27:09- INFO-     已处理 1300/5268 只股票
+20260410 15:27:11- INFO-     已处理 1400/5268 只股票
+20260410 15:27:13- INFO-     已处理 1500/5268 只股票
+20260410 15:27:16- INFO-     已处理 1600/5268 只股票
+20260410 15:27:18- INFO-     已处理 1700/5268 只股票
+20260410 15:27:20- INFO-     已处理 1800/5268 只股票
+20260410 15:27:22- INFO-     已处理 1900/5268 只股票
+20260410 15:27:24- INFO-     已处理 2000/5268 只股票
+20260410 15:27:26- INFO-     已处理 2100/5268 只股票
+20260410 15:27:28- INFO-     已处理 2200/5268 只股票
+20260410 15:27:30- INFO-     已处理 2300/5268 只股票
+20260410 15:27:32- INFO-     已处理 2400/5268 只股票
+20260410 15:27:34- INFO-     已处理 2500/5268 只股票
+20260410 15:27:37- INFO-     已处理 2600/5268 只股票
+20260410 15:27:39- INFO-     已处理 2700/5268 只股票
+20260410 15:27:41- INFO-     已处理 2800/5268 只股票
+20260410 15:27:43- INFO-     已处理 2900/5268 只股票
+20260410 15:27:45- INFO-     已处理 3000/5268 只股票
+20260410 15:27:47- INFO-     已处理 3100/5268 只股票
+20260410 15:27:49- INFO-     已处理 3200/5268 只股票
+20260410 15:27:51- INFO-     已处理 3300/5268 只股票
+20260410 15:27:53- INFO-     已处理 3400/5268 只股票
+20260410 15:27:55- INFO-     已处理 3500/5268 只股票
+20260410 15:27:58- INFO-     已处理 3600/5268 只股票
+20260410 15:28:00- INFO-     已处理 3700/5268 只股票
+20260410 15:28:02- INFO-     已处理 3800/5268 只股票
+20260410 15:45:03- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 15:45:03- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:45:05- INFO-   get_symbols返回 5212 条记录
+20260410 15:45:05- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 15:45:05- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:45:05- INFO-   history批量返回 10423 条记录
+20260410 15:45:05- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:45:05- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 15:45:05- INFO-   步骤4: 合并数据...
+20260410 15:45:05- INFO-   数据合并完成,最终返回 10423 条记录, 18 个字段
+20260410 15:47:38- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 15:47:38- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:47:39- INFO-   get_symbols返回 5212 条记录
+20260410 15:47:39- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 15:47:39- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:47:39- INFO-   history批量返回 10423 条记录
+20260410 15:47:39- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:47:40- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 15:47:40- INFO-   步骤4: 合并数据...
+20260410 15:47:40- INFO-   数据合并完成,最终返回 10423 条记录, 18 个字段
+20260410 15:47:40- INFO- 准备获取 3 个交易日的数据: 2026-04-08 至 2026-04-10
+20260410 15:47:40- INFO- 开始获取 2026-04-08 的掘金全市场数据...
+20260410 15:47:40- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:47:41- INFO-   get_symbols返回 5264 条记录
+20260410 15:47:41- INFO-   过滤后剩余 5264 只股票(已剔除未上市/已退市)
+20260410 15:47:41- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:47:41- INFO-   history批量返回 10528 条记录
+20260410 15:47:41- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:47:42- INFO-   stk_get_daily_mktvalue_pt返回 5264 条记录
+20260410 15:47:42- INFO-   步骤4: 合并数据...
+20260410 15:47:42- INFO-   数据合并完成,最终返回 10528 条记录, 18 个字段
+20260410 15:47:42- INFO- ✓ 2026-04-08 数据获取成功: 10528 条
+20260410 15:47:43- INFO- 开始获取 2026-04-09 的掘金全市场数据...
+20260410 15:47:43- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:47:43- INFO-   get_symbols返回 5265 条记录
+20260410 15:47:43- INFO-   过滤后剩余 5265 只股票(已剔除未上市/已退市)
+20260410 15:47:43- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:47:43- INFO-   history批量返回 5265 条记录
+20260410 15:47:43- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:47:44- INFO-   stk_get_daily_mktvalue_pt返回 5265 条记录
+20260410 15:47:44- INFO-   步骤4: 合并数据...
+20260410 15:47:44- INFO-   数据合并完成,最终返回 5265 条记录, 18 个字段
+20260410 15:47:44- INFO- ✓ 2026-04-09 数据获取成功: 5265 条
+20260410 15:47:44- INFO- 开始获取 2026-04-10 的掘金全市场数据...
+20260410 15:47:44- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:47:45- INFO-   get_symbols返回 5268 条记录
+20260410 15:47:45- INFO-   过滤后剩余 5268 只股票(已剔除未上市/已退市)
+20260410 15:47:45- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:47:45- WARNING-   history返回空数据
+20260410 15:47:45- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:47:45- INFO-   stk_get_daily_mktvalue_pt返回 5266 条记录
+20260410 15:47:45- INFO-   步骤4: 合并数据...
+20260410 15:47:45- INFO-   数据合并完成,最终返回 5268 条记录, 12 个字段
+20260410 15:47:45- INFO- ✓ 2026-04-10 数据获取成功: 5268 条
+20260410 15:47:46- INFO- 批量获取完成,共 15797 条记录
+20260410 15:48:53- INFO- 准备获取 7 个交易日的数据: 2025-04-01 至 2025-04-09
+20260410 15:48:53- INFO- 开始获取 2025-04-01 的掘金全市场数据...
+20260410 15:48:53- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:48:54- INFO-   get_symbols返回 5209 条记录
+20260410 15:48:54- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 15:48:54- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:48:55- INFO-   history批量返回 10416 条记录
+20260410 15:48:55- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:48:55- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 15:48:55- INFO-   步骤4: 合并数据...
+20260410 15:48:55- INFO-   数据合并完成,最终返回 10416 条记录, 18 个字段
+20260410 15:48:55- INFO- ✓ 2025-04-01 数据获取成功: 10416 条
+20260410 15:48:56- INFO- 开始获取 2025-04-02 的掘金全市场数据...
+20260410 15:48:56- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:48:57- INFO-   get_symbols返回 5211 条记录
+20260410 15:48:57- INFO-   过滤后剩余 5211 只股票(已剔除未上市/已退市)
+20260410 15:48:57- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:48:57- INFO-   history批量返回 10421 条记录
+20260410 15:48:57- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:48:57- INFO-   stk_get_daily_mktvalue_pt返回 5211 条记录
+20260410 15:48:57- INFO-   步骤4: 合并数据...
+20260410 15:48:57- INFO-   数据合并完成,最终返回 10421 条记录, 18 个字段
+20260410 15:48:57- INFO- ✓ 2025-04-02 数据获取成功: 10421 条
+20260410 15:48:58- INFO- 开始获取 2025-04-03 的掘金全市场数据...
+20260410 15:48:58- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:48:59- INFO-   get_symbols返回 5210 条记录
+20260410 15:48:59- INFO-   过滤后剩余 5210 只股票(已剔除未上市/已退市)
+20260410 15:48:59- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:48:59- INFO-   history批量返回 5210 条记录
+20260410 15:48:59- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:49:00- INFO-   stk_get_daily_mktvalue_pt返回 5210 条记录
+20260410 15:49:00- INFO-   步骤4: 合并数据...
+20260410 15:49:00- INFO-   数据合并完成,最终返回 5210 条记录, 18 个字段
+20260410 15:49:00- INFO- ✓ 2025-04-03 数据获取成功: 5210 条
+20260410 15:49:00- INFO- 开始获取 2025-04-04 的掘金全市场数据...
+20260410 15:49:00- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:49:00- WARNING- 2025-04-04 get_symbols返回空数据
+20260410 15:49:00- WARNING- ✗ 2025-04-04 无数据
+20260410 15:49:01- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 15:49:01- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:49:02- INFO-   get_symbols返回 5208 条记录
+20260410 15:49:02- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 15:49:02- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:49:02- INFO-   history批量返回 10413 条记录
+20260410 15:49:02- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:49:03- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 15:49:03- INFO-   步骤4: 合并数据...
+20260410 15:49:03- INFO-   数据合并完成,最终返回 10413 条记录, 18 个字段
+20260410 15:49:03- INFO- ✓ 2025-04-07 数据获取成功: 10413 条
+20260410 15:49:03- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 15:49:03- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:49:04- INFO-   get_symbols返回 5209 条记录
+20260410 15:49:04- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 15:49:04- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:49:04- INFO-   history批量返回 10418 条记录
+20260410 15:49:04- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:49:05- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 15:49:05- INFO-   步骤4: 合并数据...
+20260410 15:49:05- INFO-   数据合并完成,最终返回 10418 条记录, 18 个字段
+20260410 15:49:05- INFO- ✓ 2025-04-08 数据获取成功: 10418 条
+20260410 15:49:05- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 15:49:05- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:49:06- INFO-   get_symbols返回 5212 条记录
+20260410 15:49:06- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 15:49:06- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:49:06- INFO-   history批量返回 10423 条记录
+20260410 15:49:06- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:49:07- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 15:49:07- INFO-   步骤4: 合并数据...
+20260410 15:49:07- INFO-   数据合并完成,最终返回 10423 条记录, 18 个字段
+20260410 15:49:07- INFO- ✓ 2025-04-09 数据获取成功: 10423 条
+20260410 15:49:07- INFO- 批量获取完成,共 31259 条记录
+20260410 15:49:11- INFO- 准备获取 3 个交易日的数据: 2026-04-08 至 2026-04-10
+20260410 15:49:11- INFO- 开始获取 2026-04-08 的掘金全市场数据...
+20260410 15:49:11- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:49:12- INFO-   get_symbols返回 5264 条记录
+20260410 15:49:12- INFO-   过滤后剩余 5264 只股票(已剔除未上市/已退市)
+20260410 15:49:12- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:49:12- INFO-   history批量返回 10528 条记录
+20260410 15:49:12- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:49:12- INFO-   stk_get_daily_mktvalue_pt返回 5264 条记录
+20260410 15:49:12- INFO-   步骤4: 合并数据...
+20260410 15:49:12- INFO-   数据合并完成,最终返回 10528 条记录, 18 个字段
+20260410 15:49:12- INFO- ✓ 2026-04-08 数据获取成功: 10528 条
+20260410 15:49:13- INFO- 开始获取 2026-04-09 的掘金全市场数据...
+20260410 15:49:13- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:49:13- INFO-   get_symbols返回 5265 条记录
+20260410 15:49:13- INFO-   过滤后剩余 5265 只股票(已剔除未上市/已退市)
+20260410 15:49:13- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:49:13- INFO-   history批量返回 5265 条记录
+20260410 15:49:13- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:49:14- INFO-   stk_get_daily_mktvalue_pt返回 5265 条记录
+20260410 15:49:14- INFO-   步骤4: 合并数据...
+20260410 15:49:14- INFO-   数据合并完成,最终返回 5265 条记录, 18 个字段
+20260410 15:49:14- INFO- ✓ 2026-04-09 数据获取成功: 5265 条
+20260410 15:49:14- INFO- 开始获取 2026-04-10 的掘金全市场数据...
+20260410 15:49:14- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 15:49:15- INFO-   get_symbols返回 5268 条记录
+20260410 15:49:15- INFO-   过滤后剩余 5268 只股票(已剔除未上市/已退市)
+20260410 15:49:15- INFO-   步骤2: 调用history批量获取数据...
+20260410 15:49:15- WARNING-   history返回空数据
+20260410 15:49:15- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 15:49:16- INFO-   stk_get_daily_mktvalue_pt返回 5266 条记录
+20260410 15:49:16- INFO-   步骤4: 合并数据...
+20260410 15:49:16- INFO-   数据合并完成,最终返回 5268 条记录, 12 个字段
+20260410 15:49:16- INFO- ✓ 2026-04-10 数据获取成功: 5268 条
+20260410 15:49:16- INFO- 批量获取完成,共 15797 条记录
+20260410 15:51:14- INFO- 准备获取 7 个交易日的数据: 2025-04-01 至 2025-04-09
+20260410 15:51:14- INFO- 开始获取 2025-04-01 的掘金全市场数据...
+20260410 15:51:14- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:33- INFO- 准备获取 7 个交易日的数据: 2025-04-01 至 2025-04-09
+20260410 17:21:33- INFO- 开始获取 2025-04-01 的掘金全市场数据...
+20260410 17:21:33- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:34- INFO-   get_symbols返回 5209 条记录
+20260410 17:21:34- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 17:21:34- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:35- INFO-   history批量返回 10416 条记录
+20260410 17:21:35- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:35- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 17:21:35- INFO-   步骤4: 合并数据...
+20260410 17:21:35- INFO-   数据合并完成,最终返回 10416 条记录, 18 个字段
+20260410 17:21:35- INFO- ✓ 2025-04-01 数据获取成功: 10416 条
+20260410 17:21:36- INFO- 开始获取 2025-04-02 的掘金全市场数据...
+20260410 17:21:36- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:36- INFO-   get_symbols返回 5211 条记录
+20260410 17:21:36- INFO-   过滤后剩余 5211 只股票(已剔除未上市/已退市)
+20260410 17:21:36- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:37- INFO-   history批量返回 10421 条记录
+20260410 17:21:37- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:37- INFO-   stk_get_daily_mktvalue_pt返回 5211 条记录
+20260410 17:21:37- INFO-   步骤4: 合并数据...
+20260410 17:21:37- INFO-   数据合并完成,最终返回 10421 条记录, 18 个字段
+20260410 17:21:37- INFO- ✓ 2025-04-02 数据获取成功: 10421 条
+20260410 17:21:38- INFO- 开始获取 2025-04-03 的掘金全市场数据...
+20260410 17:21:38- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:38- INFO-   get_symbols返回 5210 条记录
+20260410 17:21:38- INFO-   过滤后剩余 5210 只股票(已剔除未上市/已退市)
+20260410 17:21:38- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:38- INFO-   history批量返回 5210 条记录
+20260410 17:21:38- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:39- INFO-   stk_get_daily_mktvalue_pt返回 5210 条记录
+20260410 17:21:39- INFO-   步骤4: 合并数据...
+20260410 17:21:39- INFO-   数据合并完成,最终返回 5210 条记录, 18 个字段
+20260410 17:21:39- INFO- ✓ 2025-04-03 数据获取成功: 5210 条
+20260410 17:21:39- INFO- 开始获取 2025-04-04 的掘金全市场数据...
+20260410 17:21:39- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:40- WARNING- 2025-04-04 get_symbols返回空数据
+20260410 17:21:40- WARNING- ✗ 2025-04-04 无数据
+20260410 17:21:40- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 17:21:40- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:41- INFO-   get_symbols返回 5208 条记录
+20260410 17:21:41- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 17:21:41- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:41- INFO-   history批量返回 10413 条记录
+20260410 17:21:41- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:42- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 17:21:42- INFO-   步骤4: 合并数据...
+20260410 17:21:42- INFO-   数据合并完成,最终返回 10413 条记录, 18 个字段
+20260410 17:21:42- INFO- ✓ 2025-04-07 数据获取成功: 10413 条
+20260410 17:21:42- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 17:21:42- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:43- INFO-   get_symbols返回 5209 条记录
+20260410 17:21:43- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 17:21:43- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:43- INFO-   history批量返回 10418 条记录
+20260410 17:21:43- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:43- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 17:21:43- INFO-   步骤4: 合并数据...
+20260410 17:21:43- INFO-   数据合并完成,最终返回 10418 条记录, 18 个字段
+20260410 17:21:43- INFO- ✓ 2025-04-08 数据获取成功: 10418 条
+20260410 17:21:44- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 17:21:44- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:45- INFO-   get_symbols返回 5212 条记录
+20260410 17:21:45- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 17:21:45- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:45- INFO-   history批量返回 10423 条记录
+20260410 17:21:45- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:45- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 17:21:45- INFO-   步骤4: 合并数据...
+20260410 17:21:45- INFO-   数据合并完成,最终返回 10423 条记录, 18 个字段
+20260410 17:21:45- INFO- ✓ 2025-04-09 数据获取成功: 10423 条
+20260410 17:21:46- INFO- 批量获取完成,共 31259 条记录
+20260410 17:21:46- INFO- 准备获取 3 个交易日的数据: 2026-04-08 至 2026-04-10
+20260410 17:21:46- INFO- 开始获取 2026-04-08 的掘金全市场数据...
+20260410 17:21:46- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:46- INFO-   get_symbols返回 5264 条记录
+20260410 17:21:46- INFO-   过滤后剩余 5264 只股票(已剔除未上市/已退市)
+20260410 17:21:46- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:47- INFO-   history批量返回 10528 条记录
+20260410 17:21:47- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:47- INFO-   stk_get_daily_mktvalue_pt返回 5264 条记录
+20260410 17:21:47- INFO-   步骤4: 合并数据...
+20260410 17:21:47- INFO-   数据合并完成,最终返回 10528 条记录, 18 个字段
+20260410 17:21:47- INFO- ✓ 2026-04-08 数据获取成功: 10528 条
+20260410 17:21:47- INFO- 开始获取 2026-04-09 的掘金全市场数据...
+20260410 17:21:47- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:48- INFO-   get_symbols返回 5265 条记录
+20260410 17:21:48- INFO-   过滤后剩余 5265 只股票(已剔除未上市/已退市)
+20260410 17:21:48- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:48- INFO-   history批量返回 5265 条记录
+20260410 17:21:48- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:48- INFO-   stk_get_daily_mktvalue_pt返回 5265 条记录
+20260410 17:21:48- INFO-   步骤4: 合并数据...
+20260410 17:21:48- INFO-   数据合并完成,最终返回 5265 条记录, 18 个字段
+20260410 17:21:48- INFO- ✓ 2026-04-09 数据获取成功: 5265 条
+20260410 17:21:49- INFO- 开始获取 2026-04-10 的掘金全市场数据...
+20260410 17:21:49- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:21:49- INFO-   get_symbols返回 5268 条记录
+20260410 17:21:49- INFO-   过滤后剩余 5268 只股票(已剔除未上市/已退市)
+20260410 17:21:49- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:21:49- WARNING-   history返回空数据
+20260410 17:21:49- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:21:50- INFO-   stk_get_daily_mktvalue_pt返回 5268 条记录
+20260410 17:21:50- INFO-   步骤4: 合并数据...
+20260410 17:21:50- INFO-   数据合并完成,最终返回 5268 条记录, 12 个字段
+20260410 17:21:50- INFO- ✓ 2026-04-10 数据获取成功: 5268 条
+20260410 17:21:50- INFO- 批量获取完成,共 15797 条记录
+20260410 17:24:37- INFO- 准备获取 7 个交易日的数据: 2025-04-01 至 2025-04-09
+20260410 17:24:37- INFO- 开始获取 2025-04-01 的掘金全市场数据...
+20260410 17:24:37- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:38- INFO-   get_symbols返回 5209 条记录
+20260410 17:24:38- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 17:24:38- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:38- INFO-   history批量返回 10416 条记录
+20260410 17:24:38- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:39- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 17:24:39- INFO-   步骤4: 合并数据...
+20260410 17:24:39- INFO-   数据合并完成,最终返回 10416 条记录, 18 个字段
+20260410 17:24:39- INFO- ✓ 2025-04-01 数据获取成功: 10416 条
+20260410 17:24:39- INFO- 开始获取 2025-04-02 的掘金全市场数据...
+20260410 17:24:39- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:40- INFO-   get_symbols返回 5211 条记录
+20260410 17:24:40- INFO-   过滤后剩余 5211 只股票(已剔除未上市/已退市)
+20260410 17:24:40- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:40- INFO-   history批量返回 10421 条记录
+20260410 17:24:40- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:41- INFO-   stk_get_daily_mktvalue_pt返回 5211 条记录
+20260410 17:24:41- INFO-   步骤4: 合并数据...
+20260410 17:24:41- INFO-   数据合并完成,最终返回 10421 条记录, 18 个字段
+20260410 17:24:41- INFO- ✓ 2025-04-02 数据获取成功: 10421 条
+20260410 17:24:41- INFO- 开始获取 2025-04-03 的掘金全市场数据...
+20260410 17:24:41- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:42- INFO-   get_symbols返回 5210 条记录
+20260410 17:24:42- INFO-   过滤后剩余 5210 只股票(已剔除未上市/已退市)
+20260410 17:24:42- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:42- INFO-   history批量返回 5210 条记录
+20260410 17:24:42- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:43- INFO-   stk_get_daily_mktvalue_pt返回 5210 条记录
+20260410 17:24:43- INFO-   步骤4: 合并数据...
+20260410 17:24:43- INFO-   数据合并完成,最终返回 5210 条记录, 18 个字段
+20260410 17:24:43- INFO- ✓ 2025-04-03 数据获取成功: 5210 条
+20260410 17:24:43- INFO- 开始获取 2025-04-04 的掘金全市场数据...
+20260410 17:24:43- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:43- WARNING- 2025-04-04 get_symbols返回空数据
+20260410 17:24:43- WARNING- ✗ 2025-04-04 无数据
+20260410 17:24:44- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 17:24:44- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:45- INFO-   get_symbols返回 5208 条记录
+20260410 17:24:45- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 17:24:45- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:45- INFO-   history批量返回 10413 条记录
+20260410 17:24:45- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:45- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 17:24:45- INFO-   步骤4: 合并数据...
+20260410 17:24:45- INFO-   数据合并完成,最终返回 10413 条记录, 18 个字段
+20260410 17:24:45- INFO- ✓ 2025-04-07 数据获取成功: 10413 条
+20260410 17:24:46- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 17:24:46- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:46- INFO-   get_symbols返回 5209 条记录
+20260410 17:24:46- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 17:24:46- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:47- INFO-   history批量返回 10418 条记录
+20260410 17:24:47- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:47- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 17:24:47- INFO-   步骤4: 合并数据...
+20260410 17:24:47- INFO-   数据合并完成,最终返回 10418 条记录, 18 个字段
+20260410 17:24:47- INFO- ✓ 2025-04-08 数据获取成功: 10418 条
+20260410 17:24:48- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 17:24:48- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:48- INFO-   get_symbols返回 5212 条记录
+20260410 17:24:48- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 17:24:48- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:49- INFO-   history批量返回 10423 条记录
+20260410 17:24:49- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:49- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 17:24:49- INFO-   步骤4: 合并数据...
+20260410 17:24:49- INFO-   数据合并完成,最终返回 10423 条记录, 18 个字段
+20260410 17:24:49- INFO- ✓ 2025-04-09 数据获取成功: 10423 条
+20260410 17:24:49- INFO- 批量获取完成,共 31259 条记录
+20260410 17:24:49- INFO- 准备获取 3 个交易日的数据: 2026-04-08 至 2026-04-10
+20260410 17:24:49- INFO- 开始获取 2026-04-08 的掘金全市场数据...
+20260410 17:24:49- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:50- INFO-   get_symbols返回 5264 条记录
+20260410 17:24:50- INFO-   过滤后剩余 5264 只股票(已剔除未上市/已退市)
+20260410 17:24:50- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:50- INFO-   history批量返回 10528 条记录
+20260410 17:24:50- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:51- INFO-   stk_get_daily_mktvalue_pt返回 5264 条记录
+20260410 17:24:51- INFO-   步骤4: 合并数据...
+20260410 17:24:51- INFO-   数据合并完成,最终返回 10528 条记录, 18 个字段
+20260410 17:24:51- INFO- ✓ 2026-04-08 数据获取成功: 10528 条
+20260410 17:24:51- INFO- 开始获取 2026-04-09 的掘金全市场数据...
+20260410 17:24:51- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:52- INFO-   get_symbols返回 5265 条记录
+20260410 17:24:52- INFO-   过滤后剩余 5265 只股票(已剔除未上市/已退市)
+20260410 17:24:52- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:52- INFO-   history批量返回 5265 条记录
+20260410 17:24:52- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:52- INFO-   stk_get_daily_mktvalue_pt返回 5265 条记录
+20260410 17:24:52- INFO-   步骤4: 合并数据...
+20260410 17:24:52- INFO-   数据合并完成,最终返回 5265 条记录, 18 个字段
+20260410 17:24:52- INFO- ✓ 2026-04-09 数据获取成功: 5265 条
+20260410 17:24:53- INFO- 开始获取 2026-04-10 的掘金全市场数据...
+20260410 17:24:53- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 17:24:53- INFO-   get_symbols返回 5268 条记录
+20260410 17:24:53- INFO-   过滤后剩余 5268 只股票(已剔除未上市/已退市)
+20260410 17:24:53- INFO-   步骤2: 调用history批量获取数据...
+20260410 17:24:53- WARNING-   history返回空数据
+20260410 17:24:53- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 17:24:54- INFO-   stk_get_daily_mktvalue_pt返回 5268 条记录
+20260410 17:24:54- INFO-   步骤4: 合并数据...
+20260410 17:24:54- INFO-   数据合并完成,最终返回 5268 条记录, 12 个字段
+20260410 17:24:54- INFO- ✓ 2026-04-10 数据获取成功: 5268 条
+20260410 17:24:54- INFO- 批量获取完成,共 15797 条记录
+20260410 18:09:28- INFO- 准备获取 7 个交易日的数据: 2025-04-01 至 2025-04-09
+20260410 18:09:28- INFO- 开始获取 2025-04-01 的掘金全市场数据...
+20260410 18:09:28- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:29- INFO-   get_symbols返回 5209 条记录
+20260410 18:09:29- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 18:09:29- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:30- INFO-   history批量返回 5208 条记录
+20260410 18:09:30- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:30- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 18:09:30- INFO-   步骤4: 合并数据...
+20260410 18:09:30- INFO-   数据合并完成,最终返回 5209 条记录, 18 个字段
+20260410 18:09:30- INFO- ✓ 2025-04-01 数据获取成功: 5209 条
+20260410 18:09:31- INFO- 开始获取 2025-04-02 的掘金全市场数据...
+20260410 18:09:31- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:32- INFO-   get_symbols返回 5211 条记录
+20260410 18:09:32- INFO-   过滤后剩余 5211 只股票(已剔除未上市/已退市)
+20260410 18:09:32- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:32- INFO-   history批量返回 5211 条记录
+20260410 18:09:32- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:32- INFO-   stk_get_daily_mktvalue_pt返回 5211 条记录
+20260410 18:09:32- INFO-   步骤4: 合并数据...
+20260410 18:09:32- INFO-   数据合并完成,最终返回 5211 条记录, 18 个字段
+20260410 18:09:32- INFO- ✓ 2025-04-02 数据获取成功: 5211 条
+20260410 18:09:33- INFO- 开始获取 2025-04-03 的掘金全市场数据...
+20260410 18:09:33- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:34- INFO-   get_symbols返回 5210 条记录
+20260410 18:09:34- INFO-   过滤后剩余 5210 只股票(已剔除未上市/已退市)
+20260410 18:09:34- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:34- INFO-   history批量返回 5210 条记录
+20260410 18:09:34- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:34- INFO-   stk_get_daily_mktvalue_pt返回 5210 条记录
+20260410 18:09:34- INFO-   步骤4: 合并数据...
+20260410 18:09:34- INFO-   数据合并完成,最终返回 5210 条记录, 18 个字段
+20260410 18:09:34- INFO- ✓ 2025-04-03 数据获取成功: 5210 条
+20260410 18:09:35- INFO- 开始获取 2025-04-04 的掘金全市场数据...
+20260410 18:09:35- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:35- WARNING- 2025-04-04 get_symbols返回空数据
+20260410 18:09:35- WARNING- ✗ 2025-04-04 无数据
+20260410 18:09:36- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 18:09:36- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:36- INFO-   get_symbols返回 5208 条记录
+20260410 18:09:36- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 18:09:36- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:36- INFO-   history批量返回 5208 条记录
+20260410 18:09:36- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:37- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 18:09:37- INFO-   步骤4: 合并数据...
+20260410 18:09:37- INFO-   数据合并完成,最终返回 5208 条记录, 18 个字段
+20260410 18:09:37- INFO- ✓ 2025-04-07 数据获取成功: 5208 条
+20260410 18:09:37- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 18:09:37- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:38- INFO-   get_symbols返回 5209 条记录
+20260410 18:09:38- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 18:09:38- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:38- INFO-   history批量返回 5209 条记录
+20260410 18:09:38- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:39- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 18:09:39- INFO-   步骤4: 合并数据...
+20260410 18:09:39- INFO-   数据合并完成,最终返回 5209 条记录, 18 个字段
+20260410 18:09:39- INFO- ✓ 2025-04-08 数据获取成功: 5209 条
+20260410 18:09:39- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 18:09:39- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:40- INFO-   get_symbols返回 5212 条记录
+20260410 18:09:40- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 18:09:40- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:40- INFO-   history批量返回 5212 条记录
+20260410 18:09:40- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:41- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 18:09:41- INFO-   步骤4: 合并数据...
+20260410 18:09:41- INFO-   数据合并完成,最终返回 5212 条记录, 18 个字段
+20260410 18:09:41- INFO- ✓ 2025-04-09 数据获取成功: 5212 条
+20260410 18:09:41- INFO- 批量获取完成,共 31259 条记录
+20260410 18:09:41- INFO- 准备获取 3 个交易日的数据: 2026-04-08 至 2026-04-10
+20260410 18:09:41- INFO- 开始获取 2026-04-08 的掘金全市场数据...
+20260410 18:09:41- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:42- INFO-   get_symbols返回 5264 条记录
+20260410 18:09:42- INFO-   过滤后剩余 5264 只股票(已剔除未上市/已退市)
+20260410 18:09:42- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:42- INFO-   history批量返回 5264 条记录
+20260410 18:09:42- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:43- INFO-   stk_get_daily_mktvalue_pt返回 5264 条记录
+20260410 18:09:43- INFO-   步骤4: 合并数据...
+20260410 18:09:43- INFO-   数据合并完成,最终返回 5264 条记录, 18 个字段
+20260410 18:09:43- INFO- ✓ 2026-04-08 数据获取成功: 5264 条
+20260410 18:09:43- INFO- 开始获取 2026-04-09 的掘金全市场数据...
+20260410 18:09:43- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:44- INFO-   get_symbols返回 5265 条记录
+20260410 18:09:44- INFO-   过滤后剩余 5265 只股票(已剔除未上市/已退市)
+20260410 18:09:44- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:44- INFO-   history批量返回 5265 条记录
+20260410 18:09:44- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:44- INFO-   stk_get_daily_mktvalue_pt返回 5265 条记录
+20260410 18:09:44- INFO-   步骤4: 合并数据...
+20260410 18:09:44- INFO-   数据合并完成,最终返回 5265 条记录, 18 个字段
+20260410 18:09:44- INFO- ✓ 2026-04-09 数据获取成功: 5265 条
+20260410 18:09:45- INFO- 开始获取 2026-04-10 的掘金全市场数据...
+20260410 18:09:45- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:09:45- INFO-   get_symbols返回 5268 条记录
+20260410 18:09:45- INFO-   过滤后剩余 5268 只股票(已剔除未上市/已退市)
+20260410 18:09:45- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:09:45- INFO-   history批量返回 5268 条记录
+20260410 18:09:45- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:09:46- INFO-   stk_get_daily_mktvalue_pt返回 5268 条记录
+20260410 18:09:46- INFO-   步骤4: 合并数据...
+20260410 18:09:46- INFO-   数据合并完成,最终返回 5268 条记录, 18 个字段
+20260410 18:09:46- INFO- ✓ 2026-04-10 数据获取成功: 5268 条
+20260410 18:09:46- INFO- 批量获取完成,共 15797 条记录
+20260410 18:11:19- INFO- 准备获取 7 个交易日的数据: 2025-04-01 至 2025-04-09
+20260410 18:11:19- INFO- 开始获取 2025-04-01 的掘金全市场数据...
+20260410 18:11:19- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:11:22- INFO-   get_symbols返回 5209 条记录
+20260410 18:11:22- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 18:11:22- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:11:22- INFO-   history批量返回 5208 条记录
+20260410 18:11:22- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:11:23- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 18:11:23- INFO-   步骤4: 合并数据...
+20260410 18:11:23- INFO-   数据合并完成,最终返回 5209 条记录, 18 个字段
+20260410 18:11:23- INFO- ✓ 2025-04-01 数据获取成功: 5209 条
+20260410 18:11:23- INFO- 开始获取 2025-04-02 的掘金全市场数据...
+20260410 18:11:23- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:11:26- INFO-   get_symbols返回 5211 条记录
+20260410 18:11:26- INFO-   过滤后剩余 5211 只股票(已剔除未上市/已退市)
+20260410 18:11:26- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:11:26- INFO-   history批量返回 5211 条记录
+20260410 18:11:26- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:11:26- INFO-   stk_get_daily_mktvalue_pt返回 5211 条记录
+20260410 18:11:26- INFO-   步骤4: 合并数据...
+20260410 18:11:27- INFO-   数据合并完成,最终返回 5211 条记录, 18 个字段
+20260410 18:11:27- INFO- ✓ 2025-04-02 数据获取成功: 5211 条
+20260410 18:11:27- INFO- 开始获取 2025-04-03 的掘金全市场数据...
+20260410 18:11:27- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:11:31- INFO-   get_symbols返回 5210 条记录
+20260410 18:11:31- INFO-   过滤后剩余 5210 只股票(已剔除未上市/已退市)
+20260410 18:11:31- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:11:31- INFO-   history批量返回 5210 条记录
+20260410 18:11:31- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:11:32- INFO-   stk_get_daily_mktvalue_pt返回 5210 条记录
+20260410 18:11:32- INFO-   步骤4: 合并数据...
+20260410 18:11:32- INFO-   数据合并完成,最终返回 5210 条记录, 18 个字段
+20260410 18:11:32- INFO- ✓ 2025-04-03 数据获取成功: 5210 条
+20260410 18:11:32- INFO- 开始获取 2025-04-04 的掘金全市场数据...
+20260410 18:11:32- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:11:32- WARNING- 2025-04-04 get_symbols返回空数据
+20260410 18:11:32- WARNING- ✗ 2025-04-04 无数据
+20260410 18:11:33- INFO- 开始获取 2025-04-07 的掘金全市场数据...
+20260410 18:11:33- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:11:34- INFO-   get_symbols返回 5208 条记录
+20260410 18:11:34- INFO-   过滤后剩余 5208 只股票(已剔除未上市/已退市)
+20260410 18:11:34- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:11:34- INFO-   history批量返回 5208 条记录
+20260410 18:11:34- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:11:35- INFO-   stk_get_daily_mktvalue_pt返回 5208 条记录
+20260410 18:11:35- INFO-   步骤4: 合并数据...
+20260410 18:11:35- INFO-   数据合并完成,最终返回 5208 条记录, 18 个字段
+20260410 18:11:35- INFO- ✓ 2025-04-07 数据获取成功: 5208 条
+20260410 18:11:35- INFO- 开始获取 2025-04-08 的掘金全市场数据...
+20260410 18:11:35- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:11:36- INFO-   get_symbols返回 5209 条记录
+20260410 18:11:36- INFO-   过滤后剩余 5209 只股票(已剔除未上市/已退市)
+20260410 18:11:36- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:11:36- INFO-   history批量返回 5209 条记录
+20260410 18:11:36- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:11:37- INFO-   stk_get_daily_mktvalue_pt返回 5209 条记录
+20260410 18:11:37- INFO-   步骤4: 合并数据...
+20260410 18:11:37- INFO-   数据合并完成,最终返回 5209 条记录, 18 个字段
+20260410 18:11:37- INFO- ✓ 2025-04-08 数据获取成功: 5209 条
+20260410 18:11:37- INFO- 开始获取 2025-04-09 的掘金全市场数据...
+20260410 18:11:37- INFO-   步骤1: 调用get_symbols获取基础信息...
+20260410 18:11:38- INFO-   get_symbols返回 5212 条记录
+20260410 18:11:38- INFO-   过滤后剩余 5212 只股票(已剔除未上市/已退市)
+20260410 18:11:38- INFO-   步骤2: 调用history批量获取数据...
+20260410 18:11:39- INFO-   history批量返回 5212 条记录
+20260410 18:11:39- INFO-   步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...
+20260410 18:11:39- INFO-   stk_get_daily_mktvalue_pt返回 5212 条记录
+20260410 18:11:39- INFO-   步骤4: 合并数据...
+20260410 18:11:39- INFO-   数据合并完成,最终返回 5212 条记录, 18 个字段
+20260410 18:11:39- INFO- ✓ 2025-04-09 数据获取成功: 5212 条
+20260410 18:11:39- INFO- 批量获取完成,共 31259 条记录
+20260413 09:27:05- INFO- 将2507只股票分成13多线程批处理
+20260413 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600968', 'SHSE.600969', 'SHSE.600970']...(共200只)
+20260413 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260413 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600651', 'SHSE.600653', 'SHSE.600654']...(共200只)
+20260413 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600338', 'SHSE.600339', 'SHSE.600340']...(共200只)
+20260413 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.603000', 'SHSE.603001', 'SHSE.603002']...(共200只)
+20260413 09:27:17- INFO- 完成批次处理，股票代码: ['SHSE.603322', 'SHSE.603323', 'SHSE.603324']...(共200只)
+20260413 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.000812', 'SZSE.000813', 'SZSE.000815']...(共200只)
+20260413 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.000060', 'SZSE.000061', 'SZSE.000062']...(共200只)
+20260413 09:27:18- INFO- 完成批次处理，股票代码: ['SHSE.603868', 'SHSE.603871', 'SHSE.603876']...(共200只)
+20260413 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.002059', 'SZSE.002060', 'SZSE.002061']...(共200只)
+20260413 09:27:20- INFO- 完成批次处理，股票代码: ['SZSE.002882', 'SZSE.002884', 'SZSE.002885']...(共107只)
+20260413 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.002561', 'SZSE.002562', 'SZSE.002563']...(共200只)
+20260413 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.002304', 'SZSE.002307', 'SZSE.002309']...(共200只)
+20260413 09:27:21- INFO- 所有批次处理完成，共合并82620条记录
+20260414 09:27:03- INFO- 将2513只股票分成13多线程批处理
+20260414 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600338', 'SHSE.600339', 'SHSE.600340']...(共200只)
+20260414 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600967', 'SHSE.600968', 'SHSE.600969']...(共200只)
+20260414 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.601997', 'SHSE.601999', 'SHSE.603000']...(共200只)
+20260414 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260414 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600650', 'SHSE.600651', 'SHSE.600653']...(共200只)
+20260414 09:27:15- INFO- 完成批次处理，股票代码: ['SHSE.603861', 'SHSE.603863', 'SHSE.603866']...(共200只)
+20260414 09:27:15- INFO- 完成批次处理，股票代码: ['SHSE.603319', 'SHSE.603320', 'SHSE.603322']...(共200只)
+20260414 09:27:15- INFO- 完成批次处理，股票代码: ['SZSE.000058', 'SZSE.000059', 'SZSE.000060']...(共200只)
+20260414 09:27:15- INFO- 完成批次处理，股票代码: ['SZSE.002051', 'SZSE.002052', 'SZSE.002053']...(共200只)
+20260414 09:27:15- INFO- 完成批次处理，股票代码: ['SZSE.000799', 'SZSE.000800', 'SZSE.000801']...(共200只)
+20260414 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002870', 'SZSE.002875', 'SZSE.002876']...(共113只)
+20260414 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.002554', 'SZSE.002555', 'SZSE.002556']...(共200只)
+20260414 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.002298', 'SZSE.002299', 'SZSE.002300']...(共200只)
+20260414 09:27:18- INFO- 所有批次处理完成，共合并85316条记录
+20260415 09:27:03- INFO- 将2515只股票分成13多线程批处理
+20260415 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600968', 'SHSE.600969', 'SHSE.600970']...(共200只)
+20260415 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600338', 'SHSE.600339', 'SHSE.600340']...(共200只)
+20260415 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.601999', 'SHSE.603000', 'SHSE.603001']...(共200只)
+20260415 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260415 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600650', 'SHSE.600651', 'SHSE.600653']...(共200只)
+20260415 09:27:15- INFO- 完成批次处理，股票代码: ['SHSE.603320', 'SHSE.603322', 'SHSE.603323']...(共200只)
+20260415 09:27:16- INFO- 完成批次处理，股票代码: ['SHSE.603863', 'SHSE.603866', 'SHSE.603867']...(共200只)
+20260415 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.000050', 'SZSE.000058', 'SZSE.000059']...(共200只)
+20260415 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.000799', 'SZSE.000800', 'SZSE.000801']...(共200只)
+20260415 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002048', 'SZSE.002049', 'SZSE.002051']...(共200只)
+20260415 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002867', 'SZSE.002869', 'SZSE.002870']...(共115只)
+20260415 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002296', 'SZSE.002297', 'SZSE.002298']...(共200只)
+20260415 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002552', 'SZSE.002553', 'SZSE.002554']...(共200只)
+20260415 09:27:19- INFO- 所有批次处理完成，共合并87907条记录
+20260416 09:27:03- INFO- 将2503只股票分成13多线程批处理
+20260416 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600653', 'SHSE.600654', 'SHSE.600655']...(共200只)
+20260416 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.603002', 'SHSE.603005', 'SHSE.603006']...(共200只)
+20260416 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260416 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600340', 'SHSE.600343', 'SHSE.600345']...(共200只)
+20260416 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600971', 'SHSE.600973', 'SHSE.600975']...(共200只)
+20260416 09:27:17- INFO- 完成批次处理，股票代码: ['SHSE.603868', 'SHSE.603871', 'SHSE.603876']...(共200只)
+20260416 14:44:19- INFO- 完成批次处理，股票代码: ['SHSE.603324', 'SHSE.603327', 'SHSE.603328']...(共200只)
+20260416 14:44:19- INFO- 完成批次处理，股票代码: ['SZSE.002061', 'SZSE.002062', 'SZSE.002063']...(共200只)
+20260416 14:44:19- INFO- 完成批次处理，股票代码: ['SZSE.000816', 'SZSE.000818', 'SZSE.000819']...(共200只)
+20260416 14:44:19- INFO- 完成批次处理，股票代码: ['SZSE.000061', 'SZSE.000062', 'SZSE.000065']...(共200只)
+20260416 14:44:19- INFO- 完成批次处理，股票代码: ['SZSE.002889', 'SZSE.002891', 'SZSE.002892']...(共103只)
+20260416 14:44:19- INFO- 完成批次处理，股票代码: ['SZSE.002564', 'SZSE.002565', 'SZSE.002567']...(共200只)
+20260416 14:44:19- INFO- 完成批次处理，股票代码: ['SZSE.002309', 'SZSE.002310', 'SZSE.002311']...(共200只)
+20260416 14:44:19- INFO- 所有批次处理完成，共合并87489条记录
+20260416 14:44:22- INFO- 将2503只股票分成13多线程批处理
+20260416 14:44:35- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260416 14:44:36- INFO- 完成批次处理，股票代码: ['SHSE.600340', 'SHSE.600343', 'SHSE.600345']...(共200只)
+20260416 14:44:36- INFO- 完成批次处理，股票代码: ['SHSE.600653', 'SHSE.600654', 'SHSE.600655']...(共200只)
+20260416 14:44:36- INFO- 完成批次处理，股票代码: ['SHSE.600971', 'SHSE.600973', 'SHSE.600975']...(共200只)
+20260416 14:44:36- INFO- 完成批次处理，股票代码: ['SHSE.603002', 'SHSE.603005', 'SHSE.603006']...(共200只)
+20260416 14:44:48- INFO- 完成批次处理，股票代码: ['SHSE.603868', 'SHSE.603871', 'SHSE.603876']...(共200只)
+20260416 14:44:48- INFO- 完成批次处理，股票代码: ['SHSE.603324', 'SHSE.603327', 'SHSE.603328']...(共200只)
+20260416 14:44:48- INFO- 完成批次处理，股票代码: ['SZSE.000061', 'SZSE.000062', 'SZSE.000065']...(共200只)
+20260416 14:44:49- INFO- 完成批次处理，股票代码: ['SZSE.000816', 'SZSE.000818', 'SZSE.000819']...(共200只)
+20260416 14:44:50- INFO- 完成批次处理，股票代码: ['SZSE.002061', 'SZSE.002062', 'SZSE.002063']...(共200只)
+20260416 14:44:53- INFO- 完成批次处理，股票代码: ['SZSE.002889', 'SZSE.002891', 'SZSE.002892']...(共103只)
+20260416 14:44:55- INFO- 完成批次处理，股票代码: ['SZSE.002564', 'SZSE.002565', 'SZSE.002567']...(共200只)
+20260416 14:44:55- INFO- 完成批次处理，股票代码: ['SZSE.002309', 'SZSE.002310', 'SZSE.002311']...(共200只)
+20260416 14:44:55- INFO- 所有批次处理完成，共合并87489条记录
+20260417 09:27:07- INFO- 将2517只股票分成13多线程批处理
+20260417 09:27:14- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260417 09:27:14- INFO- 完成批次处理，股票代码: ['SHSE.600339', 'SHSE.600340', 'SHSE.600343']...(共200只)
+20260417 09:27:14- INFO- 完成批次处理，股票代码: ['SHSE.600649', 'SHSE.600650', 'SHSE.600651']...(共200只)
+20260417 09:27:14- INFO- 完成批次处理，股票代码: ['SHSE.600968', 'SHSE.600969', 'SHSE.600970']...(共200只)
+20260417 09:27:14- INFO- 完成批次处理，股票代码: ['SHSE.601999', 'SHSE.603000', 'SHSE.603001']...(共200只)
+20260417 09:27:20- INFO- 完成批次处理，股票代码: ['SHSE.603319', 'SHSE.603320', 'SHSE.603322']...(共200只)
+20260417 09:27:20- INFO- 完成批次处理，股票代码: ['SZSE.000049', 'SZSE.000050', 'SZSE.000058']...(共200只)
+20260417 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.002046', 'SZSE.002048', 'SZSE.002049']...(共200只)
+20260417 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.000798', 'SZSE.000799', 'SZSE.000800']...(共200只)
+20260417 09:27:21- INFO- 完成批次处理，股票代码: ['SHSE.603861', 'SHSE.603863', 'SHSE.603866']...(共200只)
+20260417 09:27:23- INFO- 完成批次处理，股票代码: ['SZSE.002865', 'SZSE.002866', 'SZSE.002867']...(共117只)
+20260417 09:27:24- INFO- 完成批次处理，股票代码: ['SZSE.002552', 'SZSE.002553', 'SZSE.002554']...(共200只)
+20260417 09:27:24- INFO- 完成批次处理，股票代码: ['SZSE.002294', 'SZSE.002296', 'SZSE.002297']...(共200只)
+20260417 09:27:24- INFO- 所有批次处理完成，共合并87983条记录
+20260420 09:27:03- INFO- 将2507只股票分成13多线程批处理
+20260420 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600654', 'SHSE.600655', 'SHSE.600657']...(共200只)
+20260420 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600973', 'SHSE.600975', 'SHSE.600976']...(共200只)
+20260420 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260420 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600343', 'SHSE.600345', 'SHSE.600348']...(共200只)
+20260420 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.603005', 'SHSE.603006', 'SHSE.603008']...(共200只)
+20260420 09:27:19- INFO- 完成批次处理，股票代码: ['SHSE.603324', 'SHSE.603327', 'SHSE.603328']...(共200只)
+20260420 09:27:21- INFO- 完成批次处理，股票代码: ['SHSE.603871', 'SHSE.603876', 'SHSE.603877']...(共200只)
+20260420 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.002060', 'SZSE.002061', 'SZSE.002062']...(共200只)
+20260420 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.000815', 'SZSE.000816', 'SZSE.000818']...(共200只)
+20260420 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.000065', 'SZSE.000066', 'SZSE.000068']...(共200只)
+20260420 09:27:23- INFO- 完成批次处理，股票代码: ['SZSE.002884', 'SZSE.002885', 'SZSE.002886']...(共107只)
+20260420 09:27:24- INFO- 完成批次处理，股票代码: ['SZSE.002307', 'SZSE.002309', 'SZSE.002310']...(共200只)
+20260420 09:27:24- INFO- 完成批次处理，股票代码: ['SZSE.002563', 'SZSE.002564', 'SZSE.002565']...(共200只)
+20260420 09:27:24- INFO- 所有批次处理完成，共合并85124条记录
+20260421 09:27:03- INFO- 将2511只股票分成13多线程批处理
+20260421 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600655', 'SHSE.600657', 'SHSE.600658']...(共200只)
+20260421 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260421 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600975', 'SHSE.600976', 'SHSE.600977']...(共200只)
+20260421 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600343', 'SHSE.600345', 'SHSE.600348']...(共200只)
+20260421 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.603008', 'SHSE.603009', 'SHSE.603010']...(共200只)
+20260421 09:27:21- INFO- 完成批次处理，股票代码: ['SHSE.603876', 'SHSE.603877', 'SHSE.603878']...(共200只)
+20260421 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.000066', 'SZSE.000068', 'SZSE.000069']...(共200只)
+20260421 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.000811', 'SZSE.000813', 'SZSE.000815']...(共200只)
+20260421 09:27:21- INFO- 完成批次处理，股票代码: ['SHSE.603331', 'SHSE.603332', 'SHSE.603333']...(共200只)
+20260421 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.002056', 'SZSE.002057', 'SZSE.002059']...(共200只)
+20260421 09:27:24- INFO- 完成批次处理，股票代码: ['SZSE.002879', 'SZSE.002880', 'SZSE.002881']...(共111只)
+20260421 09:27:25- INFO- 完成批次处理，股票代码: ['SZSE.002560', 'SZSE.002561', 'SZSE.002562']...(共200只)
+20260421 09:27:25- INFO- 完成批次处理，股票代码: ['SZSE.002302', 'SZSE.002303', 'SZSE.002304']...(共200只)
+20260421 09:27:25- INFO- 所有批次处理完成，共合并87769条记录
+20260422 09:27:03- INFO- 将2512只股票分成13多线程批处理
+20260422 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260422 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600653', 'SHSE.600654', 'SHSE.600655']...(共200只)
+20260422 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.603005', 'SHSE.603006', 'SHSE.603007']...(共200只)
+20260422 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600340', 'SHSE.600343', 'SHSE.600345']...(共200只)
+20260422 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600973', 'SHSE.600975', 'SHSE.600976']...(共200只)
+20260422 09:27:17- INFO- 完成批次处理，股票代码: ['SHSE.603866', 'SHSE.603867', 'SHSE.603868']...(共200只)
+20260422 09:27:17- INFO- 完成批次处理，股票代码: ['SHSE.603324', 'SHSE.603327', 'SHSE.603328']...(共200只)
+20260422 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.002054', 'SZSE.002056', 'SZSE.002057']...(共200只)
+20260422 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.000060', 'SZSE.000061', 'SZSE.000062']...(共200只)
+20260422 09:27:17- INFO- 完成批次处理，股票代码: ['SZSE.000803', 'SZSE.000810', 'SZSE.000811']...(共200只)
+20260422 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002875', 'SZSE.002876', 'SZSE.002878']...(共112只)
+20260422 09:27:20- INFO- 完成批次处理，股票代码: ['SZSE.002559', 'SZSE.002560', 'SZSE.002561']...(共200只)
+20260422 09:27:20- INFO- 完成批次处理，股票代码: ['SZSE.002301', 'SZSE.002302', 'SZSE.002303']...(共200只)
+20260422 09:27:20- INFO- 所有批次处理完成，共合并87804条记录
+20260423 09:27:03- INFO- 将2505只股票分成13多线程批处理
+20260423 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260423 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600657', 'SHSE.600658', 'SHSE.600662']...(共200只)
+20260423 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.603009', 'SHSE.603010', 'SHSE.603011']...(共200只)
+20260423 09:27:09- INFO- 完成批次处理，股票代码: ['SHSE.600977', 'SHSE.600979', 'SHSE.600980']...(共200只)
+20260423 09:27:10- INFO- 完成批次处理，股票代码: ['SHSE.600345', 'SHSE.600348', 'SHSE.600350']...(共200只)
+20260423 09:27:16- INFO- 完成批次处理，股票代码: ['SHSE.603332', 'SHSE.603333', 'SHSE.603335']...(共200只)
+20260423 09:27:16- INFO- 完成批次处理，股票代码: ['SHSE.603877', 'SHSE.603878', 'SHSE.603881']...(共200只)
+20260423 09:27:16- INFO- 完成批次处理，股票代码: ['SZSE.000069', 'SZSE.000070', 'SZSE.000078']...(共200只)
+20260423 09:27:16- INFO- 完成批次处理，股票代码: ['SZSE.000818', 'SZSE.000819', 'SZSE.000822']...(共200只)
+20260423 09:27:16- INFO- 完成批次处理，股票代码: ['SZSE.002061', 'SZSE.002062', 'SZSE.002063']...(共200只)
+20260423 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.002884', 'SZSE.002885', 'SZSE.002886']...(共105只)
+20260423 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002307', 'SZSE.002309', 'SZSE.002310']...(共200只)
+20260423 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002563', 'SZSE.002564', 'SZSE.002565']...(共200只)
+20260423 09:27:19- INFO- 所有批次处理完成，共合并87568条记录
+20260424 09:27:04- INFO- 将2496只股票分成13多线程批处理
+20260424 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600979', 'SHSE.600980', 'SHSE.600981']...(共200只)
+20260424 09:27:11- INFO- 完成批次处理，股票代码: ['SHSE.600655', 'SHSE.600657', 'SHSE.600658']...(共200只)
+20260424 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600004', 'SHSE.600006', 'SHSE.600007']...(共200只)
+20260424 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.600345', 'SHSE.600348', 'SHSE.600350']...(共200只)
+20260424 09:27:12- INFO- 完成批次处理，股票代码: ['SHSE.603010', 'SHSE.603011', 'SHSE.603012']...(共200只)
+20260424 09:27:18- INFO- 完成批次处理，股票代码: ['SHSE.603337', 'SHSE.603338', 'SHSE.603339']...(共200只)
+20260424 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.000089', 'SZSE.000090', 'SZSE.000096']...(共200只)
+20260424 09:27:18- INFO- 完成批次处理，股票代码: ['SHSE.603883', 'SHSE.603885', 'SHSE.603886']...(共200只)
+20260424 09:27:18- INFO- 完成批次处理，股票代码: ['SZSE.000825', 'SZSE.000828', 'SZSE.000829']...(共200只)
+20260424 09:27:19- INFO- 完成批次处理，股票代码: ['SZSE.002066', 'SZSE.002067', 'SZSE.002068']...(共200只)
+20260424 09:27:21- INFO- 完成批次处理，股票代码: ['SZSE.002901', 'SZSE.002902', 'SZSE.002903']...(共96只)
+20260424 09:27:22- INFO- 完成批次处理，股票代码: ['SZSE.002573', 'SZSE.002575', 'SZSE.002576']...(共200只)
+20260424 09:27:22- INFO- 完成批次处理，股票代码: ['SZSE.002314', 'SZSE.002315', 'SZSE.002317']...(共200只)
+20260424 09:27:22- INFO- 所有批次处理完成，共合并87258条记录

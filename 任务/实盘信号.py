@@ -1,12 +1,12 @@
 import sys
 sys.path.append("C://Users/20561/Desktop/策略") #C:\Users\20561\Desktop\策略\任务
 import pandas as pd
-from stock_api import *
+from my_utils.stock_api import *
 import numpy as np
 import datetime as dt
 from datetime import datetime,timedelta,time
 import polars as pl
-from mapping import *
+from my_utils.mapping import *
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # 统计涨停情况(分主板，创业板，科创板进行统计)
@@ -36,8 +36,8 @@ stocks_data['vwap']= stocks_data['amount']/stocks_data['volume']
 #stock_list = stock_list[0:1000]  # 只取前10只股票进行测试
 print(f"数据日期:{stocks_data['trading_date'].unique().min()} - {stocks_data['trading_date'].unique().max()}")
 
-#%% 
-from mapping import *
+#%%
+from my_utils.mapping import *
 
 def gm_add_auction(stock_data):
     """"
@@ -143,8 +143,8 @@ else:
     print("没有历史数据可添加最新行情")
 
 
-#%% 
-from pd_fun import *
+#%%
+from my_utils.pd_fun import *
 # 1. 先确保数据按股票代码和日期排序
 stocks_data = stocks_data.sort_values(['code', 'trading_date']).reset_index(drop=True)
 # 标记涨停状态：limit_status
@@ -227,7 +227,7 @@ for code in code_list:
 
 
 # 发送信号的邮件
-from email_fun import sendStringEmail,send_email
+from my_utils.email_fun import sendStringEmail,send_email
 sender = '2056123357@qq.com'
 user_list = ['2056123357@qq.com','1712167056@qq.com','1162690293@qq.com']
 subject = f"{today_str} 买入信号股票代码"

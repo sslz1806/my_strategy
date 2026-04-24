@@ -7,9 +7,9 @@ import pandas as pd
 import datetime
 import os
 import time
-from fun import *
-from mapping import *
-from stock_api import stock_api
+from my_utils.fun import *
+from my_utils.mapping import *
+from my_utils.stock_api import stock_api
 from functools import wraps, partial
 
 logging = get_logger(log_file='log/指数ETF板块数据更新.log', inherit=False)
@@ -95,7 +95,7 @@ def update_generic_data(
         extra_kwargs: 传递给fetch_func的额外参数字典
     """
     import datetime as dt
-    from fun import get_parquet_dir_schema
+    from my_utils.fun import get_parquet_dir_schema
 
     save_dir = os.path.join(DATA_ROOT_DIR, save_dir)
 

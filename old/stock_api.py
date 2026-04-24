@@ -92,7 +92,7 @@ def retry_with_timeout(max_retries=3, retry_interval=1, timeout=120):
 
 
 from fun import get_logger
-logging = get_logger(r'log\function_output.log',)
+logging = get_logger(log_file='log/function_output.log',)
 import builtins
 
 #%% 因子函数
@@ -602,6 +602,18 @@ class stock_api:
             return {'success': False, 'symbol': symbol, 'error': str(e)}
     
     #%% 使用掘金api
+    def get_A_stock_list(self, date,type=1010):
+        """获取所有标的信息,type代码:1010=股票,1020=基金,1030=债券,1040=期货,1050=期权,1060=指数,1070=板块"""
+        date = pd.to_datetime(date).strftime('%Y-%m-%d')
+        symbols = get_symbol_infos(
+            sec_type1=type,         # 股票大类
+            df=True
+        )
+        # 剔除当日退市,还没上市的股票
+        symbols = symbols[(symbols['delisted_date'] > date) & (symbols['listed_date'] <= date)]
+        return symbols
+
+
     # 获取多个股票的历史基础数据（行情+基本信息）
     def get_history_symbols(self,symbols, 
                                 start_date: str, 
@@ -965,6 +977,268 @@ class stock_api:
                     lambda group: group['pre_close'].fillna(group['close'].shift(1))
                 ).reset_index(level=0, drop=True)  # 取同一股票前一天的close
         return concat_data
+
+    def gm_get_daily_data(self, trade_date):
+        """
+        使用掘金API获取指定交易日的全市场股票数据
+
+        整合以下API:
+        - get_symbols: 获取股票基础信息(含OHLCV、涨跌停价、复权因子、ST标记等)
+        - history_n: 补充成交量、成交额、涨跌幅等
+        - stk_get_daily_mktvalue_pt: 获取市值数据
+
+        参数:
+            trade_date: 交易日期,格式'YYYY-MM-DD'
+
+        返回:
+            pd.DataFrame: 清洗后的全市场股票数据,包含以下字段:
+                - code: 股票代码
+                - name: 股票名称
+                - trading_date: 交易日期
+                - open/high/low/close: 开高低收
+                - pre_close: 昨收价
+                - volume: 成交量
+                - amount: 成交额
+                - pct: 涨跌幅
+                - limit_up/limit_down: 涨停跌停价
+                - is_st: 是否ST
+                - is_suspended: 是否停牌
+                - adj_factor: 复权因子
+                - turn_rate: 换手率
+                - total_mv: 总市值
+                - mv_A_free_float: 流通市值
+        """
+        import datetime
+
+        # 标准化日期格式
+        if isinstance(trade_date, datetime.datetime):
+            trade_date = trade_date.strftime('%Y-%m-%d')
+        elif isinstance(trade_date, datetime.date):
+            trade_date = trade_date.strftime('%Y-%m-%d')
+
+        logging.info(f"开始获取 {trade_date} 的掘金全市场数据...")
+
+        try:
+            # 1. 获取股票基础信息(含OHLCV、涨跌停价、复权因子、ST标记等)
+            logging.info(f"  步骤1: 调用get_symbols获取基础信息...")
+            symbols_df = get_symbols(
+                sec_type1=1010,      # 股票
+                skip_st=False,       # 包含ST股
+                trade_date=trade_date,
+                df=True
+            )
+
+            if symbols_df is None or symbols_df.empty:
+                logging.warning(f"{trade_date} get_symbols返回空数据")
+                return None
+
+            logging.info(f"  get_symbols返回 {len(symbols_df)} 条记录")
+
+            # 过滤退市和未上市的股票
+            # 转换日期列为date类型进行比较
+            symbols_df['listed_date'] = pd.to_datetime(symbols_df['listed_date']).dt.date
+            symbols_df['delisted_date'] = pd.to_datetime(symbols_df['delisted_date']).dt.date
+            current_date = datetime.datetime.strptime(trade_date, '%Y-%m-%d').date()
+
+            # 过滤:已上市且未退市的股票
+            mask = (symbols_df['listed_date'] <= current_date) & (symbols_df['delisted_date'] > current_date)
+            symbols_df = symbols_df[mask].copy()
+
+            logging.info(f"  过滤后剩余 {len(symbols_df)} 只股票(已剔除未上市/已退市)")
+
+            # 提取股票代码列表
+            symbols_list = symbols_df['symbol'].tolist()
+
+            # 2. 使用history批量获取所有股票的成交量/成交额/价格数据
+            logging.info(f"  步骤2: 调用history批量获取数据...")
+            next_date = (datetime.datetime.strptime(trade_date, '%Y-%m-%d') + datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+            
+            try:
+                # 批量获取所有股票数据（不传fields，获取所有字段）
+                price_df = history(
+                    symbol=symbols_list,
+                    frequency='1d',
+                    start_time=trade_date,
+                    end_time=next_date,
+                    df=True
+                )
+                if price_df is not None and not price_df.empty:
+                    # 过滤只保留指定日期的数据（history可能返回多天数据）
+                    if 'bob' in price_df.columns:
+                        price_df['date'] = pd.to_datetime(price_df['bob']).dt.strftime('%Y-%m-%d')
+                        price_df = price_df[price_df['date'] == trade_date].copy()
+                        price_df = price_df.drop(columns=['date'])
+                    logging.info(f"  history批量返回 {len(price_df)} 条记录")
+                else:
+                    price_df = pd.DataFrame()
+                    logging.warning(f"  history返回空数据")
+            except Exception as e:
+                logging.warning(f"  批量获取价格数据失败: {str(e)}")
+                price_df = pd.DataFrame()
+
+            # 3. 获取市值数据
+            logging.info(f"  步骤3: 调用stk_get_daily_mktvalue_pt获取市值数据...")
+            try:
+                mktvalue_df = stk_get_daily_mktvalue_pt(
+                    symbols=symbols_list,
+                    fields=['a_mv', 'a_mv_ex_ltd'],  # 总市值、流通市值
+                    trade_date=trade_date,
+                    df=True
+                )
+                if mktvalue_df is not None and not mktvalue_df.empty:
+                    logging.info(f"  stk_get_daily_mktvalue_pt返回 {len(mktvalue_df)} 条记录")
+                else:
+                    mktvalue_df = pd.DataFrame()
+                    logging.warning(f"  stk_get_daily_mktvalue_pt返回空数据")
+            except Exception as e:
+                logging.warning(f"  获取市值数据失败: {str(e)}")
+                mktvalue_df = pd.DataFrame()
+
+            # 4. 合并数据
+            logging.info(f"  步骤4: 合并数据...")
+
+            # 合并symbols_df和price_df
+            if not price_df.empty:
+                # 确保symbol列存在
+                if 'symbol' not in price_df.columns and 'symbol' in price_df.index.names:
+                    price_df = price_df.reset_index()
+                # 合并
+                merged_df = pd.merge(symbols_df, price_df, on='symbol', how='left', suffixes=('', '_price'))
+            else:
+                merged_df = symbols_df.copy()
+
+            # 合并市值数据
+            if not mktvalue_df.empty:
+                merged_df = pd.merge(merged_df, mktvalue_df, on='symbol', how='left', suffixes=('', '_mkt'))
+
+            # 5. 添加交易日期列
+            merged_df['trade_date'] = trade_date
+
+            # 6. 字段重命名和清理
+            # 定义字段映射
+            column_mapping = {
+                'symbol': 'code',
+                'sec_name': 'name',
+                'open': 'open',
+                'high': 'high',
+                'low': 'low',
+                'close': 'close',
+                'pre_close': 'pre_close',
+                'upper_limit': 'limit_up',
+                'lower_limit': 'limit_down',
+                'turn_rate': 'turnover_rate',
+                'adj_factor': 'adj_factor',
+                'is_st': 'is_st',
+                'is_suspended': 'is_suspended',
+                'volume': 'volume',
+                'amount': 'amount',
+                'pct_change': 'pct',
+                'a_mv': 'total_mv',
+                'a_mv_ex_ltd': 'mv_A_free_float',
+                'trade_date': 'trading_date'
+            }
+
+            # 只保留实际存在的列
+            existing_mapping = {k: v for k, v in column_mapping.items() if k in merged_df.columns}
+            merged_df = merged_df.rename(columns=existing_mapping)
+
+            # 7. 使用clean_stocks_data统一清理
+            # 先转换symbol为code格式
+            merged_df = clean_stocks_data(merged_df, code_format='gm')
+
+            # 8. 筛选需要的列(按Tushare数据结构)
+            target_columns = [
+                'code', 'name', 'trading_date',
+                'open', 'high', 'low', 'close', 'pre_close',
+                'volume', 'amount', 'pct',
+                'limit_up', 'limit_down',
+                'is_st', 'is_suspended',
+                'adj_factor', 'turnover_rate',
+                'total_mv', 'mv_A_free_float'
+            ]
+
+            # 只保留存在的列
+            final_columns = [col for col in target_columns if col in merged_df.columns]
+            merged_df = merged_df[final_columns]
+
+            logging.info(f"  数据合并完成,最终返回 {len(merged_df)} 条记录, {len(final_columns)} 个字段")
+
+            return merged_df
+
+        except Exception as e:
+            logging.error(f"获取 {trade_date} 掘金数据失败: {str(e)}")
+            return None
+
+    def gm_get_daily_data_multi_dates(self, start_date, end_date=None):
+        """
+        批量获取多个交易日的全市场股票数据(单线程顺序获取,避免API限流)
+
+        参数:
+            start_date: 开始日期,格式'YYYY-MM-DD'
+            end_date: 结束日期,格式'YYYY-MM-DD',默认None表示获取到最新
+
+        返回:
+            pd.DataFrame: 合并后的多交易日数据
+        """
+        import datetime
+
+        # 标准化日期
+        if isinstance(start_date, str):
+            start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+        if end_date is None:
+            end_date = datetime.date.today()
+        elif isinstance(end_date, str):
+            end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+
+        # 生成交易日列表(这里简化处理,实际应该从交易所日历获取)
+        date_list = []
+        current = start_date
+        while current <= end_date:
+            # 跳过周末(简化处理)
+            if current.weekday() < 5:  # 0-4是周一到周五
+                date_list.append(current.strftime('%Y-%m-%d'))
+            current += datetime.timedelta(days=1)
+
+        if date_list == []:
+            logging.info("指定日期范围内没有交易日")
+            return None
+        logging.info(f"准备获取 {len(date_list)} 个交易日的数据: {date_list[0]} 至 {date_list[-1]}")
+
+        all_data = []
+
+        # 使用单线程逐个获取(掘金API可能有限流)
+        for trade_date in date_list:
+            try:
+                df = self.gm_get_daily_data(trade_date)
+                if df is not None and not df.empty:
+                    all_data.append(df)
+                    logging.info(f"✓ {trade_date} 数据获取成功: {len(df)} 条")
+                else:
+                    logging.warning(f"✗ {trade_date} 无数据")
+
+                # 添加延迟避免限流
+                time.sleep(0.5)
+
+            except Exception as e:
+                logging.error(f"✗ {trade_date} 获取失败: {str(e)}")
+                continue
+
+        if not all_data:
+            logging.warning("所有日期均无数据返回")
+            return None
+
+        # 合并所有数据
+        result_df = pd.concat(all_data, ignore_index=True)
+
+        # 去重(按code和trading_date)
+        result_df = result_df.drop_duplicates(subset=['code', 'trading_date'], keep='last')
+
+        # 排序
+        result_df = result_df.sort_values(by=['trading_date', 'code']).reset_index(drop=True)
+
+        logging.info(f"批量获取完成,共 {len(result_df)} 条记录")
+
+        return result_df
 
     #%% 使用tushare_api
     # 获取所有股票的所有所有日期数据

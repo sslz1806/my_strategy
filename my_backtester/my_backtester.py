@@ -20,7 +20,7 @@ sys.path.append("C://Users/20561/Desktop/策略")
 
 from dataclasses import dataclass
 from typing import Dict, Optional, Iterable, List
-from fun import get_data_trading_days,read_day_data
+from my_utils.fun import get_data_trading_days,read_day_data
 import logging
 import pandas as pd
 import numpy as np
@@ -364,7 +364,6 @@ class Backtester:
         trading_days_per_year: int = 252,
         return_method: str = "compound",
         plot: bool = True,
-        second_y: bool = True,
     ):
         """生成与 report_backtest_full 类似的指标与图表。
 
@@ -375,7 +374,7 @@ class Backtester:
         import matplotlib.pyplot as plt
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
-        from stock_api import stock_api
+        from my_utils.stock_api import stock_api
 
         if self.result is None or self.result.empty:
             raise ValueError("no backtest result to analyze; run() first")
@@ -435,7 +434,6 @@ class Backtester:
         annualized_return = (strategy_curve.iloc[-1]) ** (1 / years) - 1 if years > 0 and strategy_curve.iloc[-1] > 0 else 0
 
         daily_ret = strategy_curve.pct_change().dropna()
-        daily_drawdown = daily_ret.where(daily_ret < 0, 0)
         rf_daily = risk_free_rate / trading_days_per_year
         excess_daily = daily_ret - rf_daily
         sharpe_ratio = (excess_daily.mean() / excess_daily.std()) * np.sqrt(trading_days_per_year) if excess_daily.std() > 0 else 0
@@ -464,7 +462,6 @@ class Backtester:
                 f"{strategy_curve.iloc[-1]:.4f}" if len(strategy_curve) else "1.0000",
             ]
         })
-        logging.info("回测结果:\n" + metrics_df.to_string(index=False))
 
         fig = None
         if plot:
@@ -473,9 +470,8 @@ class Backtester:
                 cols=1,
                 shared_xaxes=True,
                 vertical_spacing=0.08,
-                subplot_titles=("净值曲线对比", "策略每日收益率", "策略每日回撤"),
-                specs=[[{"secondary_y": True}], [{"secondary_y": False}], [{"secondary_y": False}]],
-                row_heights=[0.5, 0.25, 0.13],
+                subplot_titles=("净值曲线对比", "策略每日收益率", "策略回撤"),
+                row_heights=[0.5, 0.25, 0.25],
             )
 
             # 策略净值
@@ -487,24 +483,20 @@ class Backtester:
                     line=dict(color="#1f77b4", width=2),
                     hovertemplate="日期: %{x}<br>策略净值: %{y:.4f}<extra></extra>",
                 ),
-                row=1,
-                col=1,
-                secondary_y=False,
+                row=1, col=1,
             )
 
-            # 基准
+            # 基准净值
             if index_curve is not None and not index_curve.empty:
                 fig.add_trace(
                     go.Scatter(
                         x=index_curve.index,
                         y=index_curve.values,
-                        name=f"基准净值({benchmark_code})",
+                        name=f"基准({benchmark_code})",
                         line=dict(color="#ff7f0e", width=2, dash="dash"),
                         hovertemplate="日期: %{x}<br>基准净值: %{y:.4f}<extra></extra>",
                     ),
-                    row=1,
-                    col=1,
-                    secondary_y=second_y,
+                    row=1, col=1,
                 )
 
             # 每日收益率柱状
@@ -513,38 +505,37 @@ class Backtester:
                 go.Bar(
                     x=daily_ret.index,
                     y=daily_ret.values,
-                    name="策略每日收益率",
+                    name="每日收益率",
                     marker_color=ret_colors,
                     hovertemplate="日期: %{x}<br>收益率: %{y:.2%}<extra></extra>",
                 ),
-                row=2,
-                col=1,
+                row=2, col=1,
             )
 
-            # 回撤柱状
+            # 回撤（面积图）
             fig.add_trace(
-                go.Bar(
-                    x=daily_drawdown.index,
-                    y=daily_drawdown.values,
-                    name="策略每日回撤",
-                    marker_color="#2ca02c",
+                go.Scatter(
+                    x=drawdown.index,
+                    y=drawdown.values,
+                    name="回撤",
+                    fill="tozeroy",
+                    line=dict(color="#d62728", width=1),
+                    fillcolor="rgba(211, 39, 39, 0.2)",
                     hovertemplate="日期: %{x}<br>回撤率: %{y:.2%}<extra></extra>",
                 ),
-                row=3,
-                col=1,
+                row=3, col=1,
             )
 
             fig.update_layout(
                 height=800,
                 title_text="回测结果可视化",
                 hovermode="x unified",
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1, font=dict(size=12)),
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 plot_bgcolor="rgba(248,248,248,1)",
                 paper_bgcolor="white",
             )
 
-            fig.update_yaxes(title_text="策略净值", secondary_y=False, row=1, col=1)
-            fig.update_yaxes(title_text="基准净值", secondary_y=True, row=1, col=1)
+            fig.update_yaxes(title_text="净值", row=1, col=1, tickformat=".2f")
             fig.update_yaxes(title_text="收益率", row=2, col=1, tickformat=".2%")
             fig.update_yaxes(title_text="回撤率", row=3, col=1, tickformat=".2%")
             fig.update_xaxes(title_text="日期", row=3, col=1)

@@ -1,33 +1,28 @@
 #%% 初始化数据
 import sys
 sys.path.append(r'C:\Users\20561\Desktop\策略')
-from fun import *
+from my_utils.fun import *
 import polars as pl
 import pandas as pd
 import datetime as dt
 import time 
 
-logging = get_logger(log_file='log\实盘.log',inherit=False)
+logging = get_logger(log_file='log/实盘.log',inherit=False)
 
 start_date = dt.date(2025,12,1)
 end_date = dt.datetime.today()
 #end_date = dt.date(2026,2,12)
 
 # 获取指定日期的日线数据
-stock_data = read_day_data(start_date=start_date,end_date=end_date,file_path='ts_stock_all_data')
-stock_data = stock_data.drop_nulls(subset=['open','close','pre_close','limit_up','limit_down'])
-market_value = read_day_data(start_date=start_date,end_date=end_date,file_path='ts_daily_basic')
-market_value = market_value.with_columns([
-   ( pl.col('free_share')*pl.col('close')/1e4).alias('free_float_mv')
+stock_data = read_day_data(start_date=start_date,end_date=end_date,file_path='gm_stock_all_data')
+# 将市值列除以1e8进行缩放
+stock_data = stock_data.with_columns([
+   (pl.col('mv_A_free_float') / 1e8).alias('mv_A_free_float'),
+   (pl.col('total_mv') / 1e8).alias('total_mv')
 ])
-stock_data = stock_data.join(market_value.select(['code','trading_date','free_float_mv']),on=['code','trading_date'],how='left')
-# stock_data.schema
-# 去掉没用的列
-stock_data = stock_data.drop(['change','total_share','attack','activity','pe','float_share','buying','selling','swing','strength','avg_turnover'])
-
 #%% 添加最新一天数据
-from mapping import *
-from stock_api import *
+from my_utils.mapping import *
+from my_utils.stock_api import *
 api = stock_api()
 
 def gm_add_auction(stock_data):
@@ -161,10 +156,23 @@ else:
     logging.info("没有历史数据可添加最新行情")
 
 
+# 增加指标
+stocks_data = stocks_data.with_columns(
+    (
+        (pl.col("open") - pl.col("pre_close")) 
+        / pl.col("pre_close") 
+        * 100
+    ).alias("open_pct"),  # 开盘涨幅百分比
+    #((pl.col("close") - pl.col("sma_7")) / pl.col("sma_7") * 100).alias("close_sma7_pct"), #乖离率
+    #(pl.col("amount")*100 / pl.col("volume")).alias("vwap"),
+    ((pl.col("low") <= pl.col("limit_down")*1.01)).alias("touch_limit_down"), # 是否触及跌停
+    (pl.col("close")/pl.col("pre_close")-1).alias("pct")
+)
+
 #%% qmt下单卖出
 if __name__ == "__main__":
-    from my_qmt import *
-    from mapping import convert_code_format
+    from my_utils.my_qmt import *
+    from my_utils.mapping import convert_code_format
     import time 
     positions = positions_df()
     code_list = positions['证券代码'].tolist()

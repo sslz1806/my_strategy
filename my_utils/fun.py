@@ -1,5 +1,9 @@
+# my_utils/fun.py
+"""
+fun.py - 核心工具库：本地数据接口、polars特征计算函数
+"""
+
 # 将指定目录添加到系统路径
-import sys
 DATA_ROOT_DIR = r'E:\working\stock_data'
 
 # 取数,标记特征
@@ -7,7 +11,7 @@ DATA_ROOT_DIR = r'E:\working\stock_data'
 import polars as pl
 import pandas as pd
 import numpy as np
-from mapping import *
+from my_utils.mapping import *
 import os
 import logging
 from typing import Optional,Dict
@@ -21,7 +25,7 @@ def get_logger(
     inherit: bool = True # 默认继承程序已有的日志配置
 ) -> logging.Logger:
     """
-    
+
     极简版：字典参数控制日志格式，有外部配置则复用，无则新建.如果inherit=False,则强制重新配置日志.
     :param log_file: 可选，日志文件路径（None则仅控制台输出）
     :param level: 日志级别，默认INFO
@@ -33,7 +37,7 @@ def get_logger(
     if not inherit:
         # 清空已有处理器，强制重新配置
         root_logger.handlers = []
-    
+
     # 核心判断：根logger无有效处理器时才配置
     if not any(
         isinstance(h, (logging.StreamHandler, logging.FileHandler)) and not h.stream.closed
@@ -42,11 +46,11 @@ def get_logger(
         # 创建格式器（简化变量名）
         f_formatter = logging.Formatter(fmt=file_format['format'], datefmt=file_format.get('datefmt'))
         c_formatter = logging.Formatter(fmt=console_format['format'], datefmt=console_format.get('datefmt'))
-        
+
         # 创建控制台处理器
         c_handler = logging.StreamHandler()
         c_handler.setFormatter(c_formatter)
-        
+
         # 构建处理器列表
         handlers = [c_handler]
         if log_file:
@@ -56,19 +60,19 @@ def get_logger(
             f_handler = logging.FileHandler(log_file, encoding='utf-8')
             f_handler.setFormatter(f_formatter)
             handlers.append(f_handler)
-        
+
         # 最终配置
         logging.basicConfig(level=level, handlers=handlers)
-    
+
     return root_logger
 
 def get_parquet_dir_schema(data_dir: str):
     """
     获取指定目录中Parquet文件的统一schema信息
-    
+
     参数:
         data_dir: Parquet文件所在的根目录（支持分区存储）
-    
+
     返回:
         包含列名和对应类型的schema字典，如果目录中无Parquet文件则返回None
     """
@@ -81,14 +85,14 @@ def get_parquet_dir_schema(data_dir: str):
                 if filename.endswith(".parquet"):
                     return os.path.join(dirpath, filename)
         return None
-    
+
     # 查找第一个Parquet文件
     first_parquet = find_first_parquet(data_dir)
-    
+
     if not first_parquet:
         print(f"警告：在目录 {data_dir} 中未找到任何Parquet文件")
         return None
-    
+
     # 仅读取schema（n_rows=0表示不加载数据）
     try:
         schema = pl.read_parquet(first_parquet, n_rows=0).schema
@@ -146,7 +150,7 @@ def read_min_data(start_time,end_time,stock_list=None,file_path='15min_stock_dat
 
     return df.collect()
 
-def read_day_data(start_date,end_date,stock_list=None,fields=None,file_path='ts_stock_all_data') -> pl.DataFrame:
+def read_day_data(start_date,end_date,stock_list=None,fields=None,file_path='gm_stock_all_data') -> pl.DataFrame:
     """
     读取日线数据，并根据时间范围,股票列表,需要的列进行过滤
     start_date,end_date:datetime.date对象
@@ -236,14 +240,14 @@ def mark_limit_desc(stock_data: pl.DataFrame) -> pl.DataFrame:
         limit_status = group["limit_status"].to_list()
         desc_list = []
         period_start = 0  # 记录当前周期的起始索引（最近一个未涨停日的下一天）
-        
+
         for i in range(len(is_limit_up)):
             # 计算从周期开始到当前的总天数
             total_days = i - period_start + 1
-            
+
             # 计算从周期开始到当前的涨停天数
             up_days = sum(is_limit_up[period_start:i+1])
-            
+
             if limit_status[i]=='涨停' or limit_status[i]=='炸板':
                 # 涨停日：计算到今天为止的"n天m板"
                 desc_list.append(f"{total_days}天{up_days}板")
@@ -255,11 +259,11 @@ def mark_limit_desc(stock_data: pl.DataFrame) -> pl.DataFrame:
                 desc_list.append('炸板')
             elif limit_status[i]=='断板':
                 desc_list.append('断板')
-        
+
         return group.with_columns([
             pl.Series("limit_desc", desc_list)
         ])
-    
+
     # 按股票代码分组计算
     return stock_data.group_by("code").map_groups(calc_desc)
 
@@ -277,12 +281,12 @@ def mark_last_limit_desc(stock_data: pl.DataFrame) -> pl.DataFrame:
         last_limit_desc_list = []
         period_start = 0  # 记录当前周期的起始索引（最近一个未涨停日的下一天）
         last_valid_desc = None  # 记录最后一次有效的涨停描述
-        
-        for i in range(len(limit_status)): 
+
+        for i in range(len(limit_status)):
             if i ==0:
                 last_limit_desc_list.append(None)
                 continue
-            
+
             pre_status = limit_status[i-1] #昨天的涨停状态
             # 对于涨停、炸板、断板状态，需要查找之前的最后一次涨停描述
             if pre_status in ['涨停', '炸板', '断板']:
@@ -292,17 +296,17 @@ def mark_last_limit_desc(stock_data: pl.DataFrame) -> pl.DataFrame:
                     if limit_status[j] in ['涨停']:
                         last_valid_desc = limit_desc[j]
                         break
-                
+
                 last_limit_desc_list.append(last_valid_desc)
             else:  # 昨日未涨停状态
                 last_limit_desc_list.append(None)
                 period_start = i - 1  # 重置为昨天
                 last_valid_desc = None  # 重置最后有效描述
-        
+
         return group.with_columns([
             pl.Series("last_limit_desc", last_limit_desc_list,dtype=pl.String)
         ])
-    
+
     # 按股票代码分组计算
     return stock_data.group_by("code").map_groups(calc_last_desc)
 
@@ -324,26 +328,26 @@ def mark_limit_up_down(
 ) -> pl.DataFrame:
     """
     标记沪深A股的涨跌停状态，适配Polars DataFrame
-    
+
     参数:
         df: 包含股票代码、收盘价、昨日收盘价的Polars DataFrame
         code_col: 股票代码列名（默认"stock_code"）
         close_col: 当日收盘价列名（默认"close"）
         pre_close_col: 昨日收盘价列名（默认"pre_close"）
-    
+
     返回:
         新增以下列的Polars DataFrame:
         - limit_up: 涨停价格
         - limit_down: 跌停价格
 
-    
+
     异常处理:
         - 昨日收盘价为0/空值：标记为None，不计算涨跌停
         - 非沪深A股（如8开头）：price_limit标记为None
     """
     # 深拷贝避免修改原数据
     df_copy = df.clone()
-    
+
     # 1. 定义涨跌幅限制判断逻辑
     def get_price_limit(code: str) -> int | None:
         if not isinstance(code, str) or len(code) < 6:
@@ -355,26 +359,26 @@ def mark_limit_up_down(
             return 10
         else:
             return None  # 非沪深A股（如北交所8开头）
-    
+
     # 2. 计算涨跌停价格的函数
     def calc_limit_prices(row: pl.Series) -> tuple[float | None, float | None]:
         pre_close = row[pre_close_col]
         limit = row["price_limit"]
-        
+
         # 异常值处理：昨日收盘价无效则返回None
         if pre_close is None or pre_close <= 0 or limit is None:
             return None, None
-        
+
         # 涨跌停价格计算（保留2位小数，符合A股定价规则）
         up_limit = round(pre_close * (1 + limit / 100), 2)
         down_limit = round(pre_close * (1 - limit / 100), 2)
         return up_limit, down_limit
-    
+
     # 3. 新增涨跌幅限制列
     df_copy = df_copy.with_columns(
         pl.col(code_col).map_elements(get_price_limit, return_dtype=pl.Int64).alias("price_limit")
     )
-    
+
     # 4. 计算涨跌停价格
     limit_prices = df_copy.apply(
         calc_limit_prices,
@@ -387,12 +391,12 @@ def mark_limit_up_down(
         limit_prices.struct.field("limit_up").alias("limit_up"),
         limit_prices.struct.field("limit_down").alias("limit_down")
     )
-    
+
     # 6. 警告提示：非沪深A股的数量
     non_a_share = df_copy.filter(pl.col("price_limit").is_null()).height
     if non_a_share > 0:
         warnings.warn(f"发现{non_a_share}条非沪深A股数据（60/00/300/688开头），已标记为None")
-    
+
     return df_copy.drop("price_limit")  # 可选：删除中间计算列
 
 def cal_limit_avg_turnover(stock_data: pl.DataFrame, window: int = 10, turnover_col: str = "turn_over") -> pl.DataFrame:
@@ -420,31 +424,31 @@ def cal_limit_avg_turnover(stock_data: pl.DataFrame, window: int = 10, turnover_
 
     return stock_data.with_columns(avg_turnover.alias(f"avg_limit_turnover_{window}"))
 
- 
+
 # 计算字段与前N日均值的比(如量比这个指标=今日volumn/前N日volumn均值)
 def add_pre_n_ratio(stock_data: pl.DataFrame, field: str='volume', n: int = 5) -> pl.DataFrame:
     """
     计算指定字段与前N日均值的比值（如量比=今日成交量/前N日成交量均值）
-    
+
     参数:
         stock_data: Polars DataFrame，需包含"code"（股票代码）、"trading_date"（交易日）及指定字段
         field: 要计算的字段名称（如"volume"）
         n: 前N日的窗口大小，默认5天
-    
+
     返回:
         添加了{field}_ratio_{n}列的DataFrame，值为当前字段值除以前N日均值
     """
     # 确保数据按股票代码和交易日排序
     stock_data = stock_data.sort(["code", "trading_date"])
-    
+
     # 计算前N日均值（不含当日）：
     # 1. 先计算包含当日的N天滚动均值
     # 2. 用shift(1)将结果后移1天，得到前N天（不含当日）的均值
     prev_n_mean = pl.col(field).rolling_mean(window_size=n, min_samples=1).over("code").shift(1)
-    
+
     # 计算比值（当前值 / 前N日均值），避免除零
     ratio_col = (pl.col(field) / prev_n_mean).fill_nan(0.0).fill_null(0.0)
-    
+
     # 添加结果列
     return stock_data.with_columns(
         ratio_col.alias(f"{field}_ratio_{n}")
@@ -455,11 +459,11 @@ def cal_industry_concentration(df: pd.DataFrame, window: int = 3) -> pd.DataFram
     """
     遍历信号文件中的每个信号，计算窗口内出现该信号股票的行业的比例
     (即: window天内industry=该股票industry的股票数量/窗口天数内所有股票数量)
-    
+
     参数:
         df: pandas DataFrame，必须包含列：trading_date(交易日期)、code(股票代码)、industry(行业)
         window: 计算窗口天数，默认3天
-    
+
     返回:
         新增industry_concentration列的DataFrame
     """
@@ -467,14 +471,14 @@ def cal_industry_concentration(df: pd.DataFrame, window: int = 3) -> pd.DataFram
     df = df.copy()
     # 按交易日期和股票代码排序
     df = df.sort_values(['trading_date', 'code']).reset_index(drop=True)
-    
+
     # 获取所有唯一的交易日期并排序
     trading_dates = sorted(df['trading_date'].unique())
     n_dates = len(trading_dates)
-    
+
     # 存储每个信号的行业集中度结果
     industry_concentration = []
-    
+
     for i, current_date in enumerate(trading_dates):
         # 前window-1天没有足够的窗口数据，填充0.0
         if i < window:
@@ -482,20 +486,20 @@ def cal_industry_concentration(df: pd.DataFrame, window: int = 3) -> pd.DataFram
             current_day_count = len(df[df['trading_date'] == current_date])
             industry_concentration.extend([0.0] * current_day_count)
             continue
-        
+
         # 计算窗口起始日期
         window_start_date = trading_dates[i - window]
-        
+
         # 筛选窗口内的所有数据
         window_mask = (df['trading_date'] >= window_start_date) & (df['trading_date'] <= current_date)
         window_df = df[window_mask]
-        
+
         # 窗口内总股票数量（注意：如果同一股票同一天多条记录会被多次计数）
         total_stocks = len(window_df)
-        
+
         # 获取当前日期的所有信号
         current_day_signals = df[df['trading_date'] == current_date]
-        
+
         # 计算当前日期每个信号的行业集中度
         for _, row in current_day_signals.iterrows():
             industry = row['industry']
@@ -504,39 +508,39 @@ def cal_industry_concentration(df: pd.DataFrame, window: int = 3) -> pd.DataFram
             # 计算比例（避免除零）
             concentration = industry_count / total_stocks if total_stocks > 0 else 0.0
             industry_concentration.append(concentration)
-    
+
     # 添加行业集中度列
     df['industry_concentration'] = industry_concentration
-    
+
     return df
 
 
 def cal_n_lowest(stock_data: pl.DataFrame, window: int = 30, include_today: bool = False) -> pl.DataFrame:
     """
     计算股票n日内的最低股价（兼容旧版本Polars，仅使用基础API）
-    
+
     参数:
         stock_data: 包含股票数据的DataFrame，需包含"code"（股票代码）、"trading_date"（交易日）、"low"（当日最低价）列
-        window: 计算最低股价的窗口大小，默认30天（即“n日”中的n）
-        include_today: 是否包含当天价格，默认为False（计算“前n天”最低值，不含当天；True则计算“包含当天在内的n天”最低值）
-    
+        window: 计算最低股价的窗口大小，默认30天（即"n日"中的n）
+        include_today: 是否包含当天价格，默认为False（计算"前n天"最低值，不含当天；True则计算"包含当天在内的n天"最低值）
+
     返回:
         添加了n日内最低股价列的DataFrame，新增列名为 `n_lowest_{window}`（如window=30时为`n_lowest_30`）
     """
-    # 1. 先确保数据按“股票代码+交易日”排序（滚动计算必须基于时间顺序）
+    # 1. 先确保数据按"股票代码+交易日"排序（滚动计算必须基于时间顺序）
     stock_data = stock_data.sort(["code", "trading_date"])
-    
+
     # 2. 按股票分组计算滚动最低价（核心逻辑，兼容所有Polars版本）
     if include_today:
-        # 场景1：包含当天 → 直接计算“当前日及之前共window天”的最低价
+        # 场景1：包含当天 → 直接计算"当前日及之前共window天"的最低价
         # 窗口范围：[当前日 - window + 1 天, 当前日]，共window天
         rolling_min = pl.col("low").rolling_min(window_size=window,min_samples=1).over("code")
     else:
-        # 场景2：不包含当天 → 先算“前window天（含前1天）”的最低价，再整体后移1天（排除当天）
-        # 步骤1：计算“当前日及之前共window天”的最低价（此时包含当天）
-        # 步骤2：用shift(1)将结果后移1天 → 当天结果变为“前window天（不含当天）”的最低价
+        # 场景2：不包含当天 → 先算"前window天（含前1天）"的最低价，再整体后移1天（排除当天）
+        # 步骤1：计算"当前日及之前共window天"的最低价（此时包含当天）
+        # 步骤2：用shift(1)将结果后移1天 → 当天结果变为"前window天（不含当天）"的最低价
         rolling_min = pl.col("low").rolling_min(window_size=window,min_samples=1).over("code").shift(1)
-    
+
     # 3. 添加结果列并返回
     return stock_data.with_columns(
         rolling_min.alias(f"lowest_{window}")
@@ -613,3 +617,15 @@ def add_ewma_volatility(stock_data: pl.DataFrame, window: int = 10, alpha: float
     stock_data = stock_data.group_by("code").map_groups(calc_ewma_vol)
     stock_data = stock_data.drop(["return_squared", "initial_variance"])
     return stock_data
+
+
+if __name__ == "__main__":
+    # 允许直接运行此文件进行调试（如 python my_utils/fun.py）
+    import sys
+    from pathlib import Path
+    _parent = Path(__file__).resolve().parent.parent
+    if str(_parent) not in sys.path:
+        sys.path.insert(0, str(_parent))
+
+    # 测试代码
+    print("fun.py 可直接运行调试")

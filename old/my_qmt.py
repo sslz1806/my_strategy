@@ -8,7 +8,7 @@ from datetime import datetime #时间戳改为日期时间格式的时候使用
 # 回调类,处理账户状态
 from xtquant.xttrader import XtQuantTraderCallback
 from fun import get_logger
-logging = get_logger(log_file='实盘.log',inherit=False)
+logging = get_logger(log_file='log/实盘.log',inherit=False)
 
 class MyXtQuantTraderCallback(XtQuantTraderCallback):
     def on_disconnected(self):

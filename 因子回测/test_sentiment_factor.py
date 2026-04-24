@@ -8,8 +8,8 @@ import sys
 import os
 sys.path.append("c:/Users/20561/Desktop/策略")
 
-from fun import *
-from mapping import *
+from my_utils.fun import *
+from my_utils.mapping import *
 import polars as pl
 import pandas as pd
 import numpy as np

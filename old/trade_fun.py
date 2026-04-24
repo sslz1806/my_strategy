@@ -54,13 +54,15 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_
     # 1. 获取数据
     try:
         # 获取分钟线数据
-        stock_data = read_day_data(start_date,end_date,code_list,file_path='ts_stock_all_data')
+        stock_data = read_day_data(start_date,end_date,code_list,file_path='gm_stock_all_data')
         
         # 获取日线数据（用于补充pre_close, limit_up等字段）
         mins_data = read_min_data(start_date,end_date,code_list)
         
         # 获取复权因子数据
-        if need_adj:
+        if need_adj and 'adj_factor' in stock_data.columns:
+            stock_data = stock_data.rename({'adj_factor': 'adj'})
+        elif need_adj:
             adj_data = read_day_data(start_date,end_date,code_list,file_path='ts_adj')
             stock_data = stock_data.join(
                 adj_data[['trading_date', 'code', 'adj_factor']],
@@ -631,12 +633,20 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
             valid_results.extend(date_result)  # 展平：[[a,b],[c,d]] → [a,b,c,d]
     
     if is_polars:
-        result_df = pl.DataFrame(valid_results)
-        # 处理日期和列名
-        if 'buy_time' in result_df.columns:
+        # 空结果时需要指定 schema，否则 pl.DataFrame([]) 会创建零列的 DataFrame
+        if len(valid_results) == 0:
+            result_df = pl.DataFrame(schema={
+                'code': pl.String, 'buy_time': pl.Datetime, 'buy_price': pl.Float64,
+                'sell_time': pl.Datetime, 'sell_price': pl.Float64, 'profit': pl.Float64,
+                'holding_days': pl.Float64, 'sell_reason': pl.String
+            })
+        else:
+            result_df = pl.DataFrame(valid_results)
+        # 处理日期和列名：只对 Datetime 类型的列做 .dt.date() 转换
+        if 'buy_time' in result_df.columns and result_df['buy_time'].dtype != pl.Object:
             result_df = result_df.with_columns(
                 pl.col("buy_time")
-                .dt.date()  # 截取前10个字符，即"YYYY-MM-DD"部分
+                .dt.date()
                 .alias("trading_date")
             )
         if 'code' in result_df.columns and stock_code_col != 'code':
@@ -644,7 +654,11 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
         # 合并
         merged_df = 信号文件.join(result_df, on=[stock_code_col, 'trading_date'], how='outer')
     else:
-        result_df = pd.DataFrame(valid_results)
+        # 空结果时确保有正确的列结构
+        if len(valid_results) == 0:
+            result_df = pd.DataFrame(columns=['code', 'buy_time', 'buy_price', 'sell_time', 'sell_price', 'profit', 'holding_days', 'sell_reason'])
+        else:
+            result_df = pd.DataFrame(valid_results)
         # 处理日期和列名
         if 'buy_time' in result_df.columns:
             result_df['trading_date'] = pd.to_datetime(result_df['buy_time']).dt.date()
@@ -924,7 +938,7 @@ def report_backtest_full(
     from mapping import convert_code_format,clean_stocks_data
     from stock_api import stock_api
     from fun import get_logger
-    logging = get_logger(log_file='回测.log',inherit=False)
+    logging = get_logger(log_file='log/回测.log',inherit=False)
     ts_token = 'YzAEH11Yc7jZCHjeJa63fnbpSt3k9Je3GvWn0390oiBKO95bVJjP7u5L34e2ff6b'
     ts =tns.pro_api(ts_token)
 

@@ -6,11 +6,11 @@ sys.path.append("C://Users/20561/Desktop/策略") #C:\Users\20561\Desktop\策略
 import polars as pl
 import datetime
 import tinyshare as tns
-import mapping
+from my_utils import mapping
 import pandas as pd
-from fun import *
+from my_utils.fun import *
 import datetime as dt
-from stock_api import *
+from my_utils.stock_api import *
 
 ts_token = 'YzAEH11Yc7jZCHjeJa63fnbpSt3k9Je3GvWn0390oiBKO95bVJjP7u5L34e2ff6b'
 ts =tns.pro_api(ts_token)
@@ -20,21 +20,23 @@ m_ts =tns.pro_api(mins_token)
 # stock_data = pl.read_parquet("stock_data_partitioned")
 # print(stock_data)  
 
-logging = get_logger(log_file='log\数据更新.log',inherit=False)
+logging = get_logger(log_file='log/数据更新.log',inherit=False)
 
 mins = read_min_data(start_time=dt.datetime(2025,11,10),end_time=dt.datetime(2025,11,11))
 day = read_day_data(start_date=dt.datetime(2025,8,1),end_date=dt.datetime.today(),file_path='ts_stock_all_data')
 adj = read_day_data(start_date=dt.datetime(2025,8,1),end_date=dt.datetime(2025,10,1),file_path='ts_adj')
 mkt = read_day_data(start_date=dt.datetime(2025,8,1),end_date=dt.datetime.today(),file_path='ts_daily_basic')
 start_date = day.select(pl.col("trading_date").max()).item()
+print(f"当前日线数据的最新交易日期是: {start_date}")
 end_date = datetime.date.today()
 # 打印列信息                                                                                                               
-# print(f"日数据列信息:\n {day.schema}\n个数:{len(day.columns)}")
-# print(f"分钟数据列信息:\n {mins.schema}\n个数:{len(mins.columns)}")
+print(f"日数据列信息:\n {day.schema}\n个数:{len(day.columns)}")
+print(f"分钟数据列信息:\n {mins.schema}\n个数:{len(mins.columns)}")
                                    
-#%% 更新日线基础数据
+#%% 更新日线基础数据，包括日线行情数据以及其他相关数据,
 api = stock_api()
 #api.ts_download_date_data(filename='ts_stock_all_data(pyarrow)',start_date='2025-10-01',end_date='2025-11-11',max_workers=8)
+
 def update_day_data(day_data,save_dir='ts_stock_all_data',mode='insert'):
     save_dir = os.path.join(DATA_ROOT_DIR, save_dir)
     # 没有目录则创建
@@ -97,11 +99,11 @@ def update_adj_factor_data(start_date='2021-01-01',end_date=None,save_dir='ts_ad
     mode:更新模式,'insert'表示增量更新,'update'表示全量更新
     """
     import os
-    from stock_api import stock_api
-    from mapping import convert_date_format
+    from my_utils.stock_api import stock_api
+    from my_utils.mapping import convert_date_format
     import datetime
     import polars as pl
-    from fun import get_parquet_dir_schema
+    from my_utils.fun import get_parquet_dir_schema
     api = stock_api()
     start_date = convert_date_format(start_date,to_format='%Y-%m-%d')
     end_date = convert_date_format(end_date,to_format='%Y-%m-%d')
@@ -175,11 +177,11 @@ def update_daily_basic_data(start_date='2021-01-01',end_date=None,save_dir='ts_d
     mode:更新模式,'insert'表示增量更新,'update'表示全量更新
     """
     import os
-    from stock_api import stock_api
-    from mapping import convert_date_format
+    from my_utils.stock_api import stock_api
+    from my_utils.mapping import convert_date_format
     import datetime
     import polars as pl
-    from fun import get_parquet_dir_schema
+    from my_utils.fun import get_parquet_dir_schema
     api = stock_api()
     start_date = convert_date_format(start_date,to_format='%Y-%m-%d')
     end_date = convert_date_format(end_date,to_format='%Y-%m-%d')
@@ -250,7 +252,7 @@ def update_min_data_by_day_data(day_data,min_data_dir='15min_stock_data_dir',n=1
     从day_data中获取交易日,然后对每个交易日中的股票,更新对应的分钟数据文件
     """
     import os
-    from stock_api import stock_api
+    from my_utils.stock_api import stock_api
     api = stock_api()
     # 没有目录则创建
     min_data_dir = os.path.join(DATA_ROOT_DIR, min_data_dir)   

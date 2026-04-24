@@ -4,7 +4,7 @@ set PYTHONIOENCODING=utf-8
 @echo off
 echo 开始执行脚本...
 cd /d C:\Users\20561\Desktop\策略
-E:\working\anaconda3\envs\quant\python.exe 任务\数据更新.py
+E:\working\anaconda3\envs\quant\python.exe 任务\数据更新v2.py
 echo %date% %time% - 数据更新完成 >> log\update_data.log
 type con >> log\update_data.log 2>&1
 
