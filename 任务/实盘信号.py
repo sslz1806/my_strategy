@@ -55,37 +55,33 @@ def gm_add_auction(stock_data):
         # 清洗数据
         new_data = clean_stocks_data(new_data)
 
-        # 1. 将ts_data转为Polars
+        # 1. 将new_data转为Polars
         new_data_pl = pl.from_pandas(new_data)
         new_data_pl = new_data_pl.with_columns(
             pl.col('trading_date').str.strptime(pl.Date, "%Y-%m-%d").alias('trading_date')
         )
-        
+
         # 2. 统一所有列的数据类型（核心修复）
         # 先获取stock_data的完整schema
         target_schema = stock_data.schema
-        
+
         # 逐个处理列：存在的列强制转换类型，不存在的列添加并设置类型
         for col, dtype in target_schema.items():
-            if col in ts_data_pl.columns:
+            if col in new_data_pl.columns:
                 # 强制转换已有列的类型为stock_data的类型
-                ts_data_pl = ts_data_pl.with_columns(
+                new_data_pl = new_data_pl.with_columns(
                     pl.col(col).cast(dtype).alias(col)
                 )
             else:
                 # 添加缺失列并设置类型
-                ts_data_pl = ts_data_pl.with_columns(
+                new_data_pl = new_data_pl.with_columns(
                     pl.lit(None, dtype=dtype).alias(col)
                 )
-        
-        
-        # 4. 严格按照stock_data的列顺序排序
-        ts_data_pl = ts_data_pl.select(stock_data.columns)
-        
-        # 5. 合并
-        concat_data = stock_data.vstack(ts_data_pl, in_place=False)
 
-        # 5. 合并并重新排序（关键：确保时间顺序正确）
+        # 3. 严格按照stock_data的列顺序排序
+        new_data_pl = new_data_pl.select(stock_data.columns)
+
+        # 4. 合并并重新排序（关键：确保时间顺序正确）
         concat_data = stock_data.vstack(new_data_pl, in_place=False)
         concat_data = concat_data.sort(by=['code', 'trading_date'])  # 按股票+日期排序
 

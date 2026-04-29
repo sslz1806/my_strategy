@@ -169,7 +169,9 @@ class Backtester:
         num_buy = sum(1 for _, row in daily_orders.iterrows() if int(row["direction"]) == 1)
         alloc_per_buy = cash / num_buy if num_buy > 0 else 0.
 
-        for _, row in daily_orders.iterrows():
+        # 先卖后买，避免同日换仓时先买入污染卖出匹配基准
+        daily_orders_exec = daily_orders.sort_values("direction", ascending=True, kind="mergesort")
+        for _, row in daily_orders_exec.iterrows():
             direction = int(row["direction"])
             code = str(row["code"])
             price = float(row["price"])
@@ -180,6 +182,8 @@ class Backtester:
                 self.buy_value(code, price, alloc_per_buy, buy_time)
             elif direction == -1:
                 buy_time = row["buy_time"] if "buy_time" in row else None
+                if pd.isna(buy_time):
+                    buy_time = None
                 sell_time = row["sell_time"] if "sell_time" in row else None
                 # 利用self.trade_log追踪对应的买入记录,获取当时买入数量作为卖出数量
                 sell_volume = 0
@@ -189,6 +193,13 @@ class Backtester:
                             continue
                         sell_volume = log["volume"]
                         break
+                if sell_volume == 0 and code in self.positions and self.positions[code].volume > 0:
+                    sell_volume = int(self.positions[code].volume)
+                    logging.info(f"卖出数量为0,当前持仓数量为{sell_volume}")
+                current_pos_volume = int(self.positions.get(code).volume) if code in self.positions else 0
+                if sell_volume > current_pos_volume:
+                    sell_volume = current_pos_volume
+                    logging.info(f"卖出数量超过当前持仓数量,卖出数量为{sell_volume},当前持仓数量为{current_pos_volume}")
                 if sell_volume > 0:
                     self.sell(code, price, sell_volume, sell_time)
 
@@ -223,7 +234,7 @@ class Backtester:
             if code in pos_data["code"].values:
                 daily_close = float(pos_data[pos_data["code"] == code]["close"].iloc[0])
             else:
-                daily_close = 0.0
+                daily_close = float(pos.close) if pos.close and pos.close > 0 else float(self.price_cache.get(code, pos.avg_cost))
             market_value = daily_close * pos.volume
             pnl = market_value - pos.avg_cost * pos.volume
             profit = pnl / (pos.avg_cost * pos.volume) if pos.avg_cost * pos.volume > 0 else 0.0

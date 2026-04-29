@@ -1,0 +1,101 @@
+20260425 12:25:44- INFO- 参数: START_DATE=2022-01-04, END_DATE=2026-04-20
+20260425 12:25:44- INFO- 参数: INITIAL_CASH=100000.0, COMMISSION=0.0003, SLIPPAGE=0.0
+20260425 12:25:44- INFO- 参数: STOCK_NUM=4, REFRESH_RATE=5, MV=10-100亿, 价格<=50.0
+20260425 12:25:44- INFO- 参数: 上市天数>=375, 空仓月份=[1, 4]
+20260425 12:25:44- INFO- 读取行情: 2022-01-04 至 2026-04-20
+20260425 12:25:46- INFO- 数据行数: 5281143; 列: ['code', 'name', 'trading_date', 'open', 'high', 'low', 'close', 'pre_close', 'volume', 'amount', 'limit_up', 'limit_down', 'is_st', 'is_suspended', 'adj_factor', 'turnover_rate', 'total_mv', 'mv_A_free_float', 'pe_ttm', 'pb', 'market_cap']
+20260425 12:25:52- INFO- 特征工程完成: listed_days / is_limit_up
+20260425 12:25:53- INFO- 生成交易信号...
+20260425 12:25:53- INFO- 交易日数量: 1029
+20260425 12:25:54- INFO- 信号生成完成: 买入 684 笔, 卖出 684 笔
+20260425 12:25:55- INFO- 开始回测...
+20260425 12:27:37- INFO- 回测完成
+20260425 12:27:38- INFO- 日志保存: trade_log(39 行), pos_log(8865 行), result(1029 行)
+20260425 12:27:39- INFO- 理论回测信号条数: 684
+20260425 12:27:39- INFO- 理论回测开始（cal_trade_info 多进程）...
+20260425 12:27:39- INFO- 使用40个进程并行处理，共171个日期任务
+20260425 12:27:41- INFO- 所有回测任务完成，共处理171个日期的结果
+20260425 12:27:41- INFO- 理论回测完成: 交割单 684 行
+20260425 21:09:19- INFO- 参数: START_DATE=2022-01-04, END_DATE=2026-04-20
+20260425 21:09:19- INFO- 参数: INITIAL_CASH=100000.0, COMMISSION=0.0003, SLIPPAGE=0.0
+20260425 21:09:19- INFO- 参数: STOCK_NUM=4, REFRESH_RATE=5, MV=10-100亿, 价格<=50.0
+20260425 21:09:19- INFO- 参数: 上市天数>=375, 空仓月份=[1, 4]
+20260425 21:09:19- INFO- 读取行情: 2022-01-04 至 2026-04-20
+20260425 21:09:20- INFO- 数据行数: 5281143; 列: ['code', 'name', 'trading_date', 'open', 'high', 'low', 'close', 'pre_close', 'volume', 'amount', 'limit_up', 'limit_down', 'is_st', 'is_suspended', 'adj_factor', 'turnover_rate', 'total_mv', 'mv_A_free_float', 'pe_ttm', 'pb', 'market_cap']
+20260425 21:09:27- INFO- 特征工程完成: listed_days / is_limit_up
+20260425 21:09:27- INFO- 生成交易信号...
+20260425 21:09:27- INFO- 交易日数量: 1029
+20260425 21:09:29- INFO- 信号生成完成: 买入 684 笔, 卖出 684 笔
+20260425 21:09:29- INFO- 开始回测...
+20260425 21:11:43- INFO- 回测完成
+20260425 21:11:44- INFO- 日志保存: trade_log(39 行), pos_log(8865 行), result(1029 行)
+20260425 21:11:44- INFO- 理论回测信号条数: 684
+20260425 21:11:45- INFO- 理论回测开始（cal_trade_info 多进程）...
+20260425 21:11:45- INFO- 使用40个进程并行处理，共171个日期任务
+20260425 21:11:47- INFO- 所有回测任务完成，共处理171个日期的结果
+20260425 21:11:47- INFO- 理论回测完成: 交割单 684 行
+20260425 21:15:28- INFO- 参数: START_DATE=2022-01-04, END_DATE=2026-04-20
+20260425 21:15:28- INFO- 参数: INITIAL_CASH=100000.0, COMMISSION=0.0003, SLIPPAGE=0.0
+20260425 21:15:28- INFO- 参数: STOCK_NUM=4, REFRESH_RATE=5, MV=10-100亿, 价格<=50.0
+20260425 21:15:28- INFO- 参数: 上市天数>=375, 空仓月份=[1, 4]
+20260425 21:15:28- INFO- 读取行情: 2022-01-04 至 2026-04-20
+20260425 21:15:29- INFO- 数据行数: 5281143; 列: ['code', 'name', 'trading_date', 'open', 'high', 'low', 'close', 'pre_close', 'volume', 'amount', 'limit_up', 'limit_down', 'is_st', 'is_suspended', 'adj_factor', 'turnover_rate', 'total_mv', 'mv_A_free_float', 'pe_ttm', 'pb', 'market_cap']
+20260425 21:15:35- INFO- 特征工程完成: listed_days / is_limit_up
+20260425 21:15:35- INFO- 生成交易信号...
+20260425 21:15:35- INFO- 交易日数量: 1029
+20260425 21:15:36- INFO- 信号生成完成: 买入 684 笔, 卖出 684 笔
+20260425 21:15:37- INFO- 开始回测...
+20260425 21:52:16- INFO- 参数: START_DATE=2022-01-04, END_DATE=2026-04-20
+20260425 21:52:16- INFO- 参数: INITIAL_CASH=100000.0, COMMISSION=0.0003, SLIPPAGE=0.0
+20260425 21:52:16- INFO- 参数: STOCK_NUM=4, REFRESH_RATE=5, MV=10-100亿, 价格<=50.0
+20260425 21:52:16- INFO- 参数: 上市天数>=375, 空仓月份=[1, 4]
+20260425 21:52:16- INFO- 读取行情: 2022-01-04 至 2026-04-20
+20260425 21:52:17- INFO- 数据行数: 5281143; 列: ['code', 'name', 'trading_date', 'open', 'high', 'low', 'close', 'pre_close', 'volume', 'amount', 'limit_up', 'limit_down', 'is_st', 'is_suspended', 'adj_factor', 'turnover_rate', 'total_mv', 'mv_A_free_float', 'pe_ttm', 'pb', 'market_cap']
+20260425 21:52:24- INFO- 特征工程完成: listed_days / is_limit_up
+20260425 21:52:25- INFO- 生成交易信号...
+20260425 21:52:25- INFO- 交易日数量: 1029
+20260425 21:52:26- INFO- 信号生成完成: 买入 684 笔, 卖出 684 笔
+20260425 21:52:27- INFO- 开始回测...
+20260425 21:54:37- INFO- 回测完成
+20260425 21:54:38- INFO- 日志保存: trade_log(1368 行), pos_log(3420 行), result(1029 行)
+20260425 21:54:39- INFO- 理论回测信号条数: 684
+20260425 21:54:39- INFO- 理论回测开始（cal_trade_info 多进程）...
+20260425 21:54:39- INFO- 使用40个进程并行处理，共171个日期任务
+20260425 21:54:42- INFO- 所有回测任务完成，共处理171个日期的结果
+20260425 21:54:42- INFO- 理论回测完成: 交割单 684 行
+20260425 21:57:55- INFO- 参数: START_DATE=2022-01-04, END_DATE=2026-04-20
+20260425 21:57:55- INFO- 参数: INITIAL_CASH=100000.0, COMMISSION=0.0003, SLIPPAGE=0.0
+20260425 21:57:55- INFO- 参数: STOCK_NUM=4, REFRESH_RATE=5, MV=10-100亿, 价格<=50.0
+20260425 21:57:55- INFO- 参数: 上市天数>=375, 空仓月份=[1, 4]
+20260425 21:57:55- INFO- 读取行情: 2022-01-04 至 2026-04-20
+20260425 21:57:56- INFO- 数据行数: 5281143; 列: ['code', 'name', 'trading_date', 'open', 'high', 'low', 'close', 'pre_close', 'volume', 'amount', 'limit_up', 'limit_down', 'is_st', 'is_suspended', 'adj_factor', 'turnover_rate', 'total_mv', 'mv_A_free_float', 'pe_ttm', 'pb', 'market_cap']
+20260425 21:58:02- INFO- 特征工程完成: listed_days / is_limit_up
+20260425 21:58:03- INFO- 生成交易信号...
+20260425 21:58:03- INFO- 交易日数量: 1029
+20260425 21:58:05- INFO- 信号生成完成: 买入 684 笔, 卖出 684 笔
+20260425 21:58:05- INFO- 开始回测...
+20260425 22:00:32- INFO- 回测完成
+20260425 22:00:33- INFO- 日志保存: trade_log(1368 行), pos_log(3420 行), result(1029 行)
+20260425 22:00:34- INFO- 理论回测信号条数: 684
+20260425 22:00:35- INFO- 理论回测开始（cal_trade_info 多进程）...
+20260425 22:00:35- INFO- 使用40个进程并行处理，共171个日期任务
+20260425 22:00:37- INFO- 所有回测任务完成，共处理171个日期的结果
+20260425 22:00:37- INFO- 理论回测完成: 交割单 684 行
+20260425 22:08:01- INFO- 参数: START_DATE=2022-01-04, END_DATE=2026-04-20
+20260425 22:08:01- INFO- 参数: INITIAL_CASH=100000.0, COMMISSION=0.0003, SLIPPAGE=0.0
+20260425 22:08:01- INFO- 参数: STOCK_NUM=4, REFRESH_RATE=5, MV=10-100亿, 价格<=50.0
+20260425 22:08:01- INFO- 参数: 上市天数>=375, 空仓月份=[1, 4]
+20260425 22:08:01- INFO- 读取行情: 2022-01-04 至 2026-04-20
+20260425 22:08:03- INFO- 数据行数: 5281143; 列: ['code', 'name', 'trading_date', 'open', 'high', 'low', 'close', 'pre_close', 'volume', 'amount', 'limit_up', 'limit_down', 'is_st', 'is_suspended', 'adj_factor', 'turnover_rate', 'total_mv', 'mv_A_free_float', 'pe_ttm', 'pb', 'market_cap']
+20260425 22:08:09- INFO- 特征工程完成: listed_days / is_limit_up
+20260425 22:08:10- INFO- 生成交易信号...
+20260425 22:08:10- INFO- 交易日数量: 1029
+20260425 22:08:11- INFO- 信号生成完成: 买入 684 笔, 卖出 684 笔
+20260425 22:08:12- INFO- 开始回测...
+20260425 22:10:14- INFO- 回测完成
+20260425 22:10:15- INFO- 日志保存: trade_log(1368 行), pos_log(3420 行), result(1029 行)
+20260425 22:10:16- INFO- 理论回测信号条数: 684
+20260425 22:10:17- INFO- 理论回测开始（cal_trade_info 多进程）...
+20260425 22:10:17- INFO- 使用40个进程并行处理，共171个日期任务
+20260425 22:10:19- INFO- 所有回测任务完成，共处理171个日期的结果
+20260425 22:10:19- INFO- 理论回测完成: 交割单 684 行

@@ -41,22 +41,32 @@ def calculate_time_ratio(current_time):
     return minutes / 240
 
 # 保持原有的trade函数不变，但修改参数以适应并行处理
-def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_pct=0.09):
+def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_pct=0.09,
+          buy_delay_days=0, extend_holding_days=0, day_data_file_path='gm_stock_all_data'):
     """
     并行处理的单个交易任务
     params包含: code_list, trade_date, interval参数等
+    buy_delay_days: 买入延迟天数，0表示信号日买入，1表示信号日后第一个交易日买入，以此类推
+    extend_holding_days: 持仓延长天数，延长期内只判断止损，其他卖出条件忽略
+    day_data_file_path: 日线数据源，默认使用掘金数据 gm_stock_all_data
     """
+    # 参数边界检查
+    if not (0 <= buy_delay_days <= 5):
+        raise ValueError(f"buy_delay_days must be in [0, 5], got {buy_delay_days}")
+    if not (0 <= extend_holding_days <= 2):
+        raise ValueError(f"extend_holding_days must be in [0, 2], got {extend_holding_days}")
+
     # 获取股票数据（10天的分钟线和日线数据）
     import time as Time
     start_process_time = Time.time()
     from datetime import datetime, timedelta, time
     start_date = trade_date
-    end_date = start_date + timedelta(days=15)
+    end_date = start_date + timedelta(days=30 + extend_holding_days+buy_delay_days)
 
     # 1. 获取数据
     try:
         # 获取分钟线数据
-        stock_data = read_day_data(start_date,end_date,code_list,file_path='gm_stock_all_data')
+        stock_data = read_day_data(start_date,end_date,code_list,file_path=day_data_file_path)
 
         # 获取日线数据（用于补充pre_close, limit_up等字段）
         mins_data = read_min_data(start_date,end_date,code_list)
@@ -97,6 +107,7 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_
         # 初始化交易信息
         trade_info = {
             'code': code,
+            'trading_date': trade_date,
             'buy_time': None,
             'buy_price': None,
             'sell_time': None,
@@ -116,7 +127,12 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_
         if not trading_date_list:
             return None
 
-        buy_date = trading_date_list[0]
+        # 根据延迟天数确定买入日期
+        buy_date_index = buy_delay_days
+        if buy_date_index >= len(trading_date_list):
+            logging.info(f"{code}在{trade_date}日买入延迟{buy_delay_days}天超出可用交易日，跳过该股票")
+            continue
+        buy_date = trading_date_list[buy_date_index]
 
         # 2.1 买入逻辑（9:30的开盘价）
         # buy_data = code_mins_data.filter(
@@ -153,10 +169,11 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_
         end_date = trading_date_list[-1]
         sell_triggered = False
 
-        ## 取后一天T+1,遍历信号票的每一天特定时间检测卖出
-        for i,single_date in enumerate(trading_date_list[1:]):
+        ## 取买入日后一天T+1,遍历信号票的每一天特定时间检测卖出
+        for i,single_date in enumerate(trading_date_list[buy_date_index + 1:]):
             #single_date_str = str(single_date)
-            full_days = (i+1)
+            full_days = i + 1
+            in_extend_period = full_days <= extend_holding_days
             code_daily_data = code_mins_data.filter(
                 (pl.col("trading_date") == single_date) &
                 (pl.col("datetime").dt.time().is_in(target_time))
@@ -183,6 +200,26 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_
                 same_day_ratio = calculate_time_ratio(current_time)
                 total_holding_days = round(full_days + same_day_ratio, 2)
                 adj = row['adj'] if 'adj' in row.keys() else 1
+
+                # 延长期内：只判断止损，其他条件跳过
+                if in_extend_period:
+                    # 止损检查（硬触发，任何时候触发都立即止损）
+                    if trade_info['buy_price'] and current_price <= trade_info['buy_price'] * (1-stop_loss_pct):
+                        buy_price_fee = trade_info['buy_price']* buy_adj * (1 + fee_rate)
+                        sell_price_fee = current_price* adj * (1 - fee_rate)
+                        profit = (sell_price_fee - buy_price_fee) / buy_price_fee * 100
+                        trade_info.update({
+                            'sell_time': datetime.combine(row['trading_date'],current_time),
+                            'sell_price': current_price,
+                            'profit': profit,
+                            'holding_days':total_holding_days,
+                            'sell_reason': '止损卖出'
+                        })
+                        sell_triggered = True
+                        break
+                    continue
+
+                # 延长期结束后：恢复正常卖出逻辑
 
                 # 1. 9:30 第二天开盘大幅低开
                 if open_pct <=-7 and current_time==target_time[0]:
@@ -502,17 +539,39 @@ def limit_up_trade(code_list,trade_date,fee_rate = 0.004,need_adj=True,stop_loss
 
 
 
-def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_date: str = None):
+def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_date: str = None,
+                  buy_delay_days: int = 0, extend_holding_days: int = 0,
+                  day_data_file_path: str = 'gm_stock_all_data'):
     """
     批量处理信号文件，多进程并行回测
     注意：不再传trade_fun参数，直接调用修正后的trade函数（避免参数传递冗余）
+
+    buy_delay_days: 买入延迟天数，0表示信号日买入，1表示信号日后第一个交易日买入
+    extend_holding_days: 持仓延长天数，延长期内只判断止损，其他卖出条件忽略
+    day_data_file_path: trade_fun 内部读取日线数据使用的数据源
 
     返回:
     result_df:回测的结果文件 - pd
     merged_df:回测信号+结果的详细文件 - pd | pl
     """
     import datetime as dt
+    from functools import partial
     logging = get_logger()
+
+    # 参数边界检查
+    if not (0 <= buy_delay_days <= 5):
+        raise ValueError(f"buy_delay_days must be in [0, 5], got {buy_delay_days}")
+    if not (0 <= extend_holding_days <= 2):
+        raise ValueError(f"extend_holding_days must be in [0, 2], got {extend_holding_days}")
+
+    # 使用 partial 绑定额外参数
+    trade_with_params = partial(
+        trade_fun,
+        buy_delay_days=buy_delay_days,
+        extend_holding_days=extend_holding_days,
+        day_data_file_path=day_data_file_path
+    )
+
     if isinstance(start_date, str):
         start_date = dt.datetime.strptime(start_date, "%Y-%m-%d").date()
     if isinstance(end_date, str):
@@ -609,7 +668,7 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
     #     # 每个任务是(股票列表, 日期)，trade_fun需要接收这两个参数
     #     results = pool.starmap(trade_fun, tasks)  # starmap用于传递多参数元组
     with ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_date = {executor.submit(trade_fun, stocks, date): date for date, stocks in date_to_stocks.items()}
+        future_to_date = {executor.submit(trade_with_params, stocks, date): date for date, stocks in date_to_stocks.items()}
         for future in tqdm(
             as_completed(future_to_date),
             total=int(len(tasks)),
@@ -621,6 +680,9 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
             try:
                 result = future.result()
                 if result:
+                    for trade_info in result:
+                        if isinstance(trade_info, dict):
+                            trade_info['trading_date'] = date
                     results.append(result)
                 #logging.info(f"完成回测日期: {date},股票数量: {len(date_to_stocks[date])}")
             except Exception as e:
@@ -638,14 +700,17 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
         # 空结果时需要指定 schema，否则 pl.DataFrame([]) 会创建零列的 DataFrame
         if len(valid_results) == 0:
             result_df = pl.DataFrame(schema={
-                'code': pl.String, 'buy_time': pl.Datetime, 'buy_price': pl.Float64,
+                'code': pl.String, 'trading_date': pl.Date,
+                'buy_time': pl.Datetime, 'buy_price': pl.Float64,
                 'sell_time': pl.Datetime, 'sell_price': pl.Float64, 'profit': pl.Float64,
                 'holding_days': pl.Float64, 'sell_reason': pl.String
             })
         else:
             result_df = pl.DataFrame(valid_results)
-        # 处理日期和列名：只对 Datetime 类型的列做 .dt.date() 转换
-        if 'buy_time' in result_df.columns and result_df['buy_time'].dtype != pl.Object:
+        # 处理日期和列名：延迟买入时，合并键必须保留信号日，而不是买入日
+        if 'trading_date' in result_df.columns:
+            result_df = result_df.with_columns(pl.col("trading_date").cast(pl.Date))
+        elif 'buy_time' in result_df.columns and result_df['buy_time'].dtype != pl.Object:
             result_df = result_df.with_columns(
                 pl.col("buy_time")
                 .dt.date()
@@ -662,8 +727,10 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
         else:
             result_df = pd.DataFrame(valid_results)
         # 处理日期和列名
-        if 'buy_time' in result_df.columns:
-            result_df['trading_date'] = pd.to_datetime(result_df['buy_time']).dt.date()
+        if 'trading_date' in result_df.columns:
+            result_df['trading_date'] = pd.to_datetime(result_df['trading_date']).dt.date
+        elif 'buy_time' in result_df.columns:
+            result_df['trading_date'] = pd.to_datetime(result_df['buy_time']).dt.date
         if 'code' in result_df.columns and stock_code_col != 'code':
             result_df = result_df.rename(columns={'code': stock_code_col})
         # 合并
@@ -760,7 +827,7 @@ def adjust_weight_by_near_n(回测结果, max_weight=0.4, min_weight=0, window=2
             date_weight.append((current_date, max_weight))
 
     # 合并权重数据并清理临时列
-    weight_df = pl.DataFrame(date_weight, schema=['trading_date', return_column])
+    weight_df = pl.DataFrame(date_weight, schema=['trading_date', return_column], orient="row")
     回测结果 = 回测结果.join(weight_df, on='trading_date', how='left')
 
     # 4.汇报调整正确率以及调整绩效(调整后减亏比例=(max_weight-min_weight)*(-profit).mean() )
@@ -816,7 +883,9 @@ def adjust_weight_by_consecutive_losses(回测结果, max_weight=0.4, min_weight
         previous_day_data = 回测结果.filter(pl.col('trading_date') == previous_date)
 
         # 计算昨日的平均利润
-        avg_profit = previous_day_data['profit'].mean() if previous_day_data.height > 0 else 0.0
+        avg_profit = previous_day_data['profit'].drop_nulls().mean() if previous_day_data.height > 0 else 0.0
+        if avg_profit is None:
+            avg_profit = 0.0
 
         # 判断昨日是否亏损
         if avg_profit < 0:
@@ -831,7 +900,7 @@ def adjust_weight_by_consecutive_losses(回测结果, max_weight=0.4, min_weight
             date_weight.append((current_date, max_weight))
 
     # 将日期-权重映射转为DataFrame
-    weight_df = pl.DataFrame(date_weight, schema=['trading_date', return_column])
+    weight_df = pl.DataFrame(date_weight, schema=['trading_date', return_column], orient="row")
 
     # 通过trading_date关联，给每天的所有股票赋当天的权重
     回测结果 = 回测结果.join(weight_df, on='trading_date', how='left')
@@ -903,7 +972,7 @@ def mark_weight(回测结果, max_weight=0.4, min_weight=0.3):
             date_weight.append((current_date, max_weight))
 
     # 将日期-权重映射转为DataFrame
-    weight_df = pl.DataFrame(date_weight, schema=['trading_date', 'weight'])
+    weight_df = pl.DataFrame(date_weight, schema=['trading_date', 'weight'], orient="row")
 
     # 通过trading_date关联，给每天的所有股票赋当天的权重
     回测结果 = 回测结果.join(weight_df, on='trading_date', how='left')

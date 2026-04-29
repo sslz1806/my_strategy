@@ -288,17 +288,17 @@ def get_all_stocks(date):
         (symbol_details['listed_days'] >= 100)
     ]['symbol'].tolist()
 
-    # ---------------------- 3. 流通市值过大或者国小 ----------------------
+    # ---------------------- 3. 市值过滤 ----------------------
     mktvalue_data = stk_get_daily_mktvalue_pt(
         symbols=filtered_symbols,
-        fields=['a_mv','a_mv_ex_limited'],
+        fields=['a_mv'],
         trade_date=current_date.strftime('%Y-%m-%d'),
         df=True
     )
-        # 过滤条件：市值25亿<=tot_mv<=1000亿
+        # 过滤条件：市值30亿<=a_mv<=1000亿（使用总市值，因API不支持流通市值）
     final_symbols =  mktvalue_data [
-        (mktvalue_data ['a_mv_ex_limited'] >= 30e8) &
-        (mktvalue_data ['a_mv_ex_limited'] <= 1000e8)
+        (mktvalue_data ['a_mv'] >= 40e8) &
+        (mktvalue_data ['a_mv'] <= 1000e8)
     ]['symbol'].tolist()
     return final_symbols
 
@@ -310,7 +310,7 @@ class stock_api:
         }
         ):
         import tushare as ts
-        set_token(config['token'])
+        set_token(config['token']) #f60e5c28159d9dc4e3d51de7dd16d5e132f70841
         self.config = config
         self.m_ts =tns.pro_api(config["mins_token"]) if "mins_token" in config else None
         #self.ts =tns.pro_api(config["ts_token"]) if "ts_token" in config else None
