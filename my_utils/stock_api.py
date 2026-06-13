@@ -742,13 +742,19 @@ class stock_api:
         return final_df
 
     # 利用掘金api获取特定股票的1min分钟数据,并合成需要的n分钟数据
-    def gm_get_minute_data(self,symbols,start_time='2025-10-01',end_time='2025-11-11',frequency='900s',n=15):
+    def gm_get_minute_data(self,symbols,start_time='2025-10-01',end_time='2025-11-11',frequency='900s',n=15,align='left'):
         """
         symbols: 股票代码列表
         start_time: 开始时间 '2023-01-01 09:30:00'
         end_time: 结束时间 '2023-01-31 15:00:00'
         frequency: 原始分钟数据频率，默认'60s'
         n: 目标分钟数据频率，如5表示5分钟
+        align: bar时间戳对齐方式
+            'left'  - 左对齐(默认,兼容历史数据): datetime取bob(bar开始时间),
+                      并在11:30/15:00各补一根OHLC全为close的快照bar
+            'right' - 右对齐: datetime取eob(bar结束时间), 并在09:30/13:00各补
+                      一根OHLC全为该时段首根bar开盘价(open)的快照bar,
+                      与左对齐的close快照逻辑完全镜像,同样为18根bar/天
         """
         all_data = []
         for symbol in symbols:
@@ -758,34 +764,56 @@ class stock_api:
                 if df is None or df.empty:
                     logging.info(f"{symbol} 无分钟数据，跳过")
                     continue
-                # 处理需要复制的特殊时段（eob为11:30或15:00）
                 df['symbol'] = symbol
                 # 移除时区信息（转换为naive datetime）
                 df['bob'] = df['bob'].dt.tz_localize(None)
                 df['eob'] = df['eob'].dt.tz_localize(None)
-                new_rows = []
-                for _, row in df.iterrows():
-                    # 保留原始行
-                    new_rows.append(row)
 
-                    # 检查结束时间是否为11:30或15:00（忽略日期部分）
-                    eob_time = row['eob'].time()
-                    if eob_time in (pd.Timestamp('11:30:00').time(), pd.Timestamp('15:00:00').time()):
-                        # 复制一行作为新K线
-                        new_row = row.copy()
-                        # 新K线的开始时间设为原结束时间（11:30:00或15:00:00）
-                        new_row['bob'] = row['eob']
-                        # 新K线的结束时间 = 开始时间（因为是1分钟周期逻辑）
-                        new_row['eob'] = new_row['bob']
-                        # 高开低收均设为原K线的收盘价
-                        new_row[['open', 'high', 'low', 'close']] = row['close']
-                        new_rows.append(new_row)
-                # 转换为DataFrame并按时间排序
-                processed_df = pd.DataFrame(new_rows).sort_values('bob')
-                # 去重处理（防止极端情况的重复）
-                processed_df = processed_df.drop_duplicates(subset=['bob', 'symbol'])
-                # 移除临时的eob列
-                processed_df = processed_df.drop(columns=['eob'])
+                if align == 'right':
+                    # 右对齐：时间戳取eob，并为时段起点补开盘快照（镜像左对齐的close快照逻辑）
+                    new_rows = []
+                    for _, row in df.iterrows():
+                        # 检查开始时间是否为09:30或13:00，即时段第一根bar（忽略日期部分）
+                        bob_time = row['bob'].time()
+                        if bob_time in (pd.Timestamp('09:30:00').time(), pd.Timestamp('13:00:00').time()):
+                            # 复制一行作为开盘快照K线，时间戳取时段起点（09:30:00或13:00:00）
+                            new_row = row.copy()
+                            new_row['eob'] = row['bob']
+                            # 高开低收均设为原K线的开盘价
+                            new_row[['open', 'high', 'low', 'close']] = row['open']
+                            new_rows.append(new_row)
+                        # 保留原始行
+                        new_rows.append(row)
+                    processed_df = pd.DataFrame(new_rows).sort_values('eob')
+                    # 去重处理（防止极端情况的重复）
+                    processed_df = processed_df.drop_duplicates(subset=['eob', 'symbol'])
+                    # 移除临时的bob列
+                    processed_df = processed_df.drop(columns=['bob'])
+                else:
+                    # 左对齐：处理需要复制的特殊时段（eob为11:30或15:00）
+                    new_rows = []
+                    for _, row in df.iterrows():
+                        # 保留原始行
+                        new_rows.append(row)
+
+                        # 检查结束时间是否为11:30或15:00（忽略日期部分）
+                        eob_time = row['eob'].time()
+                        if eob_time in (pd.Timestamp('11:30:00').time(), pd.Timestamp('15:00:00').time()):
+                            # 复制一行作为新K线
+                            new_row = row.copy()
+                            # 新K线的开始时间设为原结束时间（11:30:00或15:00:00）
+                            new_row['bob'] = row['eob']
+                            # 新K线的结束时间 = 开始时间（因为是1分钟周期逻辑）
+                            new_row['eob'] = new_row['bob']
+                            # 高开低收均设为原K线的收盘价
+                            new_row[['open', 'high', 'low', 'close']] = row['close']
+                            new_rows.append(new_row)
+                    # 转换为DataFrame并按时间排序
+                    processed_df = pd.DataFrame(new_rows).sort_values('bob')
+                    # 去重处理（防止极端情况的重复）
+                    processed_df = processed_df.drop_duplicates(subset=['bob', 'symbol'])
+                    # 移除临时的eob列
+                    processed_df = processed_df.drop(columns=['eob'])
                 all_data.append(processed_df)
 
                 #logging.info(f"已获取并合成 {symbol} 的{n}分钟数据")
@@ -798,14 +826,15 @@ class stock_api:
 
         combined_df = pd.concat(all_data, ignore_index=True)
 
-        # 列重命名
-        combined_df.rename(columns={'bob': 'datetime','symbol':'code'}, inplace=True)
+        # 列重命名：左对齐保留的是bob列，右对齐保留的是eob列，统一改名为datetime
+        time_col = 'eob' if align == 'right' else 'bob'
+        combined_df.rename(columns={time_col: 'datetime','symbol':'code'}, inplace=True)
         combined_df['datetime'] = convert_date_format(combined_df['datetime'],to_format='datetime')
         return combined_df.drop(columns=['frequency','position'])
 
     # 批量多线程获取多个股票的n分钟数据,不包括end_time的date的数据,end_time的date需要加一天
     #@staticmethod
-    def gm_batch_get_minute_data(self,symbols,start_time='2025-10-01',end_time='2025-11-11',frequency='900s',n=15,batch_size=100, max_workers=15):
+    def gm_batch_get_minute_data(self,symbols,start_time='2025-10-01',end_time='2025-11-11',frequency='900s',n=15,batch_size=100, max_workers=15,align='left'):
         """
         批量多线程获取多个股票的n分钟数据
 
@@ -817,6 +846,7 @@ class stock_api:
             n: 目标分钟数据频率，如5表示5分钟
             batch_size: 每批处理的股票数量
             max_workers: 最大线程数，默认使用系统推荐值
+            align: bar时间戳对齐方式，'left'左对齐(默认)/'right'右对齐，详见gm_get_minute_data
 
         返回:
             所有股票合并后的n分钟数据DataFrame，如果全部失败则返回None
@@ -838,7 +868,8 @@ class stock_api:
                     start_time,
                     end_time,
                     frequency,
-                    n
+                    n,
+                    align
                 ): batch for batch in batches
             }
 

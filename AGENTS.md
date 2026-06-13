@@ -149,3 +149,14 @@ polars 特征 → select_stocks(daily_data) 返回目标股票列表
 - 体现资金约束、100 股取整、手续费、滑点与同日买卖顺序等执行细节
 - `backtester.report()` 已封装净值/回撤/基准对比三联图，不要自行重写绘图
 
+---
+
+## Python 环境约定（AI 助手必须遵守）
+
+- 本项目默认 Python 环境为 conda 环境 `quant`。
+- 在 Codex/PowerShell 中运行 Python、pytest、unittest、脚本或 Notebook 相关验证时，优先直接调用：
+  `E:\working\anaconda3\envs\quant\python.exe`
+- 不要默认使用系统 `python` 或 base conda 里的 `python`；这些环境可能缺少 `polars` 等项目依赖。
+- 如果确实需要通过 conda 启动，优先使用：
+  `E:\working\anaconda3\Scripts\conda.exe run -n quant python ...`
+- 当前环境中 `conda env list` 可能因为 conda 插件/权限问题失败；验证环境时优先直接执行上述 `quant` 解释器路径。

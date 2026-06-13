@@ -65,7 +65,8 @@ class TradeDelayTests(unittest.TestCase):
             trade_fun=fake_trade,
             start_date="2024-01-02",
             end_date="2024-01-02",
-            buy_delay_days=1,
+            trade_kwargs={"buy_delay_days": 1},
+            max_workers=1,
         )
 
         self.assertEqual(len(result_df), 1)
@@ -73,6 +74,140 @@ class TradeDelayTests(unittest.TestCase):
         self.assertEqual(merged_df["trading_date"].to_list(), [signal_date])
         self.assertEqual(merged_df["buy_time"].dt.date().to_list(), [buy_date])
         self.assertEqual(merged_df["profit"].to_list(), [5.0])
+
+    def test_cal_trade_info_passes_strategy_specific_trade_kwargs(self):
+        signal_date = dt.date(2024, 1, 2)
+        signal_df = pl.DataFrame(
+            {
+                "trading_date": [signal_date],
+                "code": ["000001"],
+                "signal": [1],
+            }
+        )
+        seen = {}
+
+        def fake_trade(code_list, trade_date, take_profit_pct):
+            seen["take_profit_pct"] = take_profit_pct
+            return [
+                {
+                    "code": code_list[0],
+                    "buy_time": dt.datetime.combine(trade_date, dt.time(9, 30)),
+                    "buy_price": 10.0,
+                    "sell_time": dt.datetime.combine(trade_date, dt.time(15, 0)),
+                    "sell_price": 12.8,
+                    "profit": take_profit_pct * 100,
+                    "holding_days": 1.0,
+                    "sell_reason": "take_profit_sell",
+                }
+            ]
+
+        result_df, merged_df = tf.cal_trade_info(
+            signal_df,
+            trade_fun=fake_trade,
+            start_date="2024-01-02",
+            end_date="2024-01-02",
+            trade_kwargs={"take_profit_pct": 0.28},
+            max_workers=1,
+        )
+
+        self.assertEqual(seen["take_profit_pct"], 0.28)
+        self.assertEqual(len(result_df), 1)
+        self.assertEqual(merged_df["profit"].to_list(), [28.000000000000004])
+
+    def test_cal_trade_info_keeps_legacy_direct_strategy_kwargs_compatible(self):
+        signal_date = dt.date(2024, 1, 2)
+        signal_df = pl.DataFrame(
+            {
+                "trading_date": [signal_date],
+                "code": ["000001"],
+                "signal": [1],
+            }
+        )
+        seen = {}
+
+        def fake_trade(code_list, trade_date, buy_delay_days):
+            seen["buy_delay_days"] = buy_delay_days
+            return [
+                {
+                    "code": code_list[0],
+                    "buy_time": dt.datetime.combine(trade_date, dt.time(9, 30)),
+                    "buy_price": 10.0,
+                    "sell_time": dt.datetime.combine(trade_date, dt.time(15, 0)),
+                    "sell_price": 10.0,
+                    "profit": 0.0,
+                    "holding_days": 1.0,
+                    "sell_reason": "legacy_kwargs_sell",
+                }
+            ]
+
+        result_df, merged_df = tf.cal_trade_info(
+            signal_df,
+            trade_fun=fake_trade,
+            start_date="2024-01-02",
+            end_date="2024-01-02",
+            buy_delay_days=1,
+            max_workers=1,
+        )
+
+        self.assertEqual(seen["buy_delay_days"], 1)
+        self.assertEqual(len(result_df), 1)
+        self.assertEqual(merged_df.height, 1)
+
+    def test_cal_trade_info_keeps_lambda_trade_fun_compatible(self):
+        signal_date = dt.date(2024, 1, 2)
+        signal_df = pl.DataFrame(
+            {
+                "trading_date": [signal_date],
+                "code": ["000001"],
+                "signal": [1],
+            }
+        )
+
+        def fake_trade(code_list, trade_date, x):
+            return [
+                {
+                    "code": code_list[0],
+                    "buy_time": dt.datetime.combine(trade_date, dt.time(9, 30)),
+                    "buy_price": 10.0,
+                    "sell_time": dt.datetime.combine(trade_date, dt.time(15, 0)),
+                    "sell_price": 10.0 + x,
+                    "profit": x,
+                    "holding_days": 1.0,
+                    "sell_reason": "lambda_sell",
+                }
+            ]
+
+        result_df, merged_df = tf.cal_trade_info(
+            signal_df,
+            trade_fun=lambda code_list, trade_day: fake_trade(code_list, trade_day, x=1),
+            start_date="2024-01-02",
+            end_date="2024-01-02",
+            max_workers=1,
+        )
+
+        self.assertEqual(len(result_df), 1)
+        self.assertEqual(merged_df["profit"].to_list(), [1])
+
+    def test_cal_trade_info_handles_empty_trade_results(self):
+        signal_date = dt.date(2024, 1, 2)
+        signal_df = pl.DataFrame(
+            {
+                "trading_date": [signal_date],
+                "code": ["000001"],
+                "signal": [1],
+            }
+        )
+
+        result_df, merged_df = tf.cal_trade_info(
+            signal_df,
+            trade_fun=lambda code_list, trade_day: [],
+            start_date="2024-01-02",
+            end_date="2024-01-02",
+            max_workers=1,
+        )
+
+        self.assertEqual(len(result_df), 0)
+        self.assertEqual(merged_df.height, 1)
 
     def test_trade_starts_sell_scan_after_delayed_buy_date(self):
         code = "000001"

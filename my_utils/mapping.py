@@ -42,6 +42,8 @@ def convert_code_format(code,format='gm'):
     """
     转换股票代码格式，支持多种输入格式(过滤北交所):
     - 000001.SZ -> SZSE.000001
+    - 000001.XSHE -> SZSE.000001
+    - 600000.XSHG -> SHSE.600000
     - sz000001 -> SZSE.000001
     - 600000.SH -> SHSE.600000
     - sh600000 -> SHSE.600000
@@ -62,7 +64,10 @@ def convert_code_format(code,format='gm'):
         # 1.处理输入代码
         # 处理带点的格式 (000001.SZ,SHSE.000001)
         if '.' in code:
-            if '.SZ' in code or '.SH' in code:
+            if '.XSHE' in code or '.XSHG' in code:
+                code_num, market = code.split('.')
+                market = market.upper()
+            elif '.SZ' in code or '.SH' in code:
                 code_num, market = code.split('.')
                 market = market.upper()
             elif 'SZSE' in code or 'SHSE' in code:
@@ -88,16 +93,16 @@ def convert_code_format(code,format='gm'):
 
         # 2.统一处理市场代码
         if format=='gm': #掘金格式
-            if market in ['SH', 'SHSE']:
+            if market in ['SH', 'SHSE', 'XSHG']:
                 return f'SHSE.{code_num}'
-            elif market in ['SZ', 'SZSE']:
+            elif market in ['SZ', 'SZSE', 'XSHE']:
                 return f'SZSE.{code_num}'
             else:
                 raise ValueError(f"Unknown market code: {market}")
         elif format=='suffix':
-            if market in ['SH', 'SHSE']:
+            if market in ['SH', 'SHSE', 'XSHG']:
                 return f'{code_num}.SH'
-            elif market in ['SZ', 'SZSE']:
+            elif market in ['SZ', 'SZSE', 'XSHE']:
                 return f'{code_num}.SZ'
             else:
                 raise ValueError(f"Unknown market code: {market}")

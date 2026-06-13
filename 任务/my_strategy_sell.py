@@ -72,8 +72,6 @@ def gm_add_auction(stock_data):
 
         
         
-        # 5. 合并
-        concat_data = stock_data.vstack(new_data_pl, in_place=False)
         # 5. 合并并重新排序（关键：确保时间顺序正确）
         concat_data = stock_data.vstack(new_data_pl, in_place=False)
         concat_data = concat_data.sort(by=['code', 'trading_date'])  # 按股票+日期排序
@@ -97,7 +95,7 @@ def gm_add_auction(stock_data):
             )
 
         # 7.填充缺失值,[free_float_mv,name,type_name,type,industry]这些列如果有缺失,则用前一交易日的填充（核心修正）
-        need_cols = ['free_float_mv', 'name', 'type_name', 'type', 'industry']
+        need_cols = ['free_float_mv', 'name', 'type_name', 'type', 'industry', 'mv_A_free_float', 'total_mv', 'is_st']
         for col in need_cols:
             if col in concat_data.columns:
                 concat_data = concat_data.with_columns(
@@ -141,6 +139,7 @@ today_str = today.strftime("%Y-%m-%d")
 if stock_data is not None:
     if today in stock_data['trading_date'].unique():
         logging.info(f"验证成功：数据中已包含 {today_str} 的行情")
+        stocks_data = stock_data
     else:
         #stocks_data = ts_add_auction(stocks_data,m_ts)
         stocks_data = gm_add_auction(stock_data)
@@ -198,7 +197,7 @@ if __name__ == "__main__":
             logging.info(f"{code} 没有找到当天数据，无法判断是否卖出，跳过")
             continue
         current_price = code_data.select(pl.col('close')).item()
-        current_pct = code_data.select(pl.col('pct')).item()
+        current_pct = code_data.select(pl.col('pct')).item()*100
         open_price = code_data.select(pl.col('open')).item()
         open_pct = (open_price / code_data.select(pl.col('pre_close')).item() - 1) * 100
         

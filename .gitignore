@@ -1,0 +1,13 @@
+# Python cache files
+__pycache__/
+*.pyc
+
+# Runtime logs and redirected command output
+*.log
+*.tmp
+stdout.txt
+stderr.txt
+run_output.txt
+
+# OS metadata
+desktop.ini

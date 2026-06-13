@@ -42,13 +42,15 @@ def calculate_time_ratio(current_time):
 
 # 保持原有的trade函数不变，但修改参数以适应并行处理
 def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_pct=0.09,
-          buy_delay_days=0, extend_holding_days=0, day_data_file_path='gm_stock_all_data'):
+          buy_delay_days=0, extend_holding_days=0, day_data_file_path='gm_stock_all_data',
+          min_data_file_path='15min_stock_data_dir'):
     """
     并行处理的单个交易任务
     params包含: code_list, trade_date, interval参数等
     buy_delay_days: 买入延迟天数，0表示信号日买入，1表示信号日后第一个交易日买入，以此类推
     extend_holding_days: 持仓延长天数，延长期内只判断止损，其他卖出条件忽略
     day_data_file_path: 日线数据源，默认使用掘金数据 gm_stock_all_data
+    min_data_file_path: 分钟线数据源，默认使用原有15分钟目录；使用米筐数据时传入 rq_15min_stock_data_dir
     """
     # 参数边界检查
     if not (0 <= buy_delay_days <= 5):
@@ -69,7 +71,7 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_
         stock_data = read_day_data(start_date,end_date,code_list,file_path=day_data_file_path)
 
         # 获取日线数据（用于补充pre_close, limit_up等字段）
-        mins_data = read_min_data(start_date,end_date,code_list)
+        mins_data = read_min_data(start_date,end_date,code_list,file_path=min_data_file_path)
 
         # 获取复权因子数据
         if need_adj and 'adj_factor' in stock_data.columns:
@@ -540,15 +542,16 @@ def limit_up_trade(code_list,trade_date,fee_rate = 0.004,need_adj=True,stop_loss
 
 
 def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_date: str = None,
-                  buy_delay_days: int = 0, extend_holding_days: int = 0,
-                  day_data_file_path: str = 'gm_stock_all_data'):
+                  trade_kwargs: dict = None, max_workers: int = None, **legacy_trade_kwargs):
     """
     批量处理信号文件，多进程并行回测
     注意：不再传trade_fun参数，直接调用修正后的trade函数（避免参数传递冗余）
 
-    buy_delay_days: 买入延迟天数，0表示信号日买入，1表示信号日后第一个交易日买入
-    extend_holding_days: 持仓延长天数，延长期内只判断止损，其他卖出条件忽略
-    day_data_file_path: trade_fun 内部读取日线数据使用的数据源
+    trade_kwargs: 传给 trade_fun 的策略参数字典。cal_trade_info 只负责调度，
+        不理解也不硬编码任何具体策略参数。
+    max_workers: 并行线程数。None 表示沿用默认 CPU 数量规则。
+    **legacy_trade_kwargs: 兼容旧写法，例如直接传 buy_delay_days=1。
+        这些参数会被合并进 trade_kwargs 后统一传给 trade_fun。
 
     返回:
     result_df:回测的结果文件 - pd
@@ -558,19 +561,20 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
     from functools import partial
     logging = get_logger()
 
-    # 参数边界检查
-    if not (0 <= buy_delay_days <= 5):
-        raise ValueError(f"buy_delay_days must be in [0, 5], got {buy_delay_days}")
-    if not (0 <= extend_holding_days <= 2):
-        raise ValueError(f"extend_holding_days must be in [0, 2], got {extend_holding_days}")
-
-    # 使用 partial 绑定额外参数
-    trade_with_params = partial(
-        trade_fun,
-        buy_delay_days=buy_delay_days,
-        extend_holding_days=extend_holding_days,
-        day_data_file_path=day_data_file_path
-    )
+    # 策略参数统一由 trade_kwargs 承载，cal_trade_info 不再关心具体策略参数名。
+    # legacy_trade_kwargs 仅用于兼容旧 Notebook 中 cal_trade_info(..., buy_delay_days=1)
+    # 这类直接传参写法，后续推荐逐步迁移到 trade_kwargs={...}。
+    if trade_kwargs is None:
+        trade_kwargs = {}
+    elif not isinstance(trade_kwargs, dict):
+        raise TypeError(f"trade_kwargs must be a dict or None, got {type(trade_kwargs).__name__}")
+    else:
+        trade_kwargs = dict(trade_kwargs)
+    duplicate_keys = set(trade_kwargs).intersection(legacy_trade_kwargs)
+    if duplicate_keys:
+        raise ValueError(f"trade_kwargs and legacy keyword arguments duplicate keys: {sorted(duplicate_keys)}")
+    trade_kwargs.update(legacy_trade_kwargs)
+    trade_with_params = partial(trade_fun, **trade_kwargs)
 
     if isinstance(start_date, str):
         start_date = dt.datetime.strptime(start_date, "%Y-%m-%d").date()
@@ -659,7 +663,10 @@ def cal_trade_info(信号文件:pd, trade_fun=trade,start_date: str = None, end_
 
     tasks = [(stocks, date) for date, stocks in date_to_stocks.items()]
     # # 计算最大进程数（避免占用全部CPU）
-    max_workers = max(1, int(cpu_count()*2))
+    if max_workers is None:
+        max_workers = max(1, int(cpu_count()*2))
+    else:
+        max_workers = max(1, int(max_workers))
     logging.info(f"使用{max_workers}个进程并行处理，共{len(tasks)}个日期任务")
 
     # # 多进程执行（用partial固定trade_fun的参数结构，确保和任务格式匹配）

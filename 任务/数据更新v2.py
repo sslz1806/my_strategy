@@ -97,10 +97,13 @@ def update_day_data_gm(day_data, save_dir='gm_stock_all_data', mode='insert'):
 
 
 #%% 利用基础行情的数据更新分钟数据
-def update_min_data_by_day_data_gm(day_data, min_data_dir='15min_stock_data_dir', n=15):
+def update_min_data_by_day_data_gm(day_data, min_data_dir='15min_stock_data_dir', n=15, align='left'):
     """
     day_data:polars DataFrame,包含交易日和股票代码等信息
     min_data_dir:分钟数据文件存储目录,parquet格式
+    align:bar时间戳对齐方式,'left'左对齐(默认,datetime=bar开始时间,11:30/15:00补close快照)
+          /'right'右对齐(datetime=bar结束时间,09:30/13:00补open快照),均为18根bar/天,
+          不同对齐方式必须存到不同目录
     从day_data中获取交易日,然后对每个交易日中的股票,更新对应的分钟数据文件
     """
     import os
@@ -149,7 +152,8 @@ def update_min_data_by_day_data_gm(day_data, min_data_dir='15min_stock_data_dir'
                 end_time=date + datetime.timedelta(days=1),
                 frequency=f'{n*60}s',
                 n=n,
-                max_workers=16
+                max_workers=16,
+                align=align
             )
 
             if min_data is not None and not min_data.empty:
@@ -277,11 +281,19 @@ exsist_data = read_day_data(
 )
 
 if exsist_data is not None and not exsist_data.is_empty():
-    # 增量更新分钟数据
+    # 增量更新分钟数据：左右对齐两套数据分别维护在不同目录
+    # 左对齐目录(兼容现有回测/实盘代码): datetime=bar开始时间, 11:30/15:00为close快照
     update_min_data_by_day_data_gm(
         exsist_data,
         min_data_dir='15min_stock_data_dir',
         n=15
+    )
+    # 右对齐目录: datetime=bar结束时间, 09:30/13:00为open快照(与左对齐close快照镜像)
+    update_min_data_by_day_data_gm(
+        exsist_data,
+        min_data_dir='15min_stock_data_right_dir',
+        n=15,
+        align='right'
     )
 else:
     print("没有新的日线数据，跳过分钟数据更新")

@@ -78,8 +78,6 @@ def gm_add_auction(stock_data):
 
         
         
-        # 5. 合并
-        concat_data = stock_data.vstack(new_data_pl, in_place=False)
         # 5. 合并并重新排序（关键：确保时间顺序正确）
         concat_data = stock_data.vstack(new_data_pl, in_place=False)
         concat_data = concat_data.sort(by=['code', 'trading_date'])  # 按股票+日期排序
@@ -214,7 +212,7 @@ stocks_data = stocks_data.with_columns([
 params_dict={
     'low':-5,
     'high':-2.5,
-    'mv_min':30,
+    'mv_min':25,
     'mv_max':1000,
     'prev_limit_status':['断板','炸板'],
     'avg_limit_turnover_5_min':-1
@@ -278,10 +276,10 @@ from my_utils.fun import *
 from my_utils.trade_fun import adjust_weight_by_near_n, adjust_weight_by_consecutive_losses # 触及跌停调仓
 
 # 1.仓位控制风控(merged_df_with_weight)
-merged_df_with_weight = adjust_weight_by_near_n(merged_df,return_column='weight_touch_limit_down') 
+merged_df_with_weight = adjust_weight_by_near_n(merged_df, max_weight=0.45, return_column='weight_touch_limit_down')
 """触及跌停风控"""
 # 2.连续亏损风控
-merged_df_with_weight = adjust_weight_by_consecutive_losses(merged_df_with_weight,return_column='weight_consec_loss')
+merged_df_with_weight = adjust_weight_by_consecutive_losses(merged_df_with_weight, max_weight=0.45, return_column='weight_consec_loss')
 merged_df_with_weight = merged_df_with_weight.with_columns(
     pl.when(pl.col("weight_touch_limit_down") == pl.col("weight_consec_loss")) # 相等时取任意一列的值（结果一致）
     .then(pl.col("weight_touch_limit_down"))  # 相等时取任意一列的值（结果一致）
@@ -310,11 +308,11 @@ merged_df_with_weight_adjust = merged_df_with_weight.with_columns(
 ) #买点下移回测
 """买点下移风控"""
 merged_df_with_weight_adjust = merged_df_with_weight_adjust.with_columns(
-    (pl.col("profit") *0.4).alias("weight_profit")
+    (pl.col("profit") * 0.45).alias("weight_profit")
 )
 
-merged_df = merged_df.with_columns((pl.col("profit") *0.4).alias("weight_profit"))
-result_df['weight_profit'] = result_df['profit'] *0.4
+merged_df = merged_df.with_columns((pl.col("profit") * 0.45).alias("weight_profit"))
+result_df['weight_profit'] = result_df['profit'] * 0.45
 
 
 # 回测结果汇报
@@ -347,9 +345,12 @@ if __name__ == "__main__":
     from my_utils.mapping import convert_code_format
     import time 
     asset = xt_trader.query_stock_asset(ID)
-    # 正确的日志写法：将所有内容合并为一个字符串
+    # 先判空再访问属性
+    if not asset:
+        logging.error("获取资产信息失败，终止执行")
+        sys.exit(1)
     logging.info('-'*18 + '【%s】' % asset.account_id + '-'*18)
-    if asset:logging.info(f"资产总额: {asset.total_asset}\n"  
+    logging.info(f"资产总额: {asset.total_asset}\n"
                     f"持仓市值：{asset.market_value}\n"
                     f"可用资金：{asset.cash}\n")
     # 给today_trades增加一列分配资金,分配资金=min(可用资金,总资产*仓位)
@@ -363,21 +364,41 @@ if __name__ == "__main__":
 
     # 批量异步下单：5笔订单，瞬间提交
     seq_list = []  # 存所有请求序号
-    if len(code_list) == 0:
-        logging.info("没有符合条件的交易信号，今日不执行任何订单。")
-    if available_cash <= 0 and 仓位<=0:
-        logging.info("信号空仓")
-    print(code_list)
-    add_rate = 0.006
-    if input("是否增加开盘价加0.2%作为下单价格？(y/n)") == 'y':
+    if len(code_list) == 0 or available_cash <= 0 or 仓位 <= 0:
+        logging.info("没有符合条件的交易信号或资金不足，今日不执行任何订单。")
+        sys.exit(0)
+    logging.info(f"今日信号股票: {code_list}")
+    add_rate = 0.006  # 买点上移0.6%，可以根据需要调整
+    # input 超时自动同意：09:29:30 前可手动输入，到点未输入则自动 y
+    import msvcrt
+    cutoff_time = dt.time(9, 29, 00)
+    now_time = dt.datetime.now().time()
+    if now_time >= cutoff_time:
+        # 已过截止时间，直接自动同意
+        user_input = 'y'
+        logging.info(f"当前时间 {now_time.strftime('%H:%M:%S')} ≥ 09:29:30，自动确认增加开盘价加0.6%作为下单价格")
+    else:
+        # 未到截止时间，显示提示并等待输入（超时自动 y）
+        logging.info(f"当前时间 {now_time.strftime('%H:%M:%S')}，是否增加开盘价加0.6%作为下单价格？(y/n) 在 09:29:30 前未输入将自动同意")
+        user_input = ''
+        while dt.datetime.now().time() < cutoff_time:
+            if msvcrt.kbhit():
+                ch = msvcrt.getch().decode().lower()
+                if ch == 'y' or ch == 'n':
+                    user_input = ch
+                    break
+            time.sleep(0.1)
+        if not user_input:
+            user_input = 'y'
+            logging.info("输入超时（已过 09:29:30），自动同意")
+    if user_input == 'y':
         for i, (code, open_price,name) in enumerate(zip(code_list, open_list,name_list)):
             # 计算每单股票数量
             if allocated_cash > 0 and open_price > 0:
                 order_vol = allocated_cash / open_price  # 计算理论上的订单数量
                 if order_vol < 70 : # 80股以下不下单
                     logging.info(f"订单数量不足，跳过下单 {code}，理论数量: {order_vol:.2f}")
-                    allocated_cash += (allocated_cash/len(code_list)-1)  # 将这部分资金重新分配到下一单
-                    continue  # 跳过这单
+                    continue  # 跳过这单，资金留存在账户中
                 elif order_vol>=80 and order_vol<100:
                     order_vol = 100  # 最小下单数量为100股
                 else:
