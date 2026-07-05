@@ -155,9 +155,8 @@ signal = (原有的全部条件) & trend_filters
 class TrendFilterConfig:
     composite_threshold: float = 0.5    # 综合得分门槛
     rsq_min: float = 0.6                # 最低R²要求
-    max_drawdown: float = 0.15          # 最大可接受回撤
-    slope_windows: list = [20, 60, 120] # 斜率计算窗口
-    slope_weights: list = [0.2, 0.5, 0.3]  # 窗口权重
+    # 注意：stability_maxdd_60 是回撤倒数(=1/(1-low/high))，值越大回撤越小
+    # 断板低开票60日回撤普遍40-68%，所以此条件不纳入默认过滤
 ```
 
 ## 五、因子报告输出
