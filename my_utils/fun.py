@@ -14,7 +14,8 @@ import numpy as np
 from my_utils.mapping import *
 import os
 import logging
-from typing import Optional,Dict
+from typing import Optional, Dict
+from dataclasses import dataclass
 
 
 def get_logger(
@@ -617,6 +618,265 @@ def add_ewma_volatility(stock_data: pl.DataFrame, window: int = 10, alpha: float
     stock_data = stock_data.group_by("code").map_groups(calc_ewma_vol)
     stock_data = stock_data.drop(["return_squared", "initial_variance"])
     return stock_data
+
+
+def add_trend_slope_rsq(df: pl.DataFrame, window: int = 60) -> pl.DataFrame:
+    """
+    计算滚动线性回归的标准化斜率与R²。
+
+    对每只股票，用过去window天的收盘价对时间索引做一元OLS。
+    使用 rolling_sum 组件计算，避免使用 pl.corr 的滚动问题。
+
+    公式推导：
+      相对时间 x = [0, 1, ..., W-1]
+      Σx = W(W-1)/2,  Σx² = (W-1)W(2W-1)/6
+      denom = W·Σx² - (Σx)² = W²(W²-1)/12
+
+      β = (W·Σ(x·y) - Σx·Σy) / denom
+      R² = β²·SSx / SSy，其中 SSx = denom/W, SSy = Σ(y²) - (Σy)²/W
+
+      Σ(x·y) 用 rolling_sum(绝对位置·close) - (起始位置)·rolling_sum(close) 计算
+
+    参数:
+        df: 包含 'code', 'close' 列的 Polars DataFrame
+        window: 滚动窗口, 默认60
+
+    返回:
+        追加 trend_slope_{window}, trend_rsq_{window} 列的 DataFrame
+    """
+    slope_col = f"trend_slope_{window}"
+    rsq_col = f"trend_rsq_{window}"
+
+    df = df.sort(["code", "trading_date"])
+
+    # 每只股票内生成绝对时间索引
+    t_abs = pl.int_range(pl.len()).over("code").alias("_t")
+    df = df.with_columns(t_abs)
+
+    # 常数：相对时间 [0,1,...,W-1] 的和与平方和
+    sum_t = window * (window - 1) / 2
+    sum_t2 = (window - 1) * window * (2 * window - 1) / 6
+    denom = window * sum_t2 - sum_t ** 2  # = W²(W²-1)/12
+
+    # 滚动窗口起始位置
+    t_start = pl.col("_t") - window + 1
+
+    # 滚动组件：
+    # Σy = rolling_sum(close) 和 Σ(y²) 先加（无相互依赖）
+    df = df.with_columns([
+        pl.col("close").rolling_sum(window).over("code").alias("_sum_y"),
+        (pl.col("close") ** 2).rolling_sum(window).over("code").alias("_sum_y2"),
+    ])
+    # Σ(x·y) = Σ(t_abs·close) - t_start · Σy，依赖 _sum_y，分开计算
+    # Σ(t_abs · close)
+    df = df.with_columns(
+        ((pl.col("_t") * pl.col("close")).rolling_sum(window).over("code")
+         - t_start * pl.col("_sum_y")).alias("_sum_xy")
+    )
+
+    # 斜率 β = (W · Σ(x·y) - Σx · Σy) / denom
+    df = df.with_columns(
+        ((window * pl.col("_sum_xy") - sum_t * pl.col("_sum_y")) / denom)
+        .alias(slope_col)
+    )
+
+    # R² = β² · (denom/W) / (Σ(y²) - (Σy)²/W)
+    ss_x = denom / window  # Σ(x-x̄)²
+    ss_y = pl.col("_sum_y2") - pl.col("_sum_y") ** 2 / window
+    # 防止除零
+    ss_y_safe = pl.when(ss_y > 1e-12).then(ss_y).otherwise(None)
+    df = df.with_columns(
+        ((pl.col(slope_col) ** 2 * ss_x) / ss_y_safe)
+        .alias(rsq_col)
+    )
+
+    # 清理中间列
+    return df.drop(["_t", "_sum_y", "_sum_xy", "_sum_y2"])
+
+
+def add_trend_slope_multi(
+    df: pl.DataFrame,
+    windows: list = [20, 60, 120],
+    weights: list = [0.2, 0.5, 0.3]
+) -> pl.DataFrame:
+    """
+    多窗口滚动斜率与R²合成。
+
+    分别计算多个窗口的标准化斜率和R²，按指定权重加权合成。
+
+    参数:
+        df: 包含 'code', 'close' 列的 Polars DataFrame
+        windows: 时间窗口列表，默认 [20, 60, 120]
+        weights: 对应窗口权重，默认 [0.2, 0.5, 0.3]
+
+    返回:
+        追加下列的 DataFrame:
+        - trend_slope: 多窗口加权合成标准化斜率
+        - trend_rsq: 多窗口加权合成R²
+        - trend_slope_{w} / trend_rsq_{w}: 各窗口单独值
+    """
+    if len(windows) != len(weights):
+        raise ValueError(f"windows({len(windows)}) 与 weights({len(weights)}) 长度不一致")
+
+    # 逐个窗口计算
+    for w in windows:
+        df = add_trend_slope_rsq(df, window=w)
+
+    # 合成：单个 with_columns + pl.sum_horizontal
+    df = df.with_columns(
+        pl.sum_horizontal(pl.col(f"trend_slope_{w}") * wt for w, wt in zip(windows, weights)).alias("trend_slope"),
+        pl.sum_horizontal(pl.col(f"trend_rsq_{w}") * wt for w, wt in zip(windows, weights)).alias("trend_rsq"),
+    )
+
+    return df
+
+
+def add_stability_factors(df: pl.DataFrame, window: int = 60) -> pl.DataFrame:
+    """
+    计算趋势稳定性补充因子。
+
+    包含三个子因子：
+    1. EWMA波动率倒数 — 波动越小越稳
+    2. 最大回撤倒数 — 回撤越小越稳
+    3. 上涨日占比 — 平稳上行市场的特征
+
+    参数:
+        df: 包含 'code', 'high', 'low', 'close', 'pre_close' 列的 Polars DataFrame
+        window: 滚动窗口, 默认60
+
+    返回:
+        追加 stability_ewmvol_{window}, stability_maxdd_{window},
+        stability_up_ratio_{window} 列的 DataFrame
+    """
+    col_ewmvol = f"stability_ewmvol_{window}"
+    col_maxdd = f"stability_maxdd_{window}"
+    col_up_ratio = f"stability_up_ratio_{window}"
+
+    df = df.sort(["code", "trading_date"])
+
+    # 1. 波动率倒数（pct滚动标准差的倒数）
+    df = df.with_columns(
+        (1.0 / (pl.col("pct").rolling_std(window).over("code") + 1e-8))
+        .alias(col_ewmvol)
+    )
+
+    # 2. 最大回撤倒数 = 1 / (1 - window内最低价/window内最高价)
+    rolling_low = pl.col("low").rolling_min(window).over("code")
+    rolling_high = pl.col("high").rolling_max(window).over("code")
+    df = df.with_columns(
+        (1.0 / (1.0 - rolling_low / rolling_high + 1e-8))
+        .alias(col_maxdd)
+    )
+
+    # 3. 上涨日占比
+    up_flag = (pl.col("close") > pl.col("pre_close")).cast(pl.Float64)
+    df = df.with_columns(
+        up_flag.rolling_mean(window).over("code").alias(col_up_ratio)
+    )
+
+    return df
+
+
+@dataclass
+class TrendFilterConfig:
+    """
+    趋势过滤参数配置。
+
+    所有阈值和权重集中管理，方便回测调参。
+    """
+    # 窗口与权重
+    slope_windows: list = None
+    slope_weights: list = None
+    stability_window: int = 60
+
+    # 综合评分权重
+    strength_weight: float = 0.5
+    stability_weight: float = 0.5
+
+    # 硬性门槛（低于此值直接淘汰）
+    rsq_min: float = 0.6
+    max_drawdown_max: float = 0.20
+
+    def __post_init__(self):
+        if self.slope_windows is None:
+            self.slope_windows = [20, 60, 120]
+        if self.slope_weights is None:
+            self.slope_weights = [0.2, 0.5, 0.3]
+
+
+def add_trend_composite_score(
+    df: pl.DataFrame,
+    config: TrendFilterConfig = None
+) -> pl.DataFrame:
+    """
+    计算趋势综合评分（截面标准化 + 加权合成 + 硬性门槛过滤）。
+
+    调用前需已存在以下列：
+    - trend_slope (来自 add_trend_slope_multi)
+    - trend_rsq (来自 add_trend_slope_multi 或 add_trend_slope_rsq)
+    - stability_* (来自 add_stability_factors)
+
+    评分流程：
+    1. 对每个子因子做截面 rank 标准化 (0~1)
+    2. 加权合成强度分 + 稳定性分
+    3. 硬性门槛过滤（不达标置零）
+    4. 综合分 = 强度分 × strength_weight + 稳定性分 × stability_weight
+
+    参数:
+        df: 已包含所有趋势因子列的 Polars DataFrame
+        config: TrendFilterConfig 配置对象，None 则使用默认
+
+    返回:
+        追加下列的 DataFrame:
+        - trend_strength: 趋势强度分 [0, 1]
+        - trend_stability: 趋势稳定性分 [0, 1]
+        - trend_composite: 综合得分 [0, 1]
+    """
+    if config is None:
+        config = TrendFilterConfig()
+
+    w = config.stability_window
+
+    # 1. 截面 rank 标准化（每天每只股票在截面上的百分位）
+    def rank_norm(col_name: str) -> pl.Expr:
+        """截面rank标准化 [0,1]"""
+        rank = pl.col(col_name).rank("dense").over("trading_date")
+        count = pl.col(col_name).count().over("trading_date")
+        denom = pl.when(count > 1).then(count - 1).otherwise(1)
+        return (rank - 1) / denom
+
+    # 强度子因子标准化
+    slope_norm = rank_norm("trend_slope")
+
+    # 稳定性子因子标准化
+    rsq_norm = rank_norm("trend_rsq")
+    ewmvol_norm = rank_norm(f"stability_ewmvol_{w}")
+    maxdd_norm = rank_norm(f"stability_maxdd_{w}")
+    upratio_norm = rank_norm(f"stability_up_ratio_{w}")
+
+    # 2. 加权合成
+    strength = slope_norm  # 趋势强度 = 标准化斜率
+
+    stability = (
+        rsq_norm * 0.40
+        + ewmvol_norm * 0.25
+        + maxdd_norm * 0.25
+        + upratio_norm * 0.10
+    )
+
+    # 3. 硬性门槛
+    # R² < rsq_min → 稳定性分置零
+    stability = pl.when(pl.col("trend_rsq") >= config.rsq_min) \
+        .then(stability).otherwise(0.0)
+
+    # 综合分
+    composite = strength * config.strength_weight + stability * config.stability_weight
+
+    return df.with_columns([
+        strength.alias("trend_strength"),
+        stability.alias("trend_stability"),
+        composite.alias("trend_composite"),
+    ])
 
 
 if __name__ == "__main__":
