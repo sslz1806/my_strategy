@@ -5,9 +5,15 @@
 1. 更新日线基础数据 (gm_stock_all_data)
 2. 更新15分钟数据 (15min_stock_data_dir 或 gm_15min_stock_data_dir)
 """
+import argparse
 import sys
+from typing import Optional
 DATA_ROOT_DIR = r'E:\working\stock_data'
 sys.path.append("C://Users/20561/Desktop/策略")
+
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 import polars as pl
 import datetime
@@ -23,12 +29,84 @@ logging = get_logger(log_file='log/数据更新v2.log', inherit=False)
 # 初始化API
 api = stock_api()
 
-print("=" * 70)
-print("掘金数据源数据更新脚本 v2")
-print("=" * 70)
+GM_MINUTE_HISTORY_WINDOW_DAYS = 180
 
-start_date = datetime.date(2025, 1, 1)  # 设置为你需要的起始日期
-end_date = datetime.date.today()  # 设置为今天
+
+def parse_args(argv=None):
+    """解析命令行参数；默认值保持 run_update_data.bat 的日常增量行为。"""
+    parser = argparse.ArgumentParser(description="掘金数据源数据更新脚本 v2")
+    parser.add_argument("--start-date", default="2025-01-01", help="起始日期 YYYY-MM-DD")
+    parser.add_argument(
+        "--end-date",
+        default=datetime.date.today().strftime("%Y-%m-%d"),
+        help="结束日期 YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=["insert", "update"],
+        default="insert",
+        help="insert=增量; update=按指定范围覆盖",
+    )
+    parser.add_argument("--skip-day", action="store_true", help="跳过日线更新")
+    parser.add_argument("--skip-min", action="store_true", help="跳过 15 分钟更新")
+    parser.add_argument(
+        "--allow-old-min",
+        action="store_true",
+        help="跳过 GM 分钟线最近 180 天权限保护；仅在账号已开通更长历史分钟权限时使用",
+    )
+    parser.add_argument(
+        "--min-align",
+        choices=["left", "right", "both"],
+        default="both",
+        help="分钟线对齐方式",
+    )
+    return parser.parse_args(argv)
+
+
+def parse_cli_date(value: str) -> datetime.date:
+    """将 CLI 日期字符串转换为 date，错误格式交给 argparse 风格异常提示。"""
+    return datetime.datetime.strptime(value, "%Y-%m-%d").date()
+
+
+def gm_minute_history_floor(today: Optional[datetime.date] = None) -> datetime.date:
+    """计算 GM 普通分钟 Bar 权限当前允许查询的最早日期。"""
+    if today is None:
+        today = datetime.date.today()
+    return today - datetime.timedelta(days=GM_MINUTE_HISTORY_WINDOW_DAYS)
+
+
+def check_gm_minute_history_window(
+    start_date: datetime.date,
+    today: Optional[datetime.date] = None,
+) -> tuple[bool, datetime.date]:
+    """
+    判断分钟线起始日期是否落在 GM 普通权限窗口内。
+
+    GM 接口在未开通更长历史权限时，只允许拉取最近 180 个自然日的分钟 Bar。
+    历史补数如果先按 update 模式清理旧分区、再发现接口无权限，会造成无意义
+    的失败循环；因此在进入分钟线写入逻辑前先做保护。
+    """
+    min_allowed_date = gm_minute_history_floor(today)
+    return start_date >= min_allowed_date, min_allowed_date
+
+
+def remove_date_partitions(save_dir: str, dates: list[datetime.date]) -> None:
+    """
+    只删除指定交易日分区。
+
+    历史 update 模式需要覆盖旧分区，但不能影响范围外数据；因此按
+    `trading_date=YYYY-MM-DD` 精确删除目标日期。
+    """
+    import shutil
+
+    target_dir = os.path.join(DATA_ROOT_DIR, save_dir)
+    for date in dates:
+        partition_dir = os.path.join(target_dir, f"trading_date={date:%Y-%m-%d}")
+        if os.path.exists(partition_dir):
+            shutil.rmtree(partition_dir)
+            print(f"已清理旧分区: {partition_dir}")
+
+
 #%% 更新日线基础数据
 def update_day_data_gm(day_data, save_dir='gm_stock_all_data', mode='insert'):
     """
@@ -39,7 +117,8 @@ def update_day_data_gm(day_data, save_dir='gm_stock_all_data', mode='insert'):
         save_dir: 保存目录名称
         mode: 更新模式，'insert'表示增量更新，'update'表示全量更新
     """
-    save_dir = os.path.join(DATA_ROOT_DIR, save_dir)
+    save_dir_name = save_dir
+    save_dir = os.path.join(DATA_ROOT_DIR, save_dir_name)
 
     # 创建目录（如果不存在）
     if not os.path.exists(save_dir):
@@ -61,6 +140,11 @@ def update_day_data_gm(day_data, save_dir='gm_stock_all_data', mode='insert'):
         print(f"增量更新模式: 保留 > {start_date} 的数据")
     else:
         new_data = day_data
+        if mode == 'update':
+            dates_to_update = (
+                new_data.select(pl.col("trading_date").unique().sort()).to_series().to_list()
+            )
+            remove_date_partitions(save_dir_name, dates_to_update)
         print(f"全量更新模式: 更新全部数据")
 
     if new_data.is_empty():
@@ -97,7 +181,13 @@ def update_day_data_gm(day_data, save_dir='gm_stock_all_data', mode='insert'):
 
 
 #%% 利用基础行情的数据更新分钟数据
-def update_min_data_by_day_data_gm(day_data, min_data_dir='15min_stock_data_dir', n=15, align='left'):
+def update_min_data_by_day_data_gm(
+    day_data,
+    min_data_dir='15min_stock_data_dir',
+    n=15,
+    align='left',
+    mode='insert',
+):
     """
     day_data:polars DataFrame,包含交易日和股票代码等信息
     min_data_dir:分钟数据文件存储目录,parquet格式
@@ -111,7 +201,8 @@ def update_min_data_by_day_data_gm(day_data, min_data_dir='15min_stock_data_dir'
     api = stock_api()
 
     # 没有目录则创建
-    min_data_dir = os.path.join(DATA_ROOT_DIR, min_data_dir)
+    min_data_dir_name = min_data_dir
+    min_data_dir = os.path.join(DATA_ROOT_DIR, min_data_dir_name)
     if not os.path.exists(min_data_dir):
         os.makedirs(min_data_dir)
 
@@ -133,7 +224,11 @@ def update_min_data_by_day_data_gm(day_data, min_data_dir='15min_stock_data_dir'
 
     # 2.获取需要更新的交易日列表
     trading_dates = day_data.select(pl.col("trading_date").unique()).to_series().to_list()
-    dates_to_update = [date for date in trading_dates if date not in existing_dates]
+    if mode == 'update':
+        dates_to_update = trading_dates
+        remove_date_partitions(min_data_dir_name, dates_to_update)
+    else:
+        dates_to_update = [date for date in trading_dates if date not in existing_dates]
     print(f"需要更新的交易日有{len(dates_to_update)}个: {dates_to_update}")
 
     from tqdm import tqdm
@@ -190,150 +285,182 @@ def update_min_data_by_day_data_gm(day_data, min_data_dir='15min_stock_data_dir'
     print(f"\n所有交易日处理完毕！共更新{len(dates_to_update)}个交易日的分钟数据")
 
 
-#%% 主程序执行
-print("\n" + "=" * 70)
-print("步骤1: 读取现有数据，获取最新日期")
-print("=" * 70)
+def main(argv=None) -> int:
+    """脚本入口：支持日常增量和指定历史区间覆盖更新。"""
+    args = parse_args(argv)
+    requested_start_date = parse_cli_date(args.start_date)
+    end_date = parse_cli_date(args.end_date)
 
-# 尝试读取现有掘金日线数据
-gm_data_dir = os.path.join(DATA_ROOT_DIR, 'gm_stock_all_data')
+    print("=" * 70)
+    print("掘金数据源数据更新脚本 v2")
+    print("=" * 70)
 
-if os.path.exists(gm_data_dir):
-    try:
-        exsist_data = read_day_data(
-            start_date=start_date,
-            end_date=end_date,
-            file_path='gm_stock_all_data'
-        )
-        latest_date = exsist_data.select(pl.col("trading_date").max()).item()
-        print(f"✓ 现有数据最新日期: {latest_date}")
-        print(f"  总记录数: {exsist_data.height}")
-        print(f"  字段数: {len(exsist_data.columns)}")
-        print(f"\n字段列表:")
-        for i, col in enumerate(exsist_data.columns, 1):
-            print(f"  {i}. {col}")
-    except Exception as e:
-        print(f"⚠ 读取现有数据失败: {e}")
-        exsist_data = None
-        latest_date = datetime.date(2020, 1, 1)
-else:
-    print(f"ℹ 数据目录不存在，将创建新数据: {gm_data_dir}")
+    if requested_start_date > end_date:
+        print(f"起始日期大于结束日期，无需更新: {requested_start_date} > {end_date}")
+        return 0
+
+    print("\n" + "=" * 70)
+    print("步骤1: 读取现有数据，获取最新日期")
+    print("=" * 70)
+
+    gm_data_dir = os.path.join(DATA_ROOT_DIR, 'gm_stock_all_data')
     exsist_data = None
-    latest_date = datetime.date(2020, 1, 1)
-    os.makedirs(gm_data_dir, exist_ok=True)
+    latest_date = None
 
+    if os.path.exists(gm_data_dir):
+        try:
+            exsist_data = read_day_data(
+                start_date=requested_start_date,
+                end_date=end_date,
+                file_path='gm_stock_all_data'
+            )
+            if exsist_data is not None and not exsist_data.is_empty():
+                latest_date = exsist_data.select(pl.col("trading_date").max()).item()
+                print(f"✓ 指定范围内现有数据最新日期: {latest_date}")
+                print(f"  总记录数: {exsist_data.height}")
+                print(f"  字段数: {len(exsist_data.columns)}")
+                print(f"\n字段列表:")
+                for i, col in enumerate(exsist_data.columns, 1):
+                    print(f"  {i}. {col}")
+            else:
+                print("指定范围内暂无现有日线数据")
+        except Exception as e:
+            print(f"⚠ 读取现有数据失败: {e}")
+            exsist_data = None
+    else:
+        print(f"ℹ 数据目录不存在，将创建新数据: {gm_data_dir}")
+        os.makedirs(gm_data_dir, exist_ok=True)
 
-print("\n" + "=" * 70)
-print("步骤2: 获取并更新日线数据")
-print("=" * 70)
+    update_start_date = requested_start_date
+    if args.mode == "insert" and latest_date is not None:
+        # 日常增量：从指定范围内已有最新日期的下一天开始；历史 update 不覆盖用户起点。
+        update_start_date = latest_date + datetime.timedelta(days=1)
 
-# 从最新日期的下一天开始
-if exsist_data is not None:
-    start_date = latest_date + datetime.timedelta(days=1)
-else:
-    # 首次运行，设置起始日期（可根据需要调整）
-    start_date = datetime.date(2020, 1, 1)
+    print("\n" + "=" * 70)
+    print("步骤2: 获取并更新日线数据")
+    print("=" * 70)
 
-print(f"更新日期范围: {start_date} ~ {end_date}")
-
-# 检查是否需要更新
-if start_date > end_date:
-    print("数据已是最新，无需更新")
-else:
-    print(f"需要获取 { (end_date - start_date).days + 1 } 天的数据")
-
-    # 调用掘金API批量获取数据
-    print("\n正在获取掘金数据，请稍候...")
-    day_data_df = api.gm_get_daily_data_multi_dates(
-        start_date=str(start_date),
-        end_date=str(end_date)
-    )
-
-    if day_data_df is not None and not day_data_df.empty:
-        print(f"\n✓ 数据获取成功！共 {len(day_data_df)} 条记录")
-        print(f"  交易日数量: {day_data_df['trading_date'].nunique()}")
-        print(f"  股票数量: {day_data_df['code'].nunique()}")
-
-        # 转换为Polars DataFrame
-        day_data_pl = pl.from_pandas(day_data_df)
-
-        # 确保trading_date是date类型
-        if day_data_pl['trading_date'].dtype != pl.Date:
-            day_data_pl = day_data_pl.with_columns(
-                pl.col('trading_date').cast(pl.Date).alias('trading_date')
+    if args.skip_day:
+        print("已指定 --skip-day，跳过日线更新")
+    else:
+        print(f"更新日期范围: {update_start_date} ~ {end_date}")
+        if update_start_date > end_date:
+            print("数据已是最新，无需更新")
+        else:
+            print(f"需要获取 {(end_date - update_start_date).days + 1} 天的数据")
+            print("\n正在获取掘金数据，请稍候...")
+            day_data_df = api.gm_get_daily_data_multi_dates(
+                start_date=str(update_start_date),
+                end_date=str(end_date)
             )
 
-        # 执行更新
-        update_day_data_gm(day_data_pl, save_dir='gm_stock_all_data', mode='insert')
+            if day_data_df is not None and not day_data_df.empty:
+                print(f"\n✓ 数据获取成功！共 {len(day_data_df)} 条记录")
+                print(f"  交易日数量: {day_data_df['trading_date'].nunique()}")
+                print(f"  股票数量: {day_data_df['code'].nunique()}")
+
+                day_data_pl = pl.from_pandas(day_data_df)
+                if day_data_pl['trading_date'].dtype != pl.Date:
+                    day_data_pl = day_data_pl.with_columns(
+                        pl.col('trading_date').cast(pl.Date).alias('trading_date')
+                    )
+
+                update_day_data_gm(day_data_pl, save_dir='gm_stock_all_data', mode=args.mode)
+            else:
+                print("✗ 数据获取失败或返回空数据")
+
+    print("\n" + "=" * 70)
+    print("步骤3: 更新分钟数据")
+    print("=" * 70)
+
+    if args.skip_min:
+        print("已指定 --skip-min，跳过分钟数据更新")
     else:
-        print("✗ 数据获取失败或返回空数据")
-        day_data_pl = None
+        min_start_date = update_start_date if not args.skip_day else requested_start_date
+        min_window_ok, min_allowed_date = check_gm_minute_history_window(min_start_date)
+        if not min_window_ok and not args.allow_old_min:
+            print(
+                f"掘金分钟线接口当前普通权限只允许最近 {GM_MINUTE_HISTORY_WINDOW_DAYS} 个自然日 Bar，"
+                f"最早可查日期约为 {min_allowed_date}；本次分钟起始日期为 {min_start_date}。"
+            )
+            print(
+                "已在清理分钟分区前停止。若确认账号已开通更长历史分钟权限，"
+                "可加 --allow-old-min 强制执行。"
+            )
+            return 2
+        try:
+            minute_source_data = read_day_data(
+                start_date=min_start_date,
+                end_date=end_date,
+                file_path='gm_stock_all_data'
+            )
+        except Exception as e:
+            print(f"读取分钟更新所需日线数据失败，跳过分钟更新: {e}")
+            minute_source_data = None
+
+        if minute_source_data is not None and not minute_source_data.is_empty():
+            if args.min_align in ("left", "both"):
+                # 左对齐目录(兼容现有回测/实盘代码): datetime=bar开始时间。
+                update_min_data_by_day_data_gm(
+                    minute_source_data,
+                    min_data_dir='15min_stock_data_dir',
+                    n=15,
+                    align='left',
+                    mode=args.mode,
+                )
+            if args.min_align in ("right", "both"):
+                # 右对齐目录: datetime=bar结束时间，与左对齐快照逻辑镜像。
+                update_min_data_by_day_data_gm(
+                    minute_source_data,
+                    min_data_dir='15min_stock_data_right_dir',
+                    n=15,
+                    align='right',
+                    mode=args.mode,
+                )
+        else:
+            print("没有可用于分钟更新的日线数据，跳过分钟数据更新")
+
+    print("\n" + "=" * 70)
+    print("验证更新结果")
+    print("=" * 70)
+
+    try:
+        verify_start = requested_start_date if args.mode == "update" else update_start_date
+        if verify_start <= end_date:
+            updated_data = read_day_data(
+                start_date=verify_start,
+                end_date=end_date,
+                file_path='gm_stock_all_data'
+            )
+
+            print("✓ 数据读取成功")
+            print(f"\n更新后统计:")
+            print(f"  总记录数: {updated_data.height}")
+            print(f"  最新日期: {updated_data.select(pl.col('trading_date').max()).item()}")
+            print(f"  最早日期: {updated_data.select(pl.col('trading_date').min()).item()}")
+            print(f"  交易日数量: {updated_data.select(pl.col('trading_date').n_unique()).item()}")
+            print(f"  股票数量: {updated_data.select(pl.col('code').n_unique()).item()}")
+
+            print(f"\n最近5个交易日数据量:")
+            recent_stats = (
+                updated_data
+                .group_by('trading_date')
+                .agg(pl.count().alias('count'))
+                .sort('trading_date', descending=True)
+                .head(5)
+            )
+            print(recent_stats.to_pandas().to_string(index=False))
+        else:
+            print("本次没有新增日期需要验证")
+
+    except Exception as e:
+        print(f"✗ 读取数据失败: {e}")
+
+    print("\n" + "=" * 70)
+    print("数据更新v2完成!")
+    print("=" * 70)
+    return 0
 
 
-print("\n" + "=" * 70)
-print("步骤3: 更新分钟数据")
-print("=" * 70)
-
-exsist_data = read_day_data(
-    start_date=datetime.date(2026, 1, 1),
-    end_date=end_date,
-    file_path='gm_stock_all_data'
-)
-
-if exsist_data is not None and not exsist_data.is_empty():
-    # 增量更新分钟数据：左右对齐两套数据分别维护在不同目录
-    # 左对齐目录(兼容现有回测/实盘代码): datetime=bar开始时间, 11:30/15:00为close快照
-    update_min_data_by_day_data_gm(
-        exsist_data,
-        min_data_dir='15min_stock_data_dir',
-        n=15
-    )
-    # 右对齐目录: datetime=bar结束时间, 09:30/13:00为open快照(与左对齐close快照镜像)
-    update_min_data_by_day_data_gm(
-        exsist_data,
-        min_data_dir='15min_stock_data_right_dir',
-        n=15,
-        align='right'
-    )
-else:
-    print("没有新的日线数据，跳过分钟数据更新")
-
-
-print("\n" + "=" * 70)
-print("验证更新结果")
-print("=" * 70)
-
-# 读取更新后的数据验证
-try:
-    updated_data = read_day_data(
-        start_date=start_date,
-        end_date=end_date,
-        file_path='gm_stock_all_data'
-    )
-
-    print("✓ 数据读取成功")
-    print(f"\n更新后统计:")
-    print(f"  总记录数: {updated_data.height}")
-    print(f"  最新日期: {updated_data.select(pl.col('trading_date').max()).item()}")
-    print(f"  最早日期: {updated_data.select(pl.col('trading_date').min()).item()}")
-    print(f"  交易日数量: {updated_data.select(pl.col('trading_date').n_unique()).item()}")
-    print(f"  股票数量: {updated_data.select(pl.col('code').n_unique()).item()}")
-
-    # 显示最近几天的数据统计
-    print(f"\n最近5个交易日数据量:")
-    recent_stats = (
-        updated_data
-        .group_by('trading_date')
-        .agg(pl.count().alias('count'))
-        .sort('trading_date', descending=True)
-        .head(5)
-    )
-    print(recent_stats.to_pandas().to_string(index=False))
-
-except Exception as e:
-    print(f"✗ 读取数据失败: {e}")
-
-
-print("\n" + "=" * 70)
-print("数据更新v2完成!")
-print("=" * 70)
+if __name__ == "__main__":
+    raise SystemExit(main())
