@@ -19,7 +19,7 @@ end_date = dt.datetime.today()
 #end_date = dt.date(2026,2,12)
 
 # 获取指定日期的日线数据
-stock_data = read_day_data(start_date=start_date,end_date=end_date,file_path='gm_stock_all_data')
+stock_data = read_day_data(start_date=start_date,end_date=end_date)
 # 将市值列除以1e8进行缩放
 stock_data = stock_data.with_columns([
    (pl.col('mv_A_free_float') / 1e8).alias('mv_A_free_float'),
@@ -205,6 +205,12 @@ stocks_data = stocks_data.with_columns([
     pl.col("vwap").shift(1).over("code").alias("pre_vwap"),
     #pl.col("ewma_volatility_8").shift(1).over("code").alias("pre_ewma_volatility_8"),
     pl.col("close_sma7_pct").shift(1).over("code").alias("pre_close_sma7_pct"),
+    pl.col("amount").shift(1).over("code").alias("pre_amount"),
+])
+
+# 计算开盘相对昨日成交均价的折价（9:30可用，无未来信息）
+stocks_data = stocks_data.with_columns([
+    ((pl.col("open") / (pl.col("pre_vwap") / 100) - 1) * 100).alias("open_pre_vwap_pct"),
 ])
 
 # 3. 基于组内移位后的数据筛选买入信号
@@ -212,10 +218,12 @@ stocks_data = stocks_data.with_columns([
 params_dict={
     'low':-5,
     'high':-2.5,
-    'mv_min':25,
+    'mv_min':35,
     'mv_max':1000,
     'prev_limit_status':['断板','炸板'],
-    'avg_limit_turnover_5_min':-1
+    'avg_limit_turnover_5_min':-1,
+    'pos30_max':1.8,
+    'open_pre_vwap_pct_max':-4.6,
 }
 
 # 筛选数据并添加signal列
@@ -250,11 +258,18 @@ stocks_data = stocks_data.with_columns(
         # 6. 最近的涨停平均换手率
         #(pl.col("avg_limit_turnover_5") >= params_dict["avg_limit_turnover_5_min"]) &
 
-        # 6. 绝对位置不能太高，不能触发严重异动
-        ((pl.col("open")/pl.col("lowest_30")) <= 3)
+        # 6. 绝对位置不能太高，不能触发严重异动（参数字典控制阈值）
+        ((pl.col("open")/pl.col("lowest_30")) <= params_dict["pos30_max"]) &
+
+        # 7. 均衡版落地过滤：开盘相对昨日成交均价的折价幅度
+        (pl.col("open_pre_vwap_pct") <= params_dict["open_pre_vwap_pct_max"]) &
+
+        # 8. 昨日成交额不低于1亿（过滤流动性不足的票）
+        (pl.col("pre_amount") >= 1e8)
         
     ).then(1).otherwise(0)
 )
+
 
 # 如果需要只筛选出signal=1的行（可选）
 信号文件 = stocks_data.filter(pl.col("signal") == 1)

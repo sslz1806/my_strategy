@@ -14,7 +14,7 @@ end_date = dt.datetime.today()
 #end_date = dt.date(2026,2,12)
 
 # 获取指定日期的日线数据
-stock_data = read_day_data(start_date=start_date,end_date=end_date,file_path='gm_stock_all_data')
+stock_data = read_day_data(start_date=start_date,end_date=end_date)
 # 将市值列除以1e8进行缩放
 stock_data = stock_data.with_columns([
    (pl.col('mv_A_free_float') / 1e8).alias('mv_A_free_float'),

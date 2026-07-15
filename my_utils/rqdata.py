@@ -135,7 +135,7 @@ class RQData:
 # 米筐官方API
 class RqData:
     def __init__(self):
-        rq.init('license','FUqYsZ7OBunqAgtCWlyTV4FfcZr7TqYqljH47XAjrjUemHYaZAJZEZbtNbHgc9fikf92KibL6GmrPHMuplB9GiDFNjCWiOQ9jimRWb1UalPcQrA_6BzVa5EzhwMEUK4OzELB-l4xnEP_LdkzKA1ZdIBei7pmcHhFhWjYGMkiXqg=L2McHQsZ1mfYxPegD6Rzc0aWHSYy8e2rTB4MiKnHP8GmM58elDWtMoC_Jpl2ojfUFvfObmSUG1l2TYcP6VU-4fhTRkwP4kbGmXv4VOi2Nx2PREM8L92CuvhbYcQvEtVlgRfoAsjl1ZcShgFK1iq3CqWJwtt2NLEjh1ID2-wNiq0=')
+        rq.init('license','NhgWOWVZCnNzlhXcU7QwoYWSxsDredHhgzOprOOpZ2SbpVJGFm9b1W4fRs61v-cYaAEI3RT9_UoPmkmC1P_kGFoDJ1TMRqQmvXEj0RPQpBlGVXF8r8blbvLe5iqLwUe0yXGAxA-5ET5YfEPnQFYGpufhbzDEokf3Tb319vhwvB4=R9Wl1ULCiS05KJVkb7LM8Vbj_H1TwVnbiXhGKJBszyPtawrOWxlcCKwKQAu0z22uiSAwJjR_1Zdqkw4hf-762Eo46rPKJU3J7TfivcWdbPk6-QvygSzQ7NtDnx6k-jn1tPOHQFljsE6mMV4ARhX_otU7A2MicLXwwgSxiLTrKmk=')
         #rq.init(username='ly', password='123456')
 
 

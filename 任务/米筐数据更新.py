@@ -64,6 +64,8 @@ AFTERNOON_START_MINUTE = 13 * 60
 AFTERNOON_FIRST_TRADE_MINUTE = 13 * 60 + 1
 AFTERNOON_END_MINUTE = 15 * 60
 MINUTE_BAR_SIZE = 15
+MINUTE_EXPECTED_BARS_PER_CODE = 18
+MINUTE_MARKET_GUARD_MIN_CODES = 100
 
 
 # ============================================================================
@@ -108,17 +110,34 @@ def get_stock_universe(session: ddb.session) -> list[str]:
         return []
 
 
+def _is_rq_a_share_code_expr(source_col: str = "order_book_id") -> pl.Expr:
+    """
+    判断米筐代码是否为当前项目需要的沪深 A 股普通行情代码。
+
+    DDB 的 instrument_base(type='CS') 在历史库中会混入指数、H 指数或特殊证券，
+    例如 000001.XSHG、H50066.XSHG、302132.XSHE。仅依赖股票池过滤会把这些
+    非股票行情写入本地分区，因此这里再用交易所和代码段做一层本地口径兜底。
+    """
+    code = pl.col(source_col)
+    sh_a_share = code.str.contains(r"^(600|601|603|605|688|689)\d{3}\.XSHG$")
+    sz_a_share = code.str.contains(r"^(000|001|002|003|300|301)\d{3}\.XSHE$")
+    return sh_a_share | sz_a_share
+
+
 def filter_to_stock_universe(data: pl.DataFrame, rq_codes: list[str]) -> pl.DataFrame:
     """
-    按米筐 A 股股票池过滤 DDB 返回结果。
+    按米筐 A 股股票池过滤 DDB 返回结果，并剔除混入股票池的非 A 股行情代码。
 
     历史补数优先控制 DDB 请求次数，因此允许先用少量大范围 SQL 拉取
-    `.XSHE/.XSHG` 后缀数据，再在本地按 instrument_base(type='CS')
-    股票池剔除指数、基金、债券等非股票代码。
+    `.XSHE/.XSHG` 后缀数据，再在本地按 instrument_base(type='CS') 股票池和
+    沪深 A 股代码段双重过滤，避免指数、基金、债券或特殊代码污染交易日行情。
     """
     if data.is_empty() or not rq_codes or "order_book_id" not in data.columns:
         return data
-    return data.filter(pl.col("order_book_id").is_in(rq_codes))
+    return data.filter(
+        pl.col("order_book_id").is_in(rq_codes)
+        & _is_rq_a_share_code_expr("order_book_id")
+    )
 
 
 def _to_gm_code_expr(source_col: str = "order_book_id") -> pl.Expr:
@@ -174,6 +193,7 @@ def fetch_day_range(
     start_date: dt.date,
     end_date: dt.date,
     rq_codes: list[str] | None = None,
+    allowed_dates: Iterable[dt.date] | None = None,
 ) -> pl.DataFrame:
     """
     从 DDB 批量获取一段时间内全市场完整日线数据。
@@ -190,6 +210,7 @@ def fetch_day_range(
         start_date: 起始交易日
         end_date: 结束交易日
         rq_codes: 可选，外部传入的股票池（避免重复获取）
+        allowed_dates: 可选，允许写入的真实交易日集合；用于剔除 DDB 返回的节假日残留数据
 
     Returns:
         多日合并的 DataFrame（含 trading_date 列），符合 RQ_DAY_SCHEMA
@@ -198,6 +219,10 @@ def fetch_day_range(
         rq_codes = get_stock_universe(session)
     if not rq_codes:
         return pl.DataFrame(schema=RQ_DAY_SCHEMA)
+
+    # 批量 SQL 只能按日期范围查询，DDB 历史库可能在范围内返回少量非交易日行情。
+    # allowed_dates 来自交易日历，是最终写盘前的交易日白名单。
+    allowed_dates_set = set(allowed_dates) if allowed_dates is not None else None
 
     start_str = start_date.strftime("%Y.%m.%d")
     end_str = end_date.strftime("%Y.%m.%d")
@@ -221,7 +246,9 @@ def fetch_day_range(
         logging.info("  %s 无行情数据", date_label)
         return pl.DataFrame(schema=RQ_DAY_SCHEMA)
 
-    df = pl.from_pandas(kline)
+    df = pl.from_pandas(kline).with_columns(pl.col("trading_date").cast(pl.Date))
+    if allowed_dates_set is not None:
+        df = df.filter(pl.col("trading_date").is_in(list(allowed_dates_set)))
     df = filter_to_stock_universe(df, rq_codes)
     if df.is_empty():
         logging.info("  %s 无股票行情数据（全量查询后股票池过滤为空）", date_label)
@@ -620,6 +647,7 @@ def update_day_range(
     end_date: dt.date,
     mode: str,
     rq_codes: list[str] | None = None,
+    allowed_dates: Iterable[dt.date] | None = None,
 ) -> int:
     """
     批量更新一段日期范围的数据。
@@ -634,11 +662,18 @@ def update_day_range(
         end_date: 结束日期
         mode: insert / update
         rq_codes: 可选，股票池（传入则复用避免重复查询）
+        allowed_dates: 可选，当前批次真实交易日白名单；用于剔除节假日残留分区
 
     Returns:
         写入总行数
     """
-    all_data = fetch_day_range(session, start_date, end_date, rq_codes=rq_codes)
+    all_data = fetch_day_range(
+        session,
+        start_date,
+        end_date,
+        rq_codes=rq_codes,
+        allowed_dates=allowed_dates,
+    )
     if all_data.is_empty():
         return 0
 
@@ -667,6 +702,86 @@ def update_day_range(
     return total_written
 
 
+def validate_minute_expected_trading_days(
+    minute_data: pl.DataFrame,
+    allowed_dates: Iterable[dt.date] | None = None,
+    rq_codes: list[str] | None = None,
+) -> None:
+    """
+    校验全市场分钟线是否覆盖应更新的历史交易日。
+
+    全市场历史回补时，DDB 月度查询可能只返回部分日期；如果直接写盘，会留下
+    “目录看似连续、实际某些交易日缺分钟线”的隐蔽问题。今日盘中或数据源尚未
+    更新导致的缺失只记录提示，避免日常脚本因为当天分钟线未落盘而中断。
+    """
+    if not allowed_dates or not rq_codes:
+        return
+    if len(rq_codes) < MINUTE_MARKET_GUARD_MIN_CODES:
+        return
+
+    allowed_dates_set = {to_date(value) for value in allowed_dates}
+    if not allowed_dates_set:
+        return
+
+    if minute_data.is_empty():
+        present_dates: set[dt.date] = set()
+    else:
+        present_dates = {to_date(value) for value in minute_data["trading_date"].unique().to_list()}
+
+    missing_dates = sorted(allowed_dates_set - present_dates)
+    if not missing_dates:
+        return
+
+    today = dt.date.today()
+    historical_missing = [trade_date for trade_date in missing_dates if trade_date < today]
+    if historical_missing:
+        details = ", ".join(to_date_str(trade_date) for trade_date in historical_missing)
+        raise RuntimeError(f"minute data missing trading days: {details}")
+
+    logging.warning(
+        "分钟线交易日暂未返回数据（可能为当日盘中或数据源尚未更新）: %s",
+        ", ".join(to_date_str(trade_date) for trade_date in missing_dates),
+    )
+
+
+
+def validate_minute_market_coverage(
+    minute_data: pl.DataFrame,
+    rq_codes: list[str] | None = None,
+) -> None:
+    """校验全市场分钟线覆盖度，防止交易日只剩极少股票时覆盖旧分区。"""
+    if minute_data.is_empty() or not rq_codes:
+        return
+
+    # 单票质量门或小范围抽样允许只有少数股票；只有全市场/大股票池更新才启用保护。
+    if len(rq_codes) < MINUTE_MARKET_GUARD_MIN_CODES:
+        return
+
+    coverage = (
+        minute_data.group_by("trading_date")
+        .agg(
+            [
+                pl.col("code").n_unique().alias("code_count"),
+                pl.len().alias("row_count"),
+            ]
+        )
+        .sort("trading_date")
+    )
+    bad_days = coverage.filter(pl.col("code_count") < MINUTE_MARKET_GUARD_MIN_CODES)
+    if bad_days.is_empty():
+        return
+
+    details = "; ".join(
+        f"{row['trading_date']}: {row['code_count']} codes, {row['row_count']} rows"
+        for row in bad_days.iter_rows(named=True)
+    )
+    raise RuntimeError(
+        "minute coverage too low: "
+        f"{details}; expected at least {MINUTE_MARKET_GUARD_MIN_CODES} stocks "
+        f"for all-market update and {MINUTE_EXPECTED_BARS_PER_CODE} bars per stock"
+    )
+
+
 def update_minute_range(
     session: ddb.session,
     start_date: dt.date,
@@ -687,8 +802,15 @@ def update_minute_range(
         allowed_dates=allowed_dates,
         rq_codes=rq_codes,
     )
+    validate_minute_expected_trading_days(
+        minute_data,
+        allowed_dates=allowed_dates,
+        rq_codes=rq_codes,
+    )
     if minute_data.is_empty():
         return 0
+
+    validate_minute_market_coverage(minute_data, rq_codes=rq_codes)
 
     trading_dates = minute_data["trading_date"].unique().sort().to_list()
     if mode == "update":
@@ -737,14 +859,32 @@ def update_minute_all(
             to_date_str(month_start),
             to_date_str(month_end),
         )
-        total_written += update_minute_range(
-            session,
-            month_start,
-            month_end,
-            mode,
-            allowed_dates=month_allowed_dates,
-            rq_codes=rq_codes,
-        )
+        try:
+            total_written += update_minute_range(
+                session,
+                month_start,
+                month_end,
+                mode,
+                allowed_dates=month_allowed_dates,
+                rq_codes=rq_codes,
+            )
+        except RuntimeError as exc:
+            logging.warning(
+                "[分钟 %s/%s] 月度批次失败，改为按交易日重试: %s",
+                idx,
+                len(month_ranges),
+                exc,
+            )
+            for trade_date in month_allowed_dates:
+                logging.info("[分钟 %s/%s] 单日重试 %s", idx, len(month_ranges), to_date_str(trade_date))
+                total_written += update_minute_range(
+                    session,
+                    trade_date,
+                    trade_date,
+                    mode,
+                    allowed_dates=[trade_date],
+                    rq_codes=rq_codes,
+                )
 
     logging.info(
         "分钟线更新完成: 共处理 %s 个交易日, 写入 %s 行",
@@ -856,7 +996,19 @@ def update_all(
             idx, len(batch_ranges), to_date_str(batch_start), to_date_str(batch_end),
         )
 
-        written = update_day_range(session, batch_start, batch_end, mode, rq_codes=rq_codes)
+        batch_allowed_dates = [
+            trade_date
+            for trade_date in trading_days
+            if batch_start <= trade_date <= batch_end
+        ]
+        written = update_day_range(
+            session,
+            batch_start,
+            batch_end,
+            mode,
+            rq_codes=rq_codes,
+            allowed_dates=batch_allowed_dates,
+        )
         total_written += written
 
     logging.info("更新完成: 共处理 %s 个交易日, 写入 %s 行", n_days, total_written)
@@ -1027,6 +1179,18 @@ def run_minute_quality_gate(session: ddb.session) -> bool:
     return True
 
 
+def infer_insert_start_date(default_start: dt.date, end_date: dt.date, save_dir: str):
+    """insert 模式下按目标目录推断续跑起点；目录已最新时返回 None。"""
+    existing = get_existing_dates(save_dir)
+    if not existing:
+        return default_start
+
+    inferred_start = max(existing) + dt.timedelta(days=1)
+    if inferred_start > end_date:
+        logging.info("%s 数据已是最新，无需更新", save_dir)
+        return None
+    return inferred_start
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     """CLI 参数解析。"""
     parser = argparse.ArgumentParser(description="米筐本地数据更新脚本（DDB 版 v4）")
@@ -1048,7 +1212,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--data-type",
         choices=["day", "min", "all"],
-        default="day",
+        default="all",
         help="day=只更新日线/复权（默认）；min=只更新米筐右对齐15分钟；all=日线和分钟都更新",
     )
     parser.add_argument(
@@ -1087,21 +1251,33 @@ def main(argv: list[str] | None = None) -> int:
         logging.info("起始日期大于结束日期，无需更新: %s > %s", start_date, end_date)
         return 0
 
-    # insert 模式根据本次更新的数据类型推断续跑目录；默认 day 行为保持不变。
+    day_start_date = start_date if args.data_type in ("day", "all") else None
+    minute_start_date = start_date if args.data_type in ("min", "all") else None
+
+    # insert 模式需要按数据目录分别续跑。all 模式下，日线已最新不能短路分钟线更新。
     if args.mode == "insert":
-        infer_dir = RQ_MIN_DIR if args.data_type == "min" else RQ_DAY_DIR
-        existing = get_existing_dates(infer_dir)
-        if existing:
-            start_date = max(existing) + dt.timedelta(days=1)
-            if start_date > end_date:
-                logging.info("%s 数据已是最新，无需更新", infer_dir)
+        if args.data_type == "day":
+            day_start_date = infer_insert_start_date(start_date, end_date, RQ_DAY_DIR)
+            if day_start_date is None:
                 return 0
+        elif args.data_type == "min":
+            minute_start_date = infer_insert_start_date(start_date, end_date, RQ_MIN_DIR)
+            if minute_start_date is None:
+                return 0
+        else:
+            day_start_date = infer_insert_start_date(start_date, end_date, RQ_DAY_DIR)
+            minute_start_date = infer_insert_start_date(start_date, end_date, RQ_MIN_DIR)
+            if day_start_date is None and minute_start_date is None:
+                return 0
+
+    active_starts = [value for value in (day_start_date, minute_start_date) if value is not None]
+    log_start_date = min(active_starts) if active_starts else start_date
 
     logging.info(
         "米筐更新开始（DDB）— 类型: %s | 模式: %s | %s ~ %s",
         args.data_type,
         args.mode,
-        to_date_str(start_date),
+        to_date_str(log_start_date),
         to_date_str(end_date),
     )
 
@@ -1121,22 +1297,28 @@ def main(argv: list[str] | None = None) -> int:
                 return 2
 
         if args.data_type in ("day", "all"):
-            update_all(
-                session,
-                start_date,
-                end_date,
-                args.mode,
-                batch_mode=args.batch_mode,
-                batch_size=args.batch_size,
-            )
+            if day_start_date is None:
+                logging.info("%s 数据已跳过：已是最新", RQ_DAY_DIR)
+            else:
+                update_all(
+                    session,
+                    day_start_date,
+                    end_date,
+                    args.mode,
+                    batch_mode=args.batch_mode,
+                    batch_size=args.batch_size,
+                )
 
         if args.data_type in ("min", "all"):
-            update_minute_all(
-                session,
-                start_date,
-                end_date,
-                args.mode,
-            )
+            if minute_start_date is None:
+                logging.info("%s 数据已跳过：已是最新", RQ_MIN_DIR)
+            else:
+                update_minute_all(
+                    session,
+                    minute_start_date,
+                    end_date,
+                    args.mode,
+                )
     finally:
         session.close()
 

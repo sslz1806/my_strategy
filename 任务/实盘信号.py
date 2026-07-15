@@ -165,45 +165,88 @@ stocks_data['prev_sma_10'] = stocks_data.groupby('code')['sma_10'].shift(1)
 stocks_data['pre_pct'] = stocks_data.groupby('code')['pct'].shift(1)
 stocks_data['pre_vwap'] = stocks_data.groupby('code')['vwap'].shift(1)
 stocks_data['pre_close_sma7_pct'] = stocks_data.groupby('code')['close_sma7_pct'].shift(1)
+stocks_data['pre_amount'] = stocks_data.groupby('code')['amount'].shift(1)
 
 # 计算收盘价与7日均线的百分比差值
 stocks_data['close_sma7_pct'] = (stocks_data['close'] - stocks_data['sma_7']) / stocks_data['sma_7'] * 100
 
+# 计算开盘相对昨日成交均价的折价。
+# GM/Pandas 日线里 amount / volume 已经是“元”口径，不需要再除以 100；
+# 若误按米筐分钟线的“价格*100”口径处理，会把折价算成极大的正数并误杀信号。
+stocks_data['open_pre_vwap_pct'] = (stocks_data['open'] / stocks_data['pre_vwap'] - 1) * 100
+
 # 3. 基于组内移位后的数据筛选买入信号
 low = -5
 high = -2.5
+mv_min = 28
+mv_max = 1000
+pos30_max = 2.2
+open_pre_vwap_pct_max = -4.6
 信号文件 = stocks_data[
     # 1. 昨日是断板或炸板
     (stocks_data["prev_limit_status"].isin(["断板", "炸板"])) &
-    
+
     # 2. 今日低开幅度在-3%至-4%之间（根据您的描述调整了高低值）
     (stocks_data["open_pct"] >= low) & (stocks_data["open_pct"] <= high) &
-    
+
     # 3. 昨日收盘在昨日5日均线上
     (stocks_data["pre_close"] >= stocks_data["prev_sma_7"]) &
-    
+
     # 4. 最近一次涨停描述不是一天一板且不为空
     (
-        #(stocks_data["last_limit_desc"] != "1天1板") & 
-        (stocks_data["last_limit_desc"].notnull()) 
-    ) 
+        (stocks_data["last_limit_desc"] != "1天1板") &
+        (stocks_data["last_limit_desc"].notnull())
+    ) &
 
-    # 5. 自由流通值在30亿到1000亿之间（经过stock_list已经筛选）
-    # &(
-    #     (stocks_data["mv_A_free_float"] >= 30 * 1e8) &
-    #     (stocks_data["mv_A_free_float"] <= 1000 * 1e8)
-    # ) 
-    
-    # 6. 绝对位置不能太高，30日最低点至今涨幅不超过3倍
-    &(stocks_data["open"] / stocks_data["lowest_30"] <= 3)
+    # 5. 自由流通值区间（get_all_stocks 已按流通市值过滤，此处跳过）
+    # 注意：batch_get_history_symbols 不返回 mv_A_free_float 列
+    #&(stocks_data["mv_A_free_float"] >= mv_min * 1e8) &
+    #&(stocks_data["mv_A_free_float"] <= mv_max * 1e8) &
+
+    # 6. 绝对位置不能太高，30日最低点至今涨幅不超阈值
+    (stocks_data["open"] / stocks_data["lowest_30"] <= pos30_max) &
+
+    # 7. 均衡版落地过滤：开盘相对昨日成交均价的折价幅度
+    (stocks_data["open_pre_vwap_pct"] <= open_pre_vwap_pct_max) &
+
+    # 8. 昨日成交额不低于1亿（过滤流动性不足的票）
+    (stocks_data["pre_amount"] >= 1e8)
 ]
+
+# 宽松观察信号文件：用于邮件里观察候选池，不作为严格交易信号。
+# 相比正式“信号文件”，这里保留连板/低开/均线/首板/流动性等基础条件，
+# 但不再过滤“绝对位置”和“开盘相对昨日VWAP折价”，方便盘中查看被这两道条件挡住的候选票。
+宽松观察信号文件 = stocks_data[
+    # 1. 昨日是断板或炸板
+    (stocks_data["prev_limit_status"].isin(["断板", "炸板"])) &
+
+    # 2. 今日低开幅度在参数区间内
+    (stocks_data["open_pct"] >= low) & (stocks_data["open_pct"] <= high) &
+
+    # 3. 昨日收盘在昨日7日均线上
+    (stocks_data["pre_close"] >= stocks_data["prev_sma_7"]) &
+
+    # 4. 最近一次涨停描述不是一天一板且不为空
+    (
+        (stocks_data["last_limit_desc"] != "1天1板") &
+        (stocks_data["last_limit_desc"].notnull())
+    ) &
+
+    # 5. 昨日成交额不低于1亿（过滤流动性不足的票）
+    (stocks_data["pre_amount"] >= 1e8)
+]
+
 #%% 
 # 打印每日的股票代码
 today_str = (dt.date.today()).strftime("%Y-%m-%d")
-today_stocks = 信号文件[信号文件['trading_date']==today]
-today_stocks.sort_values('close_sma7_pct')
+today_stocks = 信号文件[信号文件['trading_date']==today].copy()
+today_stocks = today_stocks.sort_values('close_sma7_pct')
 today_stocks['name'] = api.get_stock_name(today_stocks['code'])
 today_stocks['code'] = today_stocks['code'].apply(lambda x: x.split('.')[1])
+today_relaxed_stocks = 宽松观察信号文件[宽松观察信号文件['trading_date']==today].copy()
+today_relaxed_stocks = today_relaxed_stocks.sort_values('close_sma7_pct')
+today_relaxed_stocks['name'] = api.get_stock_name(today_relaxed_stocks['code'])
+today_relaxed_stocks['code'] = today_relaxed_stocks['code'].apply(lambda x: x.split('.')[1])
 filter_stocks = today_stocks[today_stocks['last_limit_desc']!='1天1板']
 code_list = filter_stocks['code'].to_list()
 # 提取每个code的后缀数字并打印
@@ -221,13 +264,66 @@ for code in code_list:
     suffix_number = code
     print(suffix_number)
 
+code_list = today_relaxed_stocks['code'].to_list()
+print('今日宽松观察信号股票代码（未过滤绝对位置/开盘折价）:')
+for code in code_list:
+    suffix_number = code
+    print(suffix_number)
+
+
+# 默认在邮件底部展示前 n 个交易日的策略信号，方便盘中快速对照近期信号连续性。
+recent_signal_days_n = 3
+
+def format_signal_date(date_value):
+    """把脚本里可能出现的 date/Timestamp 统一格式化，避免邮件里日期口径不一致。"""
+    return pd.to_datetime(date_value).strftime("%Y-%m-%d")
+
+past_trading_dates = (
+    pd.Series(stocks_data.loc[stocks_data['trading_date'] < today, 'trading_date'].unique())
+    .sort_values()
+    .tail(recent_signal_days_n)
+    .to_list()
+)
+recent_signal_rows = 信号文件[信号文件['trading_date'].isin(past_trading_dates)].copy()
+if not recent_signal_rows.empty:
+    recent_signal_rows['name'] = api.get_stock_name(recent_signal_rows['code'])
+    recent_signal_rows['code'] = recent_signal_rows['code'].apply(lambda x: x.split('.')[1])
+
+recent_signal_lines = []
+for signal_date in past_trading_dates:
+    day_signals = recent_signal_rows[recent_signal_rows['trading_date'] == signal_date]
+    if day_signals.empty:
+        recent_signal_lines.append(f"{format_signal_date(signal_date)}: 无")
+    else:
+        # 每天按“代码 名称”展示，历史段直接来自同一份信号文件，避免邮件和策略口径分叉。
+        signal_desc = "、".join(
+            f"{row['code']} {row['name']}" for _, row in day_signals.iterrows()
+        )
+        recent_signal_lines.append(f"{format_signal_date(signal_date)}: {signal_desc}")
+
+recent_signal_text = "\n".join(recent_signal_lines) if recent_signal_lines else "无"
+recent_signal_html = "".join(f"{line}<br>" for line in recent_signal_lines) if recent_signal_lines else "无<br>"
+
 
 # 发送信号的邮件
 from my_utils.email_fun import sendStringEmail,send_email
 sender = '2056123357@qq.com'
 user_list = ['2056123357@qq.com','1712167056@qq.com','1162690293@qq.com']
 subject = f"{today_str} 买入信号股票代码"
-content = f"今日排除首板信号股票代码:\n{filter_stocks['code'].to_list()}\n名称:{filter_stocks['name'].to_list()}\n\n今日所有信号股票代码:\n{today_stocks['code'].to_list()}\n名称:{today_stocks['name'].to_list()}"
+content = f"""今日排除首板信号股票代码:
+{filter_stocks['code'].to_list()}
+名称:{filter_stocks['name'].to_list()}
+
+今日所有信号股票代码:
+{today_stocks['code'].to_list()}
+名称:{today_stocks['name'].to_list()}
+
+今日宽松观察信号股票代码（未过滤绝对位置/开盘折价）:
+{today_relaxed_stocks['code'].to_list()}
+名称:{today_relaxed_stocks['name'].to_list()}
+
+前{recent_signal_days_n}日策略信号文件选出的股票为:
+{recent_signal_text}"""
 html_content = f"""<body style="line-height:1.2;">
 今日排除首板信号股票代码:<br>
 {"".join([f"• {code}<br>" for code in filter_stocks['code'].to_list()])}
@@ -237,6 +333,14 @@ html_content = f"""<body style="line-height:1.2;">
 {"".join([f"• {code}<br>" for code in today_stocks['code'].to_list()])}
 名称:<br>
 {"".join([f"• {name}<br>" for name in today_stocks['name'].to_list()])}
+<br>
+今日宽松观察信号股票代码（未过滤绝对位置/开盘折价）:<br>
+{"".join([f"• {code}<br>" for code in today_relaxed_stocks['code'].to_list()])}
+名称:<br>
+{"".join([f"• {name}<br>" for name in today_relaxed_stocks['name'].to_list()])}
+<br>
+前{recent_signal_days_n}日策略信号文件选出的股票为:<br>
+{recent_signal_html}
 </body>
 """
 send_email(

@@ -44,7 +44,6 @@ logger.info(f"读取日线数据: {START_DATE} ~ {END_DATE}")
 stock_data = read_day_data(
     start_date=START_DATE,
     end_date=END_DATE,
-    file_path='gm_stock_all_data'
 )
 logger.info(f"原始数据: {stock_data.shape[0]} 行, {stock_data.shape[1]} 列")
 

@@ -36,7 +36,7 @@ print("\n[步骤1] 读取日线数据...")
 start_date = dt.date(2021, 1, 1)
 end_date = dt.date(2025, 1, 1)
 
-stock_data = read_day_data(start_date=start_date, end_date=end_date, file_path='ts_stock_all_data')
+stock_data = read_day_data(start_date=start_date, end_date=end_date)
 stock_data = stock_data.drop_nulls(subset=['open', 'close', 'pre_close', 'limit_up', 'limit_down'])
 print(f"  数据加载完成: {stock_data.shape}")
 print(f"  股票数量: {stock_data['code'].n_unique()}")

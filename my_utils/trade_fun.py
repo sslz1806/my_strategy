@@ -42,15 +42,15 @@ def calculate_time_ratio(current_time):
 
 # 保持原有的trade函数不变，但修改参数以适应并行处理
 def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_pct=0.09,
-          buy_delay_days=0, extend_holding_days=0, day_data_file_path='gm_stock_all_data',
-          min_data_file_path='15min_stock_data_dir'):
+          buy_delay_days=0, extend_holding_days=0, day_data_file_path='rq_stock_all_data',
+          min_data_file_path='rq_15min_stock_data_dir'):
     """
     并行处理的单个交易任务
     params包含: code_list, trade_date, interval参数等
     buy_delay_days: 买入延迟天数，0表示信号日买入，1表示信号日后第一个交易日买入，以此类推
     extend_holding_days: 持仓延长天数，延长期内只判断止损，其他卖出条件忽略
-    day_data_file_path: 日线数据源，默认使用掘金数据 gm_stock_all_data
-    min_data_file_path: 分钟线数据源，默认使用原有15分钟目录；使用米筐数据时传入 rq_15min_stock_data_dir
+    day_data_file_path: 日线数据源，默认使用米筐数据 rq_stock_all_data
+    min_data_file_path: 分钟线数据源，默认使用米筐15分钟目录 rq_15min_stock_data_dir
     """
     # 参数边界检查
     if not (0 <= buy_delay_days <= 5):
@@ -77,7 +77,7 @@ def trade(code_list,trade_date:dt.date,fee_rate = 0.004,need_adj=True,stop_loss_
         if need_adj and 'adj_factor' in stock_data.columns:
             stock_data = stock_data.rename({'adj_factor': 'adj'})
         elif need_adj:
-            adj_data = read_day_data(start_date,end_date,code_list,file_path='ts_adj')
+            adj_data = read_day_data(start_date,end_date,code_list,file_path='rq_adj')
             stock_data = stock_data.join(
                 adj_data[['trading_date', 'code', 'adj_factor']],
                 on=['trading_date', 'code'],
@@ -326,15 +326,17 @@ def limit_up_trade(code_list,trade_date,fee_rate = 0.004,need_adj=True,stop_loss
     end_date = start_date + timedelta(days=15)
     # 1.获取数据
     try:
-        # 获取分钟线数据
-        stock_data = read_day_data(start_date,end_date,code_list,file_path='ts_stock_all_data')
+        # 获取日线数据
+        stock_data = read_day_data(start_date,end_date,code_list)
 
-        # 获取日线数据（用于补充pre_close, limit_up等字段）
+        # 获取分钟线数据（用于补充pre_close, limit_up等字段）
         mins_data = read_min_data(start_date,end_date,code_list)
 
         # 获取复权因子数据
-        if need_adj:
-            adj_data = read_day_data(start_date,end_date,code_list,file_path='ts_adj')
+        if need_adj and 'adj_factor' in stock_data.columns:
+            stock_data = stock_data.rename({'adj_factor': 'adj'})
+        elif need_adj:
+            adj_data = read_day_data(start_date,end_date,code_list,file_path='rq_adj')
             stock_data = stock_data.join(
                 adj_data[['trading_date', 'code', 'adj_factor']],
                 on=['trading_date', 'code'],
@@ -1012,13 +1014,13 @@ def report_backtest_full(
     import matplotlib.pyplot as plt
     import plotly.graph_objects as go
     from plotly.subplots import make_subplots
-    import tinyshare as tns
+    #import tinyshare as tns
     from my_utils.mapping import convert_code_format,clean_stocks_data
     from my_utils.stock_api import stock_api
     from my_utils.fun import get_logger
     logging = get_logger(log_file='log/回测.log',inherit=False)
     ts_token = 'YzAEH11Yc7jZCHjeJa63fnbpSt3k9Je3GvWn0390oiBKO95bVJjP7u5L34e2ff6b'
-    ts =tns.pro_api(ts_token)
+    #ts =tns.pro_api(ts_token)
 
     # 1. 策略净值曲线计算
     start_date = pd.to_datetime(start_date)

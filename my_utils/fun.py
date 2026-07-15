@@ -102,7 +102,7 @@ def get_parquet_dir_schema(data_dir: str):
     except Exception as e:
         print(f"读取schema失败：{str(e)}")
         return None
-def read_min_data(start_time,end_time,stock_list=None,file_path='15min_stock_data_dir') -> pl.DataFrame:
+def read_min_data(start_time,end_time,stock_list=None,file_path='rq_15min_stock_data_dir') -> pl.DataFrame:
     """
     读取分钟数据，并根据时间范围和股票列表进行过滤
     start_time,end_time:datetime.datetime对象
@@ -151,7 +151,7 @@ def read_min_data(start_time,end_time,stock_list=None,file_path='15min_stock_dat
 
     return df.collect()
 
-def read_day_data(start_date,end_date,stock_list=None,fields=None,file_path='gm_stock_all_data') -> pl.DataFrame:
+def read_day_data(start_date,end_date,stock_list=None,fields=None,file_path='rq_stock_all_data') -> pl.DataFrame:
     """
     读取日线数据，并根据时间范围,股票列表,需要的列进行过滤
     start_date,end_date:datetime.date对象
@@ -172,7 +172,7 @@ def read_day_data(start_date,end_date,stock_list=None,fields=None,file_path='gm_
     return df.collect()
 
 # 获取交易日列表(根据日线数据目录即可获取)
-def get_data_trading_days(start_date,end_date,file_path='ts_stock_all_data') -> list:
+def get_data_trading_days(start_date,end_date,file_path='rq_stock_all_data') -> list:
     """
     获取交易日列表
     start_date,end_date:datetime.date对象
@@ -674,24 +674,26 @@ def add_trend_slope_rsq(df: pl.DataFrame, window: int = 60) -> pl.DataFrame:
          - t_start * pl.col("_sum_y")).alias("_sum_xy")
     )
 
-    # 斜率 β = (W · Σ(x·y) - Σx · Σy) / denom
-    df = df.with_columns(
-        ((window * pl.col("_sum_xy") - sum_t * pl.col("_sum_y")) / denom)
-        .alias(slope_col)
-    )
+    # 斜率 β_raw = (W · Σ(x·y) - Σx · Σy) / denom
+    raw_slope = ((window * pl.col("_sum_xy") - sum_t * pl.col("_sum_y")) / denom)
 
-    # R² = β² · (denom/W) / (Σ(y²) - (Σy)²/W)
+    # R² = β_raw² · ss_x / ss_y（用原始β，与被标准化无关）
     ss_x = denom / window  # Σ(x-x̄)²
     ss_y = pl.col("_sum_y2") - pl.col("_sum_y") ** 2 / window
-    # 防止除零
     ss_y_safe = pl.when(ss_y > 1e-12).then(ss_y).otherwise(None)
+    df = df.with_columns([
+        raw_slope.alias("_raw_slope"),
+        ((raw_slope ** 2 * ss_x) / ss_y_safe).alias(rsq_col),
+    ])
+
+    # 标准化斜率 = β_raw / close_mean（消除股价量纲，使斜率可跨股比较）
+    close_mean_expr = pl.col("close").rolling_mean(window).over("code")
     df = df.with_columns(
-        ((pl.col(slope_col) ** 2 * ss_x) / ss_y_safe)
-        .alias(rsq_col)
+        (pl.col("_raw_slope") / (close_mean_expr + 1e-12)).alias(slope_col)
     )
 
     # 清理中间列
-    return df.drop(["_t", "_sum_y", "_sum_xy", "_sum_y2"])
+    return df.drop(["_t", "_sum_y", "_sum_xy", "_sum_y2", "_raw_slope"])
 
 
 def add_trend_slope_multi(
@@ -857,11 +859,12 @@ def add_trend_composite_score(
     # 2. 加权合成
     strength = slope_norm  # 趋势强度 = 标准化斜率
 
+    # 稳定性子因子注意：ewmvol与maxdd r≈0.85，取均值去重
+    vol_dd_combined = (ewmvol_norm + maxdd_norm) / 2.0
     stability = (
-        rsq_norm * 0.40
-        + ewmvol_norm * 0.25
-        + maxdd_norm * 0.25
-        + upratio_norm * 0.10
+        rsq_norm * 0.45
+        + vol_dd_combined * 0.35
+        + upratio_norm * 0.20
     )
 
     # 3. 硬性门槛
