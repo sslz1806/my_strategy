@@ -11,3 +11,6 @@ run_output.txt
 
 # OS metadata
 desktop.ini
+
+# Local isolated Git worktrees
+.worktrees/
