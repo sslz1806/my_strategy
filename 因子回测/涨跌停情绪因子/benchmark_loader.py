@@ -12,7 +12,7 @@ from datetime import date
 from pathlib import Path
 from typing import List, Optional
 
-import numpy as np
+import logging
 import pandas as pd
 import polars as pl
 
@@ -99,7 +99,8 @@ def _load_index_benchmark(name, start_date, end_date, source="auto"):
                 result["market_daily_ret"] = result["pct"] / 100.0  # 百分比 → 小数
                 return result.sort_values("trading_date")[["trading_date", "market_daily_ret"]].reset_index(drop=True)
         except Exception:
-            pass
+            logging.getLogger(__name__).warning(
+                "掘金 API 加载基准 %s 失败，回退到 Tushare", name, exc_info=True)
 
     # 最后回退到 Tushare
     if source in ("auto", "ts"):
@@ -117,7 +118,8 @@ def _load_index_benchmark(name, start_date, end_date, source="auto"):
                 result["market_daily_ret"] = result["market_daily_ret"] / 100.0
                 return result.sort_values("trading_date")[["trading_date", "market_daily_ret"]].reset_index(drop=True)
         except Exception:
-            pass
+            logging.getLogger(__name__).warning(
+                "Tushare API 加载基准 %s 失败", name, exc_info=True)
 
     raise RuntimeError(f"无法加载基准 {name}：所有数据源均失败")
 
