@@ -13,6 +13,7 @@
 """
 
 import warnings
+from datetime import date
 from typing import Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
@@ -464,3 +465,256 @@ def plot_timing_nav_comparison(
             fontsize=15,
         )
         plt.show()
+
+
+# ============================================================
+# run_multi_benchmark_timing：对多个基准运行择时回测
+# ============================================================
+def run_multi_benchmark_timing(
+    factor_daily: pl.DataFrame,
+    benchmarks: List[str],
+    prepared_daily: pl.DataFrame,
+    calendar: pl.DataFrame,
+    start_date: date,
+    end_date: date,
+    horizons: Tuple[int, ...] = (1, 3, 5, 10),
+    lower_quantile: float = 0.65,
+    upper_quantile: float = 1.0,
+    min_history: int = 252,
+    factor_columns: List[str] = None,
+    factor_labels: Dict[str, str] = None,
+    benchmark_data_source: str = "auto",
+) -> dict:
+    """
+    对多个基准运行同一套情绪因子的择时回测。
+
+    返回:
+        summary: pd.DataFrame — 每行一个(基准, 因子, 持有期)的绩效汇总
+        daily: dict — {(基准, 因子, 持有期): 逐日明细}
+    """
+    from 因子回测.涨跌停情绪因子.benchmark_loader import load_benchmark
+    from 因子回测.alpha import add_future_return
+
+    # 空基准列表处理
+    if not benchmarks:
+        return {"summary": pd.DataFrame(), "daily": {}}
+
+    if factor_columns is None:
+        cols = [c for c in factor_daily.columns if c not in ("trading_date",)]
+        factor_columns = cols
+    if factor_labels is None:
+        factor_labels = {f: f for f in factor_columns}
+
+    factor_pd = factor_daily.to_pandas()
+    factor_pd["trading_date"] = pd.to_datetime(factor_pd["trading_date"])
+
+    daily_results = {}
+
+    for bench_name in benchmarks:
+        bench_ret = load_benchmark(
+            bench_name, start_date, end_date,
+            prepared_daily=prepared_daily, calendar=calendar,
+            source=benchmark_data_source,
+        )
+        data = factor_pd.merge(bench_ret, on="trading_date", how="inner")
+
+        data = add_future_return(data, ret_col="market_daily_ret", horizons=horizons)
+
+        data = compute_threshold(data, factor_columns,
+                                  lower_quantile=lower_quantile,
+                                  upper_quantile=upper_quantile,
+                                  min_history=min_history)
+        for factor in factor_columns:
+            data[f"signal_{factor}"] = (
+                (data[factor] >= data[f"lower_{factor}"])
+                & (data[factor] <= data[f"upper_{factor}"])
+            ).astype(float)
+
+        threshold_cols = [f"lower_{f}" for f in factor_columns]
+        common_valid = data[threshold_cols].notna().all(axis=1)
+        common_anchor = pd.Timestamp(data.loc[common_valid.idxmax(), "trading_date"])
+
+        for factor in factor_columns:
+            for horizon in horizons:
+                daily, _ = run_timing(data, signal_column=f"signal_{factor}",
+                                      horizon=horizon, anchor_date=common_anchor)
+                daily_results[(bench_name, factor, horizon)] = daily
+
+    summary_list = []
+    for (bench_name, factor, horizon), daily_detail in daily_results.items():
+        if len(daily_detail) == 0:
+            continue
+        strat_m = annualized_metrics(daily_detail["strategy_daily_ret"])
+        bench_m = annualized_metrics(daily_detail["market_daily_ret"])
+        summary_list.append({
+            "benchmark": bench_name,
+            "factor": factor,
+            "factor_label": factor_labels.get(factor, factor),
+            "horizon": horizon,
+            "holding_ratio": daily_detail["position"].mean(),
+            "annual_return": strat_m["annual_return"],
+            "benchmark_annual_return": bench_m["annual_return"],
+            "annual_excess_return": strat_m["annual_return"] - bench_m["annual_return"],
+            "sharpe": strat_m["sharpe"],
+            "max_drawdown": strat_m["max_drawdown"],
+            "final_nav": daily_detail["strategy_nav"].iloc[-1],
+            "benchmark_final_nav": daily_detail["benchmark_nav"].iloc[-1],
+            "relative_final_nav": (
+                daily_detail["strategy_nav"].iloc[-1]
+                / daily_detail["benchmark_nav"].iloc[-1] - 1
+            ),
+        })
+
+    summary = pd.DataFrame(summary_list)
+    return {"summary": summary, "daily": daily_results}
+
+
+# ============================================================
+# plot_multi_benchmark_summary：多基准择时可视化
+# ============================================================
+def plot_multi_benchmark_summary(
+    multi_results: dict,
+    factor_columns: List[str],
+    factor_labels: Dict[str, str],
+    horizons: Tuple[int, ...] = (1, 3, 5, 10),
+    benchmarks: List[str] = None,
+    benchmark_labels: Dict[str, str] = None,
+) -> None:
+    """
+    绘制多基准择时对比。
+
+    1. 每个 (因子, 持有期) 画一张多折线净值对比图
+    2. 一张热力图：row=基准, column=因子(按持有期分面)，颜色=年化超额收益
+
+    Parameters
+    ----------
+    multi_results : dict
+        run_multi_benchmark_timing 返回的结果字典，含 daily 和 summary。
+    factor_columns : list[str]
+        因子列名列表。
+    factor_labels : dict[str, str]
+        因子显示标签映射。
+    horizons : tuple[int, ...]
+        持有周期列表。
+    benchmarks : list[str], optional
+        基准名称列表。用于确定热力图的显示顺序。
+        若为 None，从 daily 键中推断。
+    benchmark_labels : dict[str, str], optional
+        基准显示标签映射。若为 None，使用基准名称本身作为显示标签。
+    """
+    daily = multi_results["daily"]
+    summary = multi_results["summary"]
+
+    # 从 daily 键中推断 benchmarks（若未提供）
+    if benchmarks is None:
+        benchmarks = sorted(set(k[0] for k in daily.keys()))
+    if benchmark_labels is None:
+        benchmark_labels = {b: b for b in benchmarks} if benchmarks else {}
+
+    colors = ["#C44E52", "#1f77b4", "#2ca02c", "#9467bd"]
+
+    # ===== 1. 每个 (因子, 持有期) 的净值对比图 =====
+    for factor in factor_columns:
+        n_horizons_plot = len(horizons)
+        n_cols = min(2, n_horizons_plot)
+        n_rows = (n_horizons_plot + 1) // 2  # ceiling division
+        fig, axes = plt.subplots(
+            n_rows, n_cols, figsize=(15, 5 * n_rows), constrained_layout=True
+        )
+        # 统一展平处理，兼容 1x1 场景
+        if n_rows == 1 and n_cols == 1:
+            axes_flat = [axes]
+        else:
+            axes_flat = axes.ravel()
+
+        for ax_idx, horizon in enumerate(horizons):
+            if ax_idx >= len(axes_flat):
+                continue
+            ax = axes_flat[ax_idx]
+            for idx, bench in enumerate(benchmarks or []):
+                key = (bench, factor, horizon)
+                if key not in daily or len(daily[key]) == 0:
+                    continue
+                detail = daily[key]
+                ax.plot(
+                    detail["trading_date"],
+                    detail["benchmark_nav"],
+                    color=colors[idx % len(colors)],
+                    linestyle="--",
+                    linewidth=1.0,
+                    alpha=0.5,
+                )
+                ax.plot(
+                    detail["trading_date"],
+                    detail["strategy_nav"],
+                    label=benchmark_labels.get(bench, bench),
+                    color=colors[idx % len(colors)],
+                    linewidth=1.6,
+                )
+            ax.set_title(f"{horizon} 日持有期")
+            ax.grid(alpha=0.25)
+            ax.legend()
+
+        # 隐藏多余的空白子图
+        for ax_idx in range(len(horizons), len(axes_flat)):
+            axes_flat[ax_idx].set_visible(False)
+
+        fig.suptitle(
+            f"{factor_labels.get(factor, factor)}：多基准择时净值对比",
+            fontsize=15,
+        )
+        plt.show()
+
+    # ===== 2. 热力图：基准 x 因子（按持有期分面） =====
+    if len(summary) == 0:
+        print("无可用汇总数据，跳过热力图")
+        return
+
+    n_horizons = len(horizons)
+    heatmap_height = max(5, 0.5 * len(benchmarks)) if benchmarks else 5
+    fig, axes = plt.subplots(
+        1, n_horizons,
+        figsize=(5 * n_horizons, heatmap_height),
+        constrained_layout=True,
+    )
+    if n_horizons == 1:
+        axes = [axes]
+
+    for ax, horizon in zip(axes, horizons):
+        sub = summary[summary["horizon"] == horizon]
+        if len(sub) == 0:
+            ax.set_title(f"{horizon}日持有期 | 无数据")
+            ax.grid(alpha=0.25)
+            continue
+
+        pivot = sub.pivot(
+            index="benchmark", columns="factor", values="annual_excess_return"
+        )
+        if benchmarks:
+            pivot = pivot.reindex(
+                index=[b for b in benchmarks if b in pivot.index]
+            )
+        if factor_columns:
+            pivot = pivot.reindex(columns=factor_columns)
+
+        vals = pivot.to_numpy(dtype=float)
+        if vals.size > 0:
+            max_abs = float(np.nanmax(np.abs(vals)))
+            limit = max(0.01, max_abs) if not np.isnan(max_abs) else 0.05
+        else:
+            limit = 0.05
+
+        im = ax.imshow(vals, aspect="auto", cmap="RdYlGn", vmin=-limit, vmax=limit)
+        ax.set_xticks(
+            range(len(pivot.columns)),
+            [factor_labels.get(c, c) for c in pivot.columns],
+            fontsize=8,
+        )
+        ax.set_yticks(
+            range(len(pivot.index)),
+            [benchmark_labels.get(b, b) for b in pivot.index],
+        )
+        ax.set_title(f"{horizon}日持有期 | 年化超额收益")
+        fig.colorbar(im, ax=ax, shrink=0.8)
+
+    plt.show()
