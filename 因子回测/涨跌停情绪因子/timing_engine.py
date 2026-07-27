@@ -532,6 +532,8 @@ def run_multi_benchmark_timing(
 
         threshold_cols = [f"lower_{f}" for f in factor_columns]
         common_valid = data[threshold_cols].notna().all(axis=1)
+        if not common_valid.any():
+            raise ValueError(f"基准 {bench_name}: 所有阈值在日期范围内均为 NaN，请增大日期范围或减小 min_history")
         common_anchor = pd.Timestamp(data.loc[common_valid.idxmax(), "trading_date"])
 
         for factor in factor_columns:

@@ -23,7 +23,10 @@ MODULE_DIR = (
 sys.path.insert(0, str(MODULE_DIR))
 
 from sentiment_timing_analysis import (  # noqa: E402
+    add_next_period_return,
+    add_trend_buy_signal,
     analyze_threshold_effectiveness,
+    build_close_forward_returns,
     analyze_factor_effectiveness,
     build_market_forward_returns,
     build_weekly_basic_factors,
@@ -136,6 +139,8 @@ def test_market_forward_returns_use_trading_steps_not_calendar_days() -> None:
         date(2025, 1, 17),
         date(2025, 1, 20),
         date(2025, 1, 21),
+        # 首日没有前一交易日市值会被排除，额外保留一天以验证 10 日前瞻收益。
+        date(2025, 1, 22),
     ]
     raw = pl.DataFrame(
         [_row("SHSE.600001", day, pct=1.0) for day in trading_days]
@@ -207,4 +212,73 @@ def test_zero_market_cap_rows_do_not_pollute_market_return() -> None:
 
     result = build_market_forward_returns(raw, horizons=(1,))
 
-    assert result["market_daily_ret"].to_list() == [0.01, 0.01]
+    # 首个样本日没有前一交易日市值，不能偷用当日市值作为权重。
+    assert result["trading_date"].to_list() == [tuesday]
+    assert result["market_daily_ret"].to_list() == [0.01]
+
+
+def test_market_return_uses_preceding_day_market_cap_as_weight() -> None:
+    """当日市值随涨跌变化时，收益权重仍必须冻结在前一交易日。"""
+    monday = date(2025, 1, 6)
+    tuesday = date(2025, 1, 7)
+    raw = pl.DataFrame(
+        [
+            _row("SHSE.600001", monday, pct=0.0, total_mv=100.0),
+            _row("SHSE.000001", monday, pct=0.0, total_mv=100.0),
+            _row("SHSE.600001", tuesday, pct=10.0, total_mv=1_000.0),
+            _row("SHSE.000001", tuesday, pct=0.0, total_mv=100.0),
+        ]
+    )
+
+    result = build_market_forward_returns(raw, horizons=(1,))
+
+    assert result["trading_date"].to_list() == [tuesday]
+    assert result["market_daily_ret"].to_list() == [pytest.approx(0.05)]
+
+
+def test_next_period_return_is_aligned_to_the_preceding_signal_period() -> None:
+    """周末形成的仓位只能配对下一周，而不能赚取本周已知收益。"""
+    weekly = pl.DataFrame(
+        {
+            "week_end_date": [date(2025, 1, 3), date(2025, 1, 10), date(2025, 1, 17)],
+            "week_return": [0.01, 0.02, -0.03],
+        }
+    )
+
+    result = add_next_period_return(
+        weekly,
+        date_column="week_end_date",
+        return_column="week_return",
+        output_column="next_week_return",
+    )
+
+    assert result["next_week_return"].to_list() == [0.02, -0.03, None]
+
+
+def test_trend_signal_uses_documented_regime_thresholds() -> None:
+    """上涨、震荡和下行环境分别至少需要 1、3、4 个因子信号。"""
+    factors = pl.DataFrame(
+        {
+            "market_trend": ["up", "up", "sideways", "sideways", "down", "down"],
+            "total_signal_count": [0, 1, 2, 3, 3, 4],
+        }
+    )
+
+    result = add_trend_buy_signal(factors)
+
+    assert result["trend_buy_signal"].to_list() == [False, True, False, True, False, True]
+
+
+def test_close_forward_returns_follow_trading_rows_for_index_series() -> None:
+    """指数前瞻收益也必须按真实交易行 shift，而非自然日历日。"""
+    prices = pl.DataFrame(
+        {
+            "trading_date": [date(2025, 1, 3), date(2025, 1, 6), date(2025, 1, 8)],
+            "close": [100.0, 101.0, 103.0],
+        }
+    )
+
+    result = build_close_forward_returns(prices, horizons=(1, 2))
+
+    assert result["future_return_1d"].to_list() == [pytest.approx(0.01), pytest.approx(103 / 101 - 1), None]
+    assert result["future_return_2d"].to_list() == [pytest.approx(0.03), None, None]

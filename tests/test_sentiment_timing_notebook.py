@@ -13,6 +13,7 @@ import nbformat
 import numpy as np
 import pandas as pd
 import polars as pl
+import pytest
 
 
 NOTEBOOK_PATH = (
@@ -91,3 +92,59 @@ def test_strategy_performance_table_does_not_require_ipython_display(capsys) -> 
     )
 
     assert "测试策略" in capsys.readouterr().out
+
+
+def test_notebook_reuses_next_period_alignment_for_main_and_broad_index_backtests() -> None:
+    """主回测与宽基稳健性必须复用同一下一周收益对齐逻辑。"""
+    notebook = nbformat.read(NOTEBOOK_PATH, as_version=4)
+    source = "\n".join(
+        cell.source for cell in notebook.cells if cell.cell_type == "code"
+    )
+
+    assert "add_next_period_return" in source
+    assert "next_index_week_ret" in source
+    assert 'comparison["strategy_ret"] = comparison["base_position"] * comparison["next_index_week_ret"]' in source
+    assert 'pl.col("return_week_end_date").dt.year().alias("year")' in source
+
+
+def test_notebook_uses_shared_trend_threshold_rule() -> None:
+    """Notebook 不应重新实现会放宽震荡/下行仓位的趋势判断。"""
+    notebook = nbformat.read(NOTEBOOK_PATH, as_version=4)
+    strategy_source = next(
+        cell.source
+        for cell in notebook.cells
+        if cell.cell_type == "code" and "def run_backtest(" in cell.source
+    )
+
+    assert "add_trend_buy_signal(result)" in strategy_source
+
+
+def test_strategy_sharpe_uses_weekly_excess_return_mean_and_volatility() -> None:
+    """周频夏普应为周超额收益均值/周波动率，再乘 sqrt(52)。"""
+    notebook = nbformat.read(NOTEBOOK_PATH, as_version=4)
+    strategy_source = next(
+        cell.source
+        for cell in notebook.cells
+        if cell.cell_type == "code" and "def compute_perf(" in cell.source
+    )
+    namespace = {"np": np, "pd": pd, "pl": pl, "FACTOR_WEIGHTS": {}}
+    exec(strategy_source, namespace)
+    weekly_returns = np.array([0.01, 0.02, -0.01, 0.03])
+
+    result = namespace["compute_perf"](weekly_returns)
+    expected = weekly_returns.mean() / weekly_returns.std(ddof=1) * np.sqrt(52)
+
+    assert result["夏普比率"] == pytest.approx(expected)
+
+
+def test_notebook_exports_multi_index_effectiveness_statistics() -> None:
+    """沪深300、中证500、中证1000都应输出 IC、HAC 与分组收益检验。"""
+    notebook = nbformat.read(NOTEBOOK_PATH, as_version=4)
+    source = "\n".join(
+        cell.source for cell in notebook.cells if cell.cell_type == "code"
+    )
+
+    assert "build_close_forward_returns" in source
+    assert "analyze_factor_effectiveness(index_weekly_factors" in source
+    assert "index_effectiveness_summary.csv" in source
+    assert "index_factor_group_returns.csv" in source

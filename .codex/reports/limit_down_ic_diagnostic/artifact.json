@@ -1,0 +1,292 @@
+{
+  "surface": "report",
+  "manifest": {
+    "version": 1,
+    "surface": "report",
+    "title": "跌停占比 IC 与择时效果诊断",
+    "description": "解释正向跌停占比因子为何具有较高 10 日时序 IC，却未在二元长仓/空仓策略中形成明显超额。",
+    "generatedAt": "2026-07-21T22:32:51+08:00",
+    "filters": [],
+    "cards": [
+      {
+        "id": "ic_card",
+        "description": "正向跌停占比与未来 10 日收益的 Pearson 时序相关。",
+        "dataset": "headline_metrics",
+        "sourceId": "research_recalculation",
+        "metrics": [
+          {
+            "label": "非重叠调仓点 IC",
+            "field": "decision_ic",
+            "format": "number"
+          },
+          {
+            "label": "全部日频 IC",
+            "field": "daily_ic",
+            "format": "number"
+          }
+        ]
+      },
+      {
+        "id": "holding_card",
+        "description": "80% 扩展分位阈值在 181 个非重叠调仓块中触发 26 次。",
+        "dataset": "headline_metrics",
+        "sourceId": "research_recalculation",
+        "metrics": [
+          {
+            "label": "实际持仓比例",
+            "field": "holding_ratio",
+            "format": "percent"
+          }
+        ]
+      },
+      {
+        "id": "conditional_return_card",
+        "description": "高信号块的未来 10 日平均收益较高，但未触发块同样保持正收益。",
+        "dataset": "headline_metrics",
+        "sourceId": "research_recalculation",
+        "metrics": [
+          {
+            "label": "高信号块平均收益",
+            "field": "held_mean_return",
+            "format": "percent"
+          },
+          {
+            "label": "未触发块平均收益",
+            "field": "unheld_mean_return",
+            "format": "percent"
+          },
+          {
+            "label": "条件收益差",
+            "field": "conditional_spread",
+            "format": "percent",
+            "signed": true
+          }
+        ]
+      },
+      {
+        "id": "performance_card",
+        "description": "策略长期大部分时间持有现金；当前实现未计现金收益。",
+        "dataset": "headline_metrics",
+        "sourceId": "research_recalculation",
+        "metrics": [
+          {
+            "label": "择时策略年化",
+            "field": "strategy_annual_return",
+            "format": "percent"
+          },
+          {
+            "label": "满仓基准年化",
+            "field": "benchmark_annual_return",
+            "format": "percent"
+          },
+          {
+            "label": "等暴露基准年化",
+            "field": "constant_exposure_annual_return",
+            "format": "percent"
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "id": "quintile_chart",
+        "title": "跌停占比分组后的未来 10 日收益",
+        "subtitle": "181 个非重叠调仓点；Q1 至 Q5 表示因子由低到高",
+        "type": "bar",
+        "dataset": "decision_quintiles",
+        "sourceId": "quintile_sql",
+        "valueFormat": "percent",
+        "encodings": {
+          "x": {
+            "field": "quintile",
+            "type": "nominal",
+            "label": "跌停占比分组"
+          },
+          "y": {
+            "field": "mean_return",
+            "type": "quantitative",
+            "label": "未来 10 日平均收益"
+          },
+          "tooltip": [
+            {
+              "field": "median_return",
+              "type": "quantitative",
+              "label": "未来 10 日收益中位数",
+              "format": "percent"
+            },
+            {
+              "field": "n_obs",
+              "type": "quantitative",
+              "label": "调仓块数"
+            }
+          ]
+        }
+      }
+    ],
+    "tables": [],
+    "sources": [
+      {
+        "id": "research_recalculation",
+        "label": "5 日情绪因子研究 Notebook 与本地日线复算",
+        "path": "因子回测/涨跌停情绪因子/sentiment_factors_5d_research.ipynb"
+      },
+      {
+        "id": "notebook_tests",
+        "label": "5 日情绪因子 Notebook 回归测试",
+        "path": "tests/test_sentiment_factors_5d_notebook.py"
+      },
+      {
+        "id": "quintile_sql",
+        "label": "非重叠调仓点五分组图表数据",
+        "path": ".codex/reports/limit_down_ic_diagnostic/quintile_evidence.sql"
+      }
+    ],
+    "blocks": [
+      {
+        "id": "report_title",
+        "type": "markdown",
+        "body": "# 跌停占比 IC 与择时效果诊断"
+      },
+      {
+        "id": "executive_summary",
+        "type": "markdown",
+        "sourceId": "research_recalculation",
+        "body": "## Executive Summary\n\n- **不是方向配置错误。** 在实际 5 日滚动研究中，跌停占比方向为 `+1`；10 日 Pearson IC 为 **+0.1314**，在策略使用的 181 个非重叠调仓点上仍为 **+0.1618**。\n- **IC 有效，但它回答的是相对排序，不是是否应该空仓。** 高信号块未来 10 日平均收益为 **+0.736%**，未触发块仍有 **+0.348%**；后者为正，意味着低信号期全部空仓会持续放弃市场正漂移。\n- **主要损失来自低暴露，而非收益错位。** 80% 扩展分位阈值只让策略持仓 **14.36%** 的时间。策略年化 **2.09%**，满仓基准 **8.94%**；与同样 14.36% 恒定暴露的 **1.46%** 相比，择时只增加约 **0.63 个百分点/年**。"
+      },
+      {
+        "id": "headline_metrics_table",
+        "type": "markdown",
+        "sourceId": "research_recalculation",
+        "body": "## 同频复算结果\n\n| 指标 | 结果 | 解释 |\n|---|---:|---|\n| 全部日频 10 日 Pearson IC | +0.1314 | 连续因子在重叠日频样本中的相关性 |\n| 非重叠调仓点 10 日 Pearson IC | +0.1618 | 与实际 10 日调仓节奏一致 |\n| 高信号块平均收益 | +0.736% | 26 个触发块 |\n| 未触发块平均收益 | +0.348% | 155 个未触发块，仍为正收益 |\n| 实际持仓比例 | 14.36% | 80% 扩展分位阈值的真实触发率 |\n| 策略 / 满仓 / 等暴露年化 | 2.09% / 8.94% / 1.46% | 等暴露基准按 14.36% 恒定仓位计算 |"
+      },
+      {
+        "id": "ic_not_signal",
+        "type": "markdown",
+        "sourceId": "research_recalculation",
+        "body": "## 正 IC 不等于低因子时应空仓\n\n**Pearson IC 只说明跌停占比更高时，未来收益倾向于更高。** 它不要求低因子样本的未来收益为负，也不保证一个 0/1 阈值策略能跑赢始终满仓。当前样本恰好属于“高因子更好、低因子也赚钱”：高信号块比未触发块高约 **0.389%/10 日**，但未触发块本身仍有 **+0.348%/10 日** 的平均收益。\n\n因此，把正向因子用于“加仓多少”是自然转换；把它用于“未触发就完全空仓”则额外加入了一个未经 IC 证明的假设——低信号期预期收益不值得持有。"
+      },
+      {
+        "id": "shape_intro",
+        "type": "markdown",
+        "sourceId": "research_recalculation",
+        "body": "## 因子关系并不单调，单一阈值会损失信息\n\n**实际调仓点的五分组不是平滑递增。** Q5 的平均收益较高，但 Q3 与 Q5 接近，Q4 反而略为负值。全样本 Pearson IC 为 +0.1314，而 Spearman IC 只有 +0.0634；对两端各裁剪 2.5% 后，Pearson IC 降至约 +0.046。这个差异说明线性 IC 受到尾部幅度影响，固定 80% 阈值无法完整承接其信息。"
+      },
+      {
+        "id": "quintile_chart_block",
+        "type": "chart",
+        "chartId": "quintile_chart"
+      },
+      {
+        "id": "shape_implication",
+        "type": "markdown",
+        "sourceId": "research_recalculation",
+        "body": "**含义：** 因子有条件收益差，但不是稳定的单调打分器。比起只买最高 20%，更值得测试连续仓位、分层仓位或把跌停占比作为已有市场仓位的增量项，并用严格样本外窗口确定映射。"
+      },
+      {
+        "id": "verification",
+        "type": "markdown",
+        "sourceId": "notebook_tests",
+        "body": "## 当前实现未发现收益错位\n\nNotebook 的信号在决策日收盘形成，持有期从下一交易日开始；10 日策略使用互不重叠的调仓块，扩展分位阈值通过 `shift(1)` 仅使用此前历史。本次执行相关回归测试，结果为 **7 项全部通过**。\n\n这能排除当前代码中的明显前视、当日收益混入和阈值偷看，但不能替代样本外稳定性检验。"
+      },
+      {
+        "id": "next_steps",
+        "type": "markdown",
+        "body": "## 下一步应检验仓位映射，而不是继续怀疑 IC 符号\n\n1. **改用暴露匹配基准。** 同时报告满仓基准、14.36% 恒定暴露基准和择时策略，分开“少持仓”与“会择时”的贡献。\n2. **把二元开关改为仓位倾斜。** 例如低分位保留基础仓位，高分位提高仓位；不要默认未触发即 0 仓。\n3. **以 Rank IC 和分组单调性约束映射。** 对极端值做温莎化，并检查扩展窗口下的 Q1-Q5 收益和阈值触发率是否稳定。\n4. **做滚动样本外校准。** 阈值和仓位函数只用过去数据拟合，在后续固定窗口验证；不要用全样本选择最优分位数后再解释为预测能力。\n5. **加入现金收益与交易成本。** 当前空仓收益为 0；现金收益会改善长现金策略，交易成本则会削弱频繁调仓，两者应同时纳入。"
+      },
+      {
+        "id": "further_questions",
+        "type": "markdown",
+        "body": "## 仍需回答的问题\n\n- 跌停占比的预测含义究竟是“恐慌后的均值回归”，还是市场风险偏好增强？两种解释对应相反的仓位用途。\n- Q3 与 Q5 收益接近、Q4 偏弱的形状在各年份是否稳定，还是由少数极端行情贡献？\n- 若保留 50% 基础仓位、仅在高信号时升至 100%，样本外收益和回撤是否优于满仓及等暴露基准？"
+      },
+      {
+        "id": "caveats",
+        "type": "markdown",
+        "sourceId": "research_recalculation",
+        "body": "## 口径与限制\n\n- 数据区间为 2018 年 1 月至 2026 年 7 月，基准为本地沪深 A 股前一日市值加权收益。\n- IC 使用日频重叠的未来 10 日收益；报告同时复算了 181 个非重叠调仓点，以避免只依赖重叠样本。\n- 当前策略使用过去 252 日起步的 80% 扩展分位阈值，空仓收益设为 0，未计交易成本。\n- 回归中的日度 alpha 约为年化 **0.38%**，p 值约 **0.90**；因此现有证据支持“有条件收益差”，但不支持“已经形成稳定可交易 alpha”。"
+      }
+    ]
+  },
+  "snapshot": {
+    "version": 1,
+    "generatedAt": "2026-07-21T22:32:51+08:00",
+    "status": "ready",
+    "datasets": {
+      "headline_metrics": [
+        {
+          "daily_ic": 0.13136621006212013,
+          "decision_ic": 0.16184759134226223,
+          "holding_ratio": 0.143646408839779,
+          "held_mean_return": 0.007364754820926966,
+          "unheld_mean_return": 0.003478657074250163,
+          "conditional_spread": 0.0038860977466768035,
+          "strategy_annual_return": 0.02092467771484796,
+          "benchmark_annual_return": 0.08939838293893598,
+          "constant_exposure_annual_return": 0.014617614779907306
+        }
+      ],
+      "decision_quintiles": [
+        {
+          "quintile": "Q1（最低）",
+          "mean_return": -0.0007593,
+          "median_return": -0.00408163,
+          "n_obs": 37
+        },
+        {
+          "quintile": "Q2",
+          "mean_return": 0.00380389,
+          "median_return": 0.00920621,
+          "n_obs": 36
+        },
+        {
+          "quintile": "Q3",
+          "mean_return": 0.00892007,
+          "median_return": 0.00847409,
+          "n_obs": 36
+        },
+        {
+          "quintile": "Q4",
+          "mean_return": -0.00052197,
+          "median_return": 0.00185492,
+          "n_obs": 36
+        },
+        {
+          "quintile": "Q5（最高）",
+          "mean_return": 0.00887495,
+          "median_return": 0.01566696,
+          "n_obs": 36
+        }
+      ]
+    },
+    "accessIssues": []
+  },
+  "sources": [
+    {
+      "id": "research_recalculation",
+      "query": {
+        "engine": "python",
+        "language": "python",
+        "description": "复用 sentiment_factors_5d_research.ipynb 中的因子构造、扩展阈值和非重叠择时函数，对本地 rq_stock_all_data 日线重新计算跌停占比 10 日 IC、条件收益、分组收益和暴露匹配绩效。",
+        "executed_at": "2026-07-21T22:24:00+08:00"
+      }
+    },
+    {
+      "id": "notebook_tests",
+      "query": {
+        "engine": "pytest",
+        "language": "python",
+        "description": "执行 tests/test_sentiment_factors_5d_notebook.py，验证未来收益起点、方向参数、滚动 IC 可用日、扩展阈值滞后和非重叠持有期。",
+        "executed_at": "2026-07-21T22:27:00+08:00"
+      }
+    },
+    {
+      "id": "quintile_sql",
+      "query": {
+        "engine": "sqlite",
+        "language": "sql",
+        "sql": "SELECT 'Q1（最低）' AS quintile, -0.00075930 AS mean_return, -0.00408163 AS median_return, 37 AS n_obs\nUNION ALL SELECT 'Q2', 0.00380389, 0.00920621, 36\nUNION ALL SELECT 'Q3', 0.00892007, 0.00847409, 36\nUNION ALL SELECT 'Q4', -0.00052197, 0.00185492, 36\nUNION ALL SELECT 'Q5（最高）', 0.00887495, 0.01566696, 36",
+        "description": "承载已由 sentiment_factors_5d_research.ipynb 同频复算并复核的五分组聚合值，供便携报告图表渲染。",
+        "executed_at": "2026-07-21T22:32:00+08:00"
+      }
+    }
+  ]
+}

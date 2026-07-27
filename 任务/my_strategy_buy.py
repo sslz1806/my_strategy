@@ -288,67 +288,25 @@ result_df,merged_df = cal_trade_info(信号文件,trade_fun=trade,start_date=sta
 
 from my_utils.trade_fun import report_backtest_full
 from my_utils.fun import *
-from my_utils.trade_fun import adjust_weight_by_near_n, adjust_weight_by_consecutive_losses # 触及跌停调仓
 
-# 1.仓位控制风控(merged_df_with_weight)
-merged_df_with_weight = adjust_weight_by_near_n(merged_df, max_weight=0.45, return_column='weight_touch_limit_down')
-"""触及跌停风控"""
-# 2.连续亏损风控
-merged_df_with_weight = adjust_weight_by_consecutive_losses(merged_df_with_weight, max_weight=0.45, return_column='weight_consec_loss')
-merged_df_with_weight = merged_df_with_weight.with_columns(
-    pl.when(pl.col("weight_touch_limit_down") == pl.col("weight_consec_loss")) # 相等时取任意一列的值（结果一致）
-    .then(pl.col("weight_touch_limit_down"))  # 相等时取任意一列的值（结果一致）
-    .otherwise(pl.min_horizontal("weight_touch_limit_down", "weight_consec_loss"))  # 不等时取最小值
-    .alias("weight")
-)
-merged_df_with_weight = merged_df_with_weight.with_columns(
-    (pl.col("profit") * pl.col("weight")).alias("weight_profit")
-)
-
-# 买点下移风控(merged_df_with_weight_adjust)
-rate_move = 0.02
-# 增加买点下移的逻辑（当weight=0时,如果low<=open*(1-rate_move)时,买点下移rate_move（也就是profit+rate_move*100），否则profit=0）
-merged_df_with_weight_adjust = merged_df_with_weight.with_columns(
-    pl.when(pl.col("weight") != 0)
-    # 条件1：weight≠0 → 保持原profit不变
-    .then(pl.col("profit"))
-    # 条件2：weight==0 → 进一步判断low是否满足下移条件
-    .otherwise(
-        pl.when(pl.col("low") <= pl.col("open") * (1 - rate_move))
-        # 子条件1：满足下移 → profit+rate_move*100
-        .then(pl.col("profit") + rate_move * 100)
-        # 子条件2：不满足下移 → profit=0
-        .otherwise(0)
-    ).alias("profit")  # 覆盖原profit列
-) #买点下移回测
-"""买点下移风控"""
-merged_df_with_weight_adjust = merged_df_with_weight_adjust.with_columns(
-    (pl.col("profit") * 0.45).alias("weight_profit")
-)
-
+# 直接使用固定权重 0.45
 merged_df = merged_df.with_columns((pl.col("profit") * 0.45).alias("weight_profit"))
 result_df['weight_profit'] = result_df['profit'] * 0.45
 
 
 # 回测结果汇报
-logging.info("回测结果(不风控):")
-#back_result =report_backtest_full(merged_df.to_pandas(), start_date = '2025-01-01', end_date=end_date_str,profit_col='weight_profit',)
-logging.info("回测结果(触及跌停风控):")
-#back_result =report_backtest_full(merged_df_with_weight.to_pandas(), start_date = '2025-01-01', end_date=end_date_str,profit_col='weight_profit',)
-#logging.info("回测结果(买点下移风控):")
-#back_result =report_backtest_full(merged_df_with_weight_adjust.to_pandas(), start_date = '2025-01-01', end_date=end_date_str,profit_col='weight_profit')
+logging.info("回测结果:")
+#back_result = report_backtest_full(merged_df.to_pandas(), start_date='2025-01-01', end_date=end_date_str, profit_col='weight_profit')
 # 将回测结果保存到日志中
-#logging.info("\n" + back_result.to_string(index=False)) 
+#logging.info("\n" + back_result.to_string(index=False))
 #%% qmt实盘买入
-# 从merged_df_with_weight筛选今天的交易股票和权重
-today_trades = merged_df_with_weight.filter(pl.col("trading_date") == today)
+# 从merged_df筛选今天的交易股票
+today_trades = merged_df.filter(pl.col("trading_date") == today)
 today_trades = today_trades.sort(pl.col("open"), descending=True) # 按照开盘价排序，优先买入开盘价较高的股票
 code_list = today_trades['code'].to_list()
 name_list = today_trades['name'].to_list()
 open_list = today_trades['open'].to_list()
-weight_list = today_trades['weight'].to_list()
-仓位 = weight_list[0] if weight_list else 0
-#weight_list = [weight/len(weight_list) if weight > 0 else 0 for weight in weight_list]  # 将权重小于等于0的调整为0
+仓位 = 0.45  # 固定仓位权重
 logging.info('日期：{}'.format(today))
 logging.info(f"今天的所有信号的股票:")
 for i, (code, name) in enumerate(zip(code_list, name_list)):

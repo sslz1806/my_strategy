@@ -1,3 +1,4 @@
+import sys
 from datetime import date
 from pathlib import Path
 
@@ -6,6 +7,8 @@ import numpy as np
 import pandas as pd
 import polars as pl
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from 因子回测.alpha import add_future_return
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK_PATH = (
@@ -112,7 +115,6 @@ def test_next_day_event_return_rejects_stock_record_that_skips_market_day():
 
 
 def test_forward_returns_start_after_factor_date():
-    namespace = load_notebook_definitions()
     market = pd.DataFrame(
         {
             "trading_date": pd.to_datetime(
@@ -121,10 +123,10 @@ def test_forward_returns_start_after_factor_date():
             "market_daily_ret": [0.50, 0.10, -0.20, 0.25],
         }
     )
-    result = namespace["add_forward_returns"](market, horizons=(1, 3))
+    result = add_future_return(market, ret_col="market_daily_ret", horizons=(1, 3))
 
-    assert np.isclose(result.loc[0, "future_return_1d"], 0.10)
-    assert np.isclose(result.loc[0, "future_return_3d"], 1.10 * 0.80 * 1.25 - 1)
+    assert np.isclose(result.loc[0, "future_market_daily_ret_1d"], 0.10)
+    assert np.isclose(result.loc[0, "future_market_daily_ret_3d"], 1.10 * 0.80 * 1.25 - 1)
 
 
 def test_ic_reports_raw_and_direction_adjusted_correlation():
@@ -133,7 +135,7 @@ def test_ic_reports_raw_and_direction_adjusted_correlation():
     research = pd.DataFrame(
         {
             "test_factor": factor,
-            "future_return_1d": factor * 0.02,
+            "future_market_daily_ret_1d": factor * 0.02,
         }
     )
     summary = namespace["analyze_ic"](
@@ -148,6 +150,30 @@ def test_ic_reports_raw_and_direction_adjusted_correlation():
     assert np.isclose(summary.loc[0, "spearman_ic"], 1.0)
     assert np.isclose(summary.loc[0, "directional_pearson_ic"], -1.0)
     assert summary.loc[0, "n_obs"] == 80
+
+
+def test_rolling_ic_requires_full_window_and_delays_availability():
+    namespace = load_notebook_definitions()
+    trading_dates = pd.date_range("2024-01-02", periods=8, freq="B")
+    factor = np.arange(1.0, 9.0)
+    research = pd.DataFrame(
+        {
+            "trading_date": trading_dates,
+            "test_factor": factor,
+            "future_market_daily_ret_2d": factor * 0.01,
+        }
+    )
+    rolling = namespace["compute_rolling_ic"](
+        research,
+        factor_columns=["test_factor"],
+        horizons=(2,),
+        windows=(3,),
+    )
+    valid = rolling.dropna(subset=["rolling_ic"]).reset_index(drop=True)
+
+    assert valid.loc[0, "factor_window_end_date"] == trading_dates[2]
+    assert valid.loc[0, "available_date"] == trading_dates[4]
+    assert np.isclose(valid.loc[0, "rolling_ic"], 1.0)
 
 
 def test_expanding_threshold_uses_only_prior_observations():

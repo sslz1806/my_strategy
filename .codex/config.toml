@@ -1,0 +1,7 @@
+[shell_environment_policy]
+inherit = "core"
+
+[shell_environment_policy.set]
+CONDA_PREFIX = 'E:\working\anaconda3\envs\quant'
+CONDA_DEFAULT_ENV = "quant"
+CONDA_SHLVL = "1"

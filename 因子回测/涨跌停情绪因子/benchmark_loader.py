@@ -52,6 +52,8 @@ def load_benchmark(
 
 def _load_all_a_value_weight(prepared_daily, calendar, start_date, end_date):
     """从 prepared_daily 计算全 A 市值加权收益。"""
+    if prepared_daily is None or calendar is None:
+        raise ValueError("all_a_value_weight 基准需要 prepared_daily 和 calendar 参数")
     # 直接延时导入避免循环依赖
     from 因子回测.涨跌停情绪因子.timing_engine import build_value_weighted_benchmark
     result = build_value_weighted_benchmark(prepared_daily, calendar)

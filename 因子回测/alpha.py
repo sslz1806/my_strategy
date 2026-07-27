@@ -6,14 +6,70 @@ sys.path.append('D://桌面/策略')
 from my_utils.stock_api import *
 import pandas as pd
 import numpy as np
+from typing import Sequence
 api = stock_api()
 
-def cal_next_return(stock_data: pl.DataFrame, days=5) -> pl.DataFrame:
-    stock_data = stock_data.sort(['code','trading_date'])
-    stock_data = stock_data.with_columns([
-        ((pl.col('close').shift(-days) - pl.col('close')) / pl.col('close')*100).over('code').alias(f'return_{days}d')
-    ])
-    return stock_data
+def add_future_return(
+    df,
+    ret_col: str = "pct",
+    price_col: str = "close",
+    pre_close_col: str = "pre_close",
+    horizons: Sequence[int] = (1, 5, 10, 20),
+    date_col: str = "trading_date",
+    code_col: str = "code",
+):
+    """
+    为输入 DataFrame 添加未来 n 日累计收益列。
+
+    支持 Polars 和 Pandas，有 code 列则按股票分组计算，否则按单一时序。
+    ret_col 列存在直接用，不存在则用 price_col/pre_close_col-1。
+    输出列名格式: future_{ret_col}_{h}d
+    """
+    is_polars = isinstance(df, pl.DataFrame)
+    is_panel = (code_col in df.columns)
+
+    # 排序
+    if is_polars:
+        sorted_df = df.sort([code_col, date_col] if is_panel else date_col)
+    else:
+        sorted_df = df.sort_values([code_col, date_col] if is_panel else date_col).copy()
+
+    # 计算未来收益
+    if is_polars:
+        gross_expr = (pl.col(ret_col) + 1.0) if ret_col in sorted_df.columns else (pl.col(price_col) / pl.col(pre_close_col))
+        exprs = []
+        for h in horizons:
+            # 手动展开 shift 乘法，避免 rolling_product 在低版本 Polars 上不存在
+            future_gross = gross_expr.shift(-1)
+            for i in range(2, h + 1):
+                future_gross = future_gross * gross_expr.shift(-i)
+            future_ret = future_gross - 1
+            if is_panel:
+                future_ret = future_ret.over(code_col)
+            exprs.append(future_ret.alias(f"future_{ret_col}_{h}d"))
+        sorted_df = sorted_df.with_columns(exprs)
+    else:
+        if ret_col in sorted_df.columns:
+            gross = 1.0 + sorted_df[ret_col].astype(float)
+        else:
+            gross = sorted_df[price_col].astype(float) / sorted_df[pre_close_col].astype(float)
+        sorted_df["__gross__"] = gross
+        for h in horizons:
+            if is_panel:
+                sorted_df[f"future_{ret_col}_{h}d"] = (
+                    sorted_df.groupby(code_col)["__gross__"]
+                    .transform(lambda s: s.rolling(h, min_periods=h).apply(np.prod, raw=True).shift(-h))
+                    - 1.0
+                )
+            else:
+                sorted_df[f"future_{ret_col}_{h}d"] = (
+                    sorted_df["__gross__"]
+                    .rolling(h, min_periods=h).apply(np.prod, raw=True).shift(-h)
+                    - 1.0
+                )
+        sorted_df = sorted_df.drop(columns=["__gross__"])
+
+    return sorted_df
 
 
 def ols_neutralize(group: pl.DataFrame, y_column: str, x_columns: list) -> pl.DataFrame:
@@ -56,22 +112,31 @@ def ols_neutralize(group: pl.DataFrame, y_column: str, x_columns: list) -> pl.Da
     )[group.columns + [f'{y_column}_neutralized']]  # 保持原始列顺序
 
 
-def analyze_ic(factor_data, stock_data, start_date, end_date, adjust_freq=1,return_periods=[1, 5, 10, 20],save_results=False):
+def analyze_ic(factor_data, stock_data, start_date, end_date, adjust_freq=1,
+               return_periods=[1, 5, 10, 20], ret_col=None, save_results=False):
     """
     分析因子与股票收益率的相关性（IC）
-    :param factor_data: DataFrame，包含因子数据(宽数据格式)
-    :param stock_data: DataFrame，包含股票日线数据(长数据格式)
-    :param start_date: str，分析开始日期
-    :param end_date: str，分析结束日期
-    :param adjust_freq: int，调仓频率，单位为天。默认每日调仓
-    :factor_group_num: int, 因子分组数量
-    :param return_periods: list，分析的未来收益周期，例如[1,5,10,20]表示分析1日、5日、10日和20日收益
 
-    功能:
-    1. 合并因子数据(宽格式)和股票数据(长格式)
-    2. 根据return_periods计算下期收益(future_return_{}d)
-    3. 按照调仓日期日期计算IC和RankIC,汇报各个下期收益的统计指标(均值,标准差,IR,正相关比例等)
-    4. 可视化每个下期收益的ic,
+    参数
+    ----
+    factor_data : DataFrame
+        因子宽表，包含 trading_date 列和股票代码列（宽格式）
+    stock_data : DataFrame
+        股票日线数据（长格式，含 trading_date, code, 及日收益率或 close 列）
+    start_date, end_date : str
+        分析起止日期
+    adjust_freq : int
+        调仓频率（天），默认每日
+    return_periods : list
+        未来收益周期列表，如 [1, 5, 10, 20]
+    ret_col : str, optional
+        stock_data 中的日收益率列名（如 'pct', 'returns'），
+        传入后使用 add_future_return 从该列复利计算未来收益，
+        由调用方保证该列考虑了复权。
+        为 None 时向后兼容：优先用已有的 future_return_{}d 列，
+        都没有则从 close 列计算（发出 FutureWarning）。
+    save_results : bool
+        是否保存结果到文件
     """
     print(f"开始IC分析: 从{start_date}到{end_date}，调仓频率={adjust_freq}天")
     
@@ -94,18 +159,34 @@ def analyze_ic(factor_data, stock_data, start_date, end_date, adjust_freq=1,retu
     print(f"分析期间共有{len(rebalance_dates)}个调仓日")
     
     # 3. 计算未来收益率
-    # 对stock_data按股票分组，计算未来N日收益率
-    stock_data_grouped = stock_data.sort_values(['code', 'trading_date']).groupby('code')
-    
-    # 初始化收益率列
-    for period in return_periods:
-        stock_data[f'future_return_{period}d'] = np.nan
-    
-    # 计算每只股票的未来收益率
-    for code, group in stock_data_grouped:
-        for period in return_periods: # 计算每个下期收益
-            # 计算未来N日收益率: (future_price / current_price) - 1
-            stock_data.loc[group.index, f'future_return_{period}d'] = group['close'].shift(-period) / group['close'] - 1
+    if ret_col is not None:
+        # 用 add_future_return 从可靠的日收益率列复利计算
+        # 调用方负责 ret_col 列的准确性（如用前复权价算的 pct_chg）
+        stock_data = add_future_return(
+            stock_data, ret_col=ret_col, horizons=tuple(return_periods),
+            date_col='trading_date', code_col='code',
+        )
+        # 重命名列以匹配内部约定 future_return_{period}d
+        rename_map = {f'future_{ret_col}_{p}d': f'future_return_{p}d' for p in return_periods}
+        stock_data.rename(columns=rename_map, inplace=True)
+    elif all(f'future_return_{p}d' in stock_data.columns for p in return_periods):
+        print("检测到 stock_data 已有未来收益列，跳过计算")
+    else:
+        # 向后兼容兜底：从 close 列计算（未考虑复权，不推荐）
+        import warnings
+        warnings.warn(
+            "analyze_ic 使用 raw close 计算未来收益（未考虑复权除息），"
+            "建议传入 ret_col 参数使用可靠的日收益率列。",
+            FutureWarning,
+        )
+        stock_data_grouped = stock_data.sort_values(['code', 'trading_date']).groupby('code')
+        for period in return_periods:
+            stock_data.loc[:, f'future_return_{period}d'] = np.nan
+        for _, group in stock_data_grouped:
+            for period in return_periods:
+                stock_data.loc[group.index, f'future_return_{period}d'] = (
+                    group['close'].shift(-period) / group['close'] - 1
+                )
     
     # 4. 计算每个调仓日的IC
     ic_results = [] # 包含每个调仓日因子的所有下期收益的IC
@@ -324,7 +405,7 @@ warnings.filterwarnings('ignore')
 
 def analyze_factor(
     factor_data: pd.DataFrame,
-    close_data: pd.DataFrame,
+    ret_data: pd.DataFrame,
     start_date: str,
     end_date: str,
     adjust_freq: int = 1,
@@ -334,7 +415,18 @@ def analyze_factor(
 ) -> dict:
     """
     超极简版因子分析：纯宽表向量化计算（无长格式转换）
-    核心优化：用corrwith直接计算IC，RankIC通过rank+corrwith实现
+
+    参数
+    ----
+    factor_data : pd.DataFrame
+        因子值宽表，index=交易日，columns=股票代码
+    ret_data : pd.DataFrame
+        未来N日累计收益宽表，index=交易日，columns=股票代码
+        （与 factor_data 的 index 和 columns 对齐）
+        调用方负责收益计算的准确性（如前复权、pct累乘等），
+        本函数只做齐对、对齐和滤波后直接计算 IC/分组收益。
+    start_date, end_date, adjust_freq, return_period, group_num, save_result
+        参见原函数文档。
     """
     # ===================== 1. 数据预处理（纯宽表） =====================
     print(f"开始因子分析: {start_date} ~ {end_date} | 持仓{return_period}天 | 调仓{adjust_freq}天")
@@ -343,13 +435,10 @@ def analyze_factor(
 
     # 日期格式化 + 切片
     start_date, end_date = pd.to_datetime(start_date), pd.to_datetime(end_date)
-    # 用 trading_date 列筛选日期范围（包含起始和结束日期）
-    factor_wide = factor_data[(factor_data.index>= start_date) & 
+    factor_wide = factor_data[(factor_data.index>= start_date) &
                             (factor_data.index <= end_date)].sort_index().copy()
-    close_wide = close_data[(close_data.index >= start_date) & 
-                            (close_data.index <= end_date)].sort_index().copy()
-    # 计算未来N天收益（宽表）
-    ret_wide = close_wide.shift(-return_period) / close_wide - 1
+    ret_wide = ret_data[(ret_data.index >= start_date) &
+                        (ret_data.index <= end_date)].sort_index().copy()
 
     # 步骤1：先对齐股票代码（避免列不一致导致的空值）
     common_stocks = factor_wide.columns.intersection(ret_wide.columns)
@@ -411,13 +500,17 @@ def analyze_factor(
         valid_mask = factor_row.notna()
         if valid_mask.sum() < group_num * 5:
             return pd.Series(np.nan, index=factor_row.index)
-        # 分位数分组
-        return pd.qcut(
-            factor_row[valid_mask].rank(method='dense'),
-            q=group_num,
-            labels=[f'G{i+1}' for i in range(group_num)],
-            duplicates='drop'
-        ).reindex(factor_row.index)
+        # 百分位分组法（比pd.qcut更稳健，不受大量重复值影响）
+        # 将因子值按排名等分为group_num组
+        ranks = factor_row[valid_mask].rank(method='dense')
+        pct = ranks / ranks.max()  # 归一化到 [0, 1]
+        group_idx = (pct * group_num).clip(0, group_num - 1).astype(int)
+        group_labels = pd.Series(
+            [f'G{i+1}' for i in range(group_num)],
+            index=range(group_num)
+        )
+        result = group_idx.map(group_labels)
+        return result.reindex(factor_row.index)
 
     # 生成分组矩阵（index=日期，columns=代码，values=分组标签）
     group_matrix = factor_wide.apply(daily_group, axis=1)
