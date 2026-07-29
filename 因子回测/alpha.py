@@ -616,3 +616,277 @@ def analyze_factor(
         'ic_df': ic_df, 'ic_stats': ic_stats,
         'group_returns': group_returns_wide, 'nav_df': nav_wide, 'group_stats': group_stats_df
     }
+
+
+# ============================================================
+# 时序因子分组回测
+# ============================================================
+
+
+def backtest_timeseries_factor(
+    analysis_data: pd.DataFrame,
+    factor_col: str,
+    index_ret_col: str,
+    q: int = 5,
+    hold_period: int = 5,
+    plot: bool = True,
+    verbose: bool = True,
+) -> dict:
+    """
+    时序因子分组回测：分组统计 + 每组独立策略回测 + 净值对比
+
+    将单时序因子（如市场情绪指标、大盘择时信号）按分位数分组，
+    对每组分别做策略回测并对比绩效。
+
+    参数
+    ----
+    analysis_data : pd.DataFrame
+        时序因子数据。index 为时间轴（交易日/15分钟时间戳/任意有序
+        时间戳均可，函数不假定其频率粒度）。
+        必须含 factor_col 和 index_ret_col 两列。
+    factor_col : str
+        因子值列名。
+    index_ret_col : str
+        单期收益率列名（%单位，如 0.5 表示 0.5%）。NaN 在内部填充为 0。
+    q : int
+        等分位组数，默认 5。
+    hold_period : int
+        持仓期数（与 index 粒度一致：日线传天数，分钟线传分钟期数），
+        默认 5。
+    plot : bool
+        是否自动显示图表。Figure 始终通过返回值返回以供二次加工。
+    verbose : bool
+        是否打印分组统计和绩效汇总。批量调用（如跨指数/跨因子循环）时
+        设为 False 以保持输出干净。
+
+    返回
+    ----
+    dict : {
+        'group_stats': pd.DataFrame,
+            分组未来收益统计。index=factor_group (G1~Gq)，
+            columns=['平均收益(%)', '收益标准差', '样本数']
+        'group_performance': pd.DataFrame,
+            分组策略绩效。index=group_name (G1~Gq + '买入持有基准')，
+            columns=['累计收益(%)', '年化收益(%)', '夏普比率',
+                     '最大回撤(%)', '胜率(%)', '持仓占比(%)']
+        'group_nav': pd.DataFrame,
+            各分组策略净值宽表，columns=分组名，index=analysis_data.index
+        'future_return_col': str,
+            内部生成的未来收益列名，格式 f'future_return_{hold_period}d'
+        'fig_bar': plt.Figure | None,
+            分组平均收益柱状图 Figure 对象
+        'fig_nav': plt.Figure | None,
+            分组策略净值对比图 Figure 对象
+    }
+
+    注意
+    ----
+    - 内部保留 backtest_group_strategy 和 calculate_group_performance_metrics
+      作为嵌套函数，与 notebook 原版实现一致。
+    - 未来收益从 index_ret_col 复利合成（替代原 nav.shift(-h)/nav-1）。
+    - 有效样本数小于 q 时抛 ValueError。
+    """
+    # ---------- 嵌套函数：单分组策略回测 ----------
+    def backtest_group_strategy(data, group_col, target_group, hold_period):
+        """单个分组策略回测"""
+        data = data.copy().dropna(subset=[group_col])
+        data['signal'] = (data[group_col] == target_group).astype(int)
+
+        signal_arr = data['signal'].to_numpy()
+        position = np.zeros(len(data), dtype=np.int8)
+        remaining_days = 0
+
+        for i, s in enumerate(signal_arr):
+            if s == 1:
+                remaining_days = hold_period
+            if remaining_days > 0:
+                position[i] = 1
+                remaining_days -= 1
+
+        data['position'] = position
+        data['strategy_return'] = data['position'] * data[index_ret_col] / 100
+        data['strategy_nav'] = (1 + data['strategy_return']).cumprod()
+        return data
+
+    # ---------- 嵌套函数：分组绩效指标 ----------
+    def calculate_group_performance_metrics(data, group_name):
+        """计算分组策略表现指标"""
+        returns = data['strategy_return'].dropna()
+        nav = data['strategy_nav'].dropna()
+
+        if len(returns) == 0:
+            return None
+
+        total_return = nav.iloc[-1] - 1
+        years = len(returns) / 252
+        annual_return = (1 + total_return) ** (1 / years) - 1 if years > 0 else 0
+
+        daily_rf = 0.03 / 252
+        excess_return = returns - daily_rf
+        sharpe = np.sqrt(252) * excess_return.mean() / returns.std() if returns.std() > 0 else 0
+
+        peak = nav.expanding().max()
+        drawdown = (nav - peak) / peak
+        max_drawdown = drawdown.min()
+
+        win_rate = (returns > 0).mean()
+        position_days = (data['position'] == 1).sum()
+        position_ratio = position_days / len(data)
+
+        return {
+            '分组': group_name,
+            '累计收益': total_return * 100,
+            '年化收益': annual_return * 100,
+            '夏普比率': sharpe,
+            '最大回撤': max_drawdown * 100,
+            '胜率': win_rate * 100,
+            '持仓占比': position_ratio * 100,
+        }
+
+    # ==================== 主流程 ====================
+    # 设置中文字体（避免图标题/标签出现方框）
+    plt.rcParams["font.family"] = ["SimHei"]
+    plt.rcParams["axes.unicode_minus"] = False
+
+    analysis_data = analysis_data.copy()
+    analysis_data = analysis_data.sort_index()
+
+    # 1. 未来收益合成（从 index_ret_col 复利）
+    future_return_col = f'future_return_{hold_period}d'
+    ret_series = analysis_data[index_ret_col].fillna(0)
+    gross = 1 + ret_series / 100
+    future_gross = gross.rolling(hold_period).apply(np.prod, raw=True).shift(-hold_period)
+    analysis_data[future_return_col] = (future_gross - 1) * 100
+
+    # 2. 分组
+    analysis_data_clean = analysis_data.dropna(subset=[factor_col]).copy()
+    if len(analysis_data_clean) < q:
+        raise ValueError(
+            f"有效样本数 ({len(analysis_data_clean)}) 小于分组数 ({q})，无法分组"
+        )
+
+    analysis_data_clean['factor_group'] = pd.qcut(
+        analysis_data_clean[factor_col],
+        q=q,
+        labels=[f'G{i+1}' for i in range(q)],
+        duplicates='drop',
+    )
+    actual_groups = analysis_data_clean['factor_group'].nunique()
+    if actual_groups < q and verbose:
+        print(f"⚠ 因子重复值过多，实际分组数 {actual_groups} < {q}")
+
+    # 3. 分组未来收益统计
+    group_returns = analysis_data_clean.groupby('factor_group', observed=True)[future_return_col].agg(
+        ['mean', 'std', 'count']
+    )
+    group_returns.columns = ['平均收益(%)', '收益标准差', '样本数']
+    if verbose:
+        print(f"\n{factor_col} 分组未来{hold_period}期收益统计:")
+        print(group_returns.round(4))
+
+    # 4. 柱状图（仅 plot=True 时创建 Figure）
+    fig_bar = None
+    colors = [
+        '#e74c3c', '#e67e22', '#f1c40f', '#27ae60', '#2980b9',
+        '#3498db', '#9b59b6', '#1abc9c', '#e84393', '#00b894',
+    ][:q]
+    if plot:
+        fig_bar, ax_bar = plt.subplots(figsize=(10, 6))
+        bars = ax_bar.bar(
+            group_returns.index, group_returns['平均收益(%)'],
+            color=colors, alpha=0.7,
+        )
+        ax_bar.axhline(y=0, color='black', linestyle='-', alpha=0.5)
+
+        for bar in bars:
+            height = bar.get_height()
+            ax_bar.text(
+                bar.get_x() + bar.get_width() / 2.,
+                height + (0.01 if height > 0 else -0.05),
+                f'{height:.4f}%',
+                ha='center',
+                va='bottom' if height > 0 else 'top',
+            )
+
+        ax_bar.set_title(f'{factor_col} 分组未来{hold_period}期平均收益', fontsize=14)
+        ax_bar.set_xlabel('因子分组（G1最低，Gq最高）', fontsize=12)
+        ax_bar.set_ylabel('平均收益(%)', fontsize=12)
+        ax_bar.grid(alpha=0.3, axis='y')
+        fig_bar.tight_layout()
+
+    # 5. 分组策略回测
+    groups = [f'G{i+1}' for i in range(actual_groups)]
+    group_results = {}
+    for group in groups:
+        group_strategy = backtest_group_strategy(
+            analysis_data_clean, 'factor_group',
+            target_group=group, hold_period=hold_period,
+        )
+        group_results[group] = group_strategy
+
+    # 基准：买入持有
+    benchmark_data = analysis_data_clean.copy()
+    benchmark_data['position'] = 1
+    benchmark_data['strategy_return'] = benchmark_data[index_ret_col] / 100
+    benchmark_data['strategy_nav'] = (1 + benchmark_data['strategy_return']).cumprod()
+
+    # 绩效指标
+    all_metrics = []
+    group_nav_dict = {}
+    for group in groups:
+        metrics = calculate_group_performance_metrics(group_results[group], group)
+        all_metrics.append(metrics)
+        group_nav_dict[group] = group_results[group]['strategy_nav']
+
+    benchmark_metrics = calculate_group_performance_metrics(benchmark_data, '买入持有基准')
+    all_metrics.append(benchmark_metrics)
+
+    performance_df = pd.DataFrame(all_metrics).set_index('分组')
+    group_nav_df = pd.DataFrame(group_nav_dict, index=analysis_data_clean.index)
+
+    display_df = performance_df.copy()
+    for col in ['累计收益', '年化收益', '最大回撤', '胜率', '持仓占比']:
+        if col in display_df.columns:
+            display_df[col] = display_df[col].apply(lambda x: f'{x:.2f}%')
+    if '夏普比率' in display_df.columns:
+        display_df['夏普比率'] = display_df['夏普比率'].apply(lambda x: f'{x:.2f}')
+    if verbose:
+        print("\n" + "=" * 90)
+        print("所有分组策略表现汇总")
+        print("=" * 90)
+        print(display_df)
+
+    # 6. 净值对比图（仅 plot=True 时创建 Figure）
+    fig_nav = None
+    if plot:
+        fig_nav, ax_nav = plt.subplots(figsize=(14, 8))
+        nav_colors = colors[:len(groups)] + ['#888888']
+        nav_labels = [f'{g}' for g in groups] + ['买入持有基准']
+
+        for i, group in enumerate(groups):
+            ax_nav.plot(
+                group_nav_df.index, group_nav_df[group],
+                label=nav_labels[i], color=nav_colors[i], linewidth=2,
+            )
+
+        ax_nav.plot(
+            benchmark_data.index, benchmark_data['strategy_nav'],
+            label='买入持有基准', color='#888888', linewidth=2, linestyle='--',
+        )
+
+        ax_nav.set_title(f'{factor_col} 各分组策略净值对比（持有{hold_period}期）', fontsize=16)
+        ax_nav.set_xlabel('时间', fontsize=12)
+        ax_nav.set_ylabel('净值（初始=1）', fontsize=12)
+        ax_nav.legend(fontsize=11, loc='best')
+        ax_nav.grid(alpha=0.3)
+        fig_nav.tight_layout()
+        fig_nav.show()
+
+    return {
+        'group_stats': group_returns,
+        'group_performance': performance_df,
+        'group_nav': group_nav_df,
+        'future_return_col': future_return_col,
+        'fig_bar': fig_bar,
+        'fig_nav': fig_nav,
+    }

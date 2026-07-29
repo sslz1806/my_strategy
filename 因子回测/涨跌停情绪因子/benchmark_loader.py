@@ -96,9 +96,21 @@ def _load_index_benchmark(name, start_date, end_date, source="auto"):
             api = stock_api()
             df = api.gm_get_index_day_data(gm_code, start_date, end_date)
             if df is not None and len(df) > 0:
-                result = df[["trading_date", "pct"]].copy()
+                # 掘金原始字段和清洗后的字段名可能不同；统一转换为小数日收益率。
+                pct_column = next(
+                    (name for name in ("pct", "pct_chg", "pct_change") if name in df.columns),
+                    None,
+                )
+                result = df[["trading_date"]].copy()
+                if pct_column is not None:
+                    result["market_daily_ret"] = df[pct_column] / 100.0
+                elif {"close", "pre_close"}.issubset(df.columns):
+                    result["market_daily_ret"] = df["close"] / df["pre_close"] - 1.0
+                else:
+                    raise ValueError(
+                        f"掘金指数日线缺少收益字段，实际列为: {df.columns.tolist()}"
+                    )
                 result["trading_date"] = pd.to_datetime(result["trading_date"])
-                result["market_daily_ret"] = result["pct"] / 100.0  # 百分比 → 小数
                 return result.sort_values("trading_date")[["trading_date", "market_daily_ret"]].reset_index(drop=True)
         except Exception:
             logging.getLogger(__name__).warning(
