@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import datetime
 import json
+import logging
 import pandas as pd
 import requests
 import gzip
@@ -132,15 +135,98 @@ class RQData:
             print(f"请求错误: {e}")
             raise
 
+# 米筐 ETF 行情只请求落盘所需字段，减少单次响应体积。
+ETF_DAY_FIELDS = [
+    'open',
+    'high',
+    'low',
+    'close',
+    'prev_close',
+    'volume',
+    'total_turnover',
+]
+ETF_MINUTE_FIELDS = [
+    'open',
+    'high',
+    'low',
+    'close',
+    'volume',
+    'total_turnover',
+]
+
+
 # 米筐官方API
-class RqData:
+class RqData: #NhgWOWVZCnNzlhXcU7QwoYWSxsDredHhgzOprOOpZ2SbpVJGFm9b1W4fRs61v-cYaAEI3RT9_UoPmkmC1P_kGFoDJ1TMRqQmvXEj0RPQpBlGVXF8r8blbvLe5iqLwUe0yXGAxA-5ET5YfEPnQFYGpufhbzDEokf3Tb319vhwvB4=R9Wl1ULCiS05KJVkb7LM8Vbj_H1TwVnbiXhGKJBszyPtawrOWxlcCKwKQAu0z22uiSAwJjR_1Zdqkw4hf-762Eo46rPKJU3J7TfivcWdbPk6-QvygSzQ7NtDnx6k-jn1tPOHQFljsE6mMV4ARhX_otU7A2MicLXwwgSxiLTrKmk=
     def __init__(self):
         rq.init('license','NhgWOWVZCnNzlhXcU7QwoYWSxsDredHhgzOprOOpZ2SbpVJGFm9b1W4fRs61v-cYaAEI3RT9_UoPmkmC1P_kGFoDJ1TMRqQmvXEj0RPQpBlGVXF8r8blbvLe5iqLwUe0yXGAxA-5ET5YfEPnQFYGpufhbzDEokf3Tb319vhwvB4=R9Wl1ULCiS05KJVkb7LM8Vbj_H1TwVnbiXhGKJBszyPtawrOWxlcCKwKQAu0z22uiSAwJjR_1Zdqkw4hf-762Eo46rPKJU3J7TfivcWdbPk6-QvygSzQ7NtDnx6k-jn1tPOHQFljsE6mMV4ARhX_otU7A2MicLXwwgSxiLTrKmk=')
         #rq.init(username='ly', password='123456')
 
+    def close(self):
+        """释放本进程的米筐官方连接，供长驻或复用 main 的调用方在结束后收尾。"""
+        rq.reset()
 
-    def get_price(self, symbol, start_date, end_date, frequency='1d', fields=None):
-        return rq.get_price(symbol, start_date=start_date, end_date=end_date, frequency=frequency, fields=fields)
+
+    def get_price(
+        self,
+        symbol,
+        start_date,
+        end_date,
+        frequency='1d',
+        fields=None,
+        adjust_type='pre',
+        skip_suspended=False,
+        expect_df=True,
+    ):
+        """调用官方行情接口，并保持既有调用默认使用前复权。"""
+        return rq.get_price(
+            symbol,
+            start_date=start_date,
+            end_date=end_date,
+            frequency=frequency,
+            fields=fields,
+            adjust_type=adjust_type,
+            skip_suspended=skip_suspended,
+            expect_df=expect_df,
+        )
+
+    def get_etf_instruments(self):
+        """获取包含退市记录的完整 ETF 历史基础池。"""
+        return rq.all_instruments(type='ETF', market='cn')
+
+    def get_trading_days(self, start_date, end_date):
+        """获取一次运行内可复用的中国市场交易日历。"""
+        values = rq.get_trading_dates(start_date, end_date, market='cn')
+        return [value.date() if hasattr(value, 'date') else value for value in values]
+
+    def get_quota(self):
+        """读取官方账户当日流量上限、已用量、许可类型及剩余有效期。"""
+        return rq.user.get_quota()
+
+    def fetch_etf_day_range(self, rq_codes, start_date, end_date):
+        """用一次请求获取批次内全部 ETF 的不复权日线。"""
+        return self.get_price(
+            rq_codes,
+            start_date,
+            end_date,
+            frequency='1d',
+            fields=ETF_DAY_FIELDS,
+            adjust_type='none',
+            skip_suspended=False,
+            expect_df=True,
+        )
+
+    def fetch_etf_minute_range(self, rq_codes, start_date, end_date):
+        """用一次请求获取批次内全部 ETF 的原始不复权 1 分钟线。"""
+        return self.get_price(
+            rq_codes,
+            start_date,
+            end_date,
+            frequency='1m',
+            fields=ETF_MINUTE_FIELDS,
+            adjust_type='none',
+            skip_suspended=False,
+            expect_df=True,
+        )
 
     
     def get_return(self, symbol, start_date, end_date, frequency='1d'):
@@ -150,11 +236,196 @@ class RqData:
     
 # 本地数据库API
 class DDBData:
-    def __init__(self):
+    def __init__(self, session=None):
         self.acc_db_path = config['acc_db_path']
         self.kline_db_path = config['kline_db_path']
-        self.ddb_config = config['ddb_config']  
+        self.ddb_config = config['ddb_config']
+        self._session = session
+        self._owns_session = session is None
         #day_kline_table = 'day_kline'
+
+    def connect(self):
+        """返回可复用的 DDB 会话；未注入会话时按现有配置延迟创建。"""
+        if self._session is None:
+            self._session = ddb.session()
+            self._session.connect(
+                self.ddb_config['host'],
+                self.ddb_config['port'],
+                self.ddb_config['user'],
+                self.ddb_config['password'],
+            )
+        return self._session
+
+    def close(self):
+        """关闭本实例创建的会话，不接管调用方注入会话的生命周期。"""
+        if self._session is not None and self._owns_session:
+            self._session.close()
+            self._session = None
+
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+        return False
+
+    def _run_query(self, script, query_name):
+        """在数据访问层统一补充查询上下文，并保留原始异常链。"""
+        try:
+            return self.connect().run(script)
+        except Exception as exc:
+            logging.warning("DDB %s查询失败: %s", query_name, exc)
+            raise RuntimeError(f"DDB {query_name}查询失败: {exc}") from exc
+
+    def get_stock_universe(self):
+        """获取 DDB 中的米筐普通股票代码列表。"""
+        try:
+            data = self.connect().run("""
+                select order_book_id
+                from loadTable('dfs://common_years_tsdb', 'instrument_base')
+                where type = 'CS'
+            """)
+            return data["order_book_id"].dropna().tolist()
+        except Exception as exc:
+            logging.error("获取 DDB 股票池失败: %s", exc)
+            return []
+
+    def get_trading_days(self, start_date, end_date):
+        """从 DDB 交易日表读取指定范围内的交易日。"""
+        start_str = pd.to_datetime(start_date).strftime("%Y.%m.%d")
+        end_str = pd.to_datetime(end_date).strftime("%Y.%m.%d")
+        try:
+            data = self.connect().run(f"""
+                select distinct trade_date
+                from loadTable('dfs://common_years_tsdb', 'trade_date')
+                where is_trade_date = true
+                  and trade_date >= date({start_str})
+                  and trade_date <= date({end_str})
+                order by trade_date
+            """)
+            dates = data["trade_date"].dropna().tolist()
+            return [value.date() if hasattr(value, "date") else value for value in dates]
+        except Exception as exc:
+            logging.error("获取交易日列表失败: %s", exc)
+            return []
+
+    def fetch_day_range(
+        self,
+        start_date,
+        end_date,
+        rq_codes=None,
+        allowed_dates=None,
+    ):
+        """批量查询 DDB 日线相关表并返回本地统一 Schema 的 Polars 数据。"""
+        from my_utils.rq_fun import RQ_DAY_SCHEMA, normalize_ddb_day_range
+
+        if rq_codes is None:
+            rq_codes = self.get_stock_universe()
+        if not rq_codes:
+            import polars as pl
+
+            return pl.DataFrame(schema=RQ_DAY_SCHEMA)
+
+        start_str = pd.to_datetime(start_date).strftime("%Y.%m.%d")
+        end_str = pd.to_datetime(end_date).strftime("%Y.%m.%d")
+        kline = self._run_query(f"""
+            select order_book_id, date as trading_date,
+                   open, close, high, low,
+                   volume, total_turnover as amount,
+                   prev_close as pre_close,
+                   limit_up, limit_down
+            from loadTable('dfs://common_years_olap', 'day_kline')
+            where (order_book_id like '%.XSHE' or order_book_id like '%.XSHG')
+              and date >= date({start_str})
+              and date <= date({end_str})
+        """, "日线")
+        if kline.empty:
+            import polars as pl
+
+            return pl.DataFrame(schema=RQ_DAY_SCHEMA)
+
+        is_st = self._run_query(f"""
+            select order_book_id, date as trading_date, is_st
+            from loadTable('dfs://stock_years_tsdb', 'is_st_stock')
+            where date >= date({start_str})
+              and date <= date({end_str})
+        """, "ST 标记")
+        shares = self._run_query(f"""
+            select order_book_id, date as trading_date,
+                   circulation_a, total_a, free_circulation
+            from loadTable('dfs://stock_years_tsdb', 'stock_shares')
+            where date >= date({start_str})
+              and date <= date({end_str})
+        """, "股本")
+        ex_factor = self._run_query(f"""
+            select order_book_id, ex_date, ex_cum_factor as adj_factor
+            from loadTable('dfs://stock_years_tsdb', 'ex_factor')
+            where ex_date <= date({end_str})
+        """, "复权因子")
+        instruments = self._run_query("""
+            select order_book_id, symbol as name
+            from loadTable('dfs://common_years_tsdb', 'instrument_base')
+            where type = 'CS'
+        """, "股票信息")
+
+        return normalize_ddb_day_range(
+            kline,
+            is_st,
+            shares,
+            ex_factor,
+            instruments,
+            rq_codes,
+            allowed_dates=allowed_dates,
+        )
+
+    def fetch_minute_range(
+        self,
+        start_date,
+        end_date,
+        allowed_dates=None,
+        rq_codes=None,
+    ):
+        """批量查询 DDB 一分钟线并合成为右对齐 15 分钟线。"""
+        import polars as pl
+        from my_utils.rq_fun import RQ_MIN_SCHEMA, aggregate_right_aligned_15min
+
+        if rq_codes is None:
+            rq_codes = self.get_stock_universe()
+        if not rq_codes:
+            return pl.DataFrame(schema=RQ_MIN_SCHEMA)
+
+        if allowed_dates is None:
+            allowed_dates = set(self.get_trading_days(start_date, end_date))
+        else:
+            allowed_dates = set(allowed_dates)
+        if not allowed_dates:
+            return pl.DataFrame(schema=RQ_MIN_SCHEMA)
+
+        code_filter = ""
+        if len(rq_codes) == 1:
+            safe_code = str(rq_codes[0]).replace("'", "''")
+            code_filter = f"\n              and order_book_id = '{safe_code}'"
+
+        start_str = pd.to_datetime(start_date).strftime("%Y.%m.%d")
+        end_str = pd.to_datetime(end_date).strftime("%Y.%m.%d")
+        raw = self._run_query(f"""
+            select order_book_id, trade_time,
+                   open, close, high, low, volume, total_turnover
+            from loadTable('dfs://common_years_olap', 'one_min_kline')
+            where (order_book_id like '%.XSHE' or order_book_id like '%.XSHG')
+              and trade_time >= timestamp({start_str} 09:31:00)
+              and trade_time <= timestamp({end_str} 15:00:00)
+              {code_filter}
+        """, "分钟线")
+
+        if raw.empty:
+            return pl.DataFrame(schema=RQ_MIN_SCHEMA)
+        return aggregate_right_aligned_15min(
+            pl.from_pandas(raw),
+            rq_codes=rq_codes,
+            allowed_dates=allowed_dates,
+        )
 
     def load_data_from_dolphindb(self,db_path, table_name,columns=[],select_sql=""):
         """

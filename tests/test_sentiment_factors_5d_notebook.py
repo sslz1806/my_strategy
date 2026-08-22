@@ -2,13 +2,13 @@ import sys
 from datetime import date
 from pathlib import Path
 
-import nbformat
 import numpy as np
 import pandas as pd
 import polars as pl
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from 因子回测.alpha import add_future_return
+from 因子回测.涨跌停情绪因子 import timing_engine
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 NOTEBOOK_PATH = (
@@ -20,14 +20,9 @@ NOTEBOOK_PATH = (
 
 
 def load_notebook_definitions():
-    """只执行带 definitions 标签的单元，避免测试时读取真实行情。"""
+    """返回薄 Notebook 实际复用的公共模块接口，避免读取真实行情。"""
     assert NOTEBOOK_PATH.exists(), f"Notebook 尚未创建：{NOTEBOOK_PATH}"
-    notebook = nbformat.read(NOTEBOOK_PATH, as_version=4)
-    namespace = {}
-    for cell in notebook.cells:
-        if cell.cell_type == "code" and "definitions" in cell.metadata.get("tags", []):
-            exec(compile(cell.source, str(NOTEBOOK_PATH), "exec"), namespace)
-    return namespace
+    return vars(timing_engine)
 
 
 def build_synthetic_daily_data() -> pl.DataFrame:
@@ -95,11 +90,10 @@ def test_five_day_factors_count_repeated_events_and_avoid_division_by_zero():
     factors = namespace["build_daily_sentiment_factors"](prepared, calendar, window=5)
 
     fifth_day = factors.row(4, named=True)
-    assert fifth_day["limit_up_count_5d"] == 6
-    assert fifth_day["limit_down_count_5d"] == 0
-    assert fifth_day["max_eligible_stock_count_5d"] == 3
     assert fifth_day["limit_up_ratio"] == 2.0
-    assert fifth_day["limit_up_down_ratio"] == 6.0
+    assert fifth_day["limit_down_ratio"] == 0.0
+    assert fifth_day["net_limit_ratio"] == 2.0
+    assert fifth_day["limit_up_down_ratio"] is None
 
 
 def test_next_day_event_return_rejects_stock_record_that_skips_market_day():
@@ -152,22 +146,24 @@ def test_ic_reports_raw_and_direction_adjusted_correlation():
     assert summary.loc[0, "n_obs"] == 80
 
 
-def test_rolling_ic_requires_full_window_and_delays_availability():
+def test_rolling_ic_uses_named_return_and_date_columns():
     namespace = load_notebook_definitions()
     trading_dates = pd.date_range("2024-01-02", periods=8, freq="B")
     factor = np.arange(1.0, 9.0)
     research = pd.DataFrame(
         {
-            "trading_date": trading_dates,
+            "observation_date": trading_dates,
             "test_factor": factor,
-            "future_market_daily_ret_2d": factor * 0.01,
+            "future_hs300_ret_2d": factor * 0.01,
         }
     )
-    rolling = namespace["compute_rolling_ic"](
+    rolling = namespace["analyze_rolling_ic"](
         research,
         factor_columns=["test_factor"],
         horizons=(2,),
         windows=(3,),
+        ret_column="hs300_ret",
+        date_column="observation_date",
     )
     valid = rolling.dropna(subset=["rolling_ic"]).reset_index(drop=True)
 
@@ -184,7 +180,7 @@ def test_expanding_threshold_uses_only_prior_observations():
             "test_factor": [1.0, 2.0, 3.0, 100.0, 5.0, 6.0],
         }
     )
-    result = namespace["build_expanding_thresholds"](
+    result = namespace["compute_threshold"](
         research,
         factor_columns=["test_factor"],
         quantile=0.8,
@@ -206,12 +202,16 @@ def test_non_overlapping_timing_applies_signal_only_to_following_block():
             "threshold_test_factor": [5.0] * 7,
         }
     )
-    daily, blocks = namespace["run_non_overlapping_timing"](
+    research["signal_test_factor"] = (
+        research["test_factor"] >= research["threshold_test_factor"]
+    ).astype(float)
+    daily, blocks = namespace["run_time_backtest"](
         research,
-        factor="test_factor",
+        signal_column="signal_test_factor",
+        ret_column="market_daily_ret",
         horizon=2,
         anchor_date=research.loc[0, "trading_date"],
-        direction=1,
+        require_complete_exit=False,
     )
     summary = namespace["summarize_timing"](
         daily,

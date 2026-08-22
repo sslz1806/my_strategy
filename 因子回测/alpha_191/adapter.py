@@ -104,19 +104,21 @@ def fetch_industry_from_rq(
         if not rq_codes:
             return {}
 
-        # 调用米筐 get_industry API
-        df = client.call('get_industry', {
+        # 调用米筐 shenwan_instrument_industry API：给定股票列表返回申万一级行业。
+        # 官方签名 shenwan_instrument_industry(order_book_ids, date, level=1)，
+        # 返回 DataFrame(index=order_book_id, columns=['index_code','index_name'])。
+        # 注意不能用 get_industry——它接收的是「行业名」而非股票列表，方向相反。
+        df = client.call('shenwan_instrument_industry', {
             'order_book_ids': rq_codes,
             'date': date,
         })
 
-        if df.empty:
+        if df is None or df.empty:
             return {}
 
-        # 解析结果——米筐返回: index=order_book_id, 列名=行业分类体系
-        # 取 'sws_2016'（申万行业）或 'sws_2021'，如果都没有取第一列
+        # 行业名称列：优先申万一级行业中文名 index_name，回退到行业代码 index_code
         industry_col = None
-        for col in ['sws_2021', 'sws_2016', 'zjw']:
+        for col in ['index_name', 'index_code']:
             if col in df.columns:
                 industry_col = col
                 break
@@ -126,7 +128,7 @@ def fetch_industry_from_rq(
         if industry_col is None:
             return {}
 
-        # 转换回 gm 格式
+        # 转换回 gm 格式（index 为 order_book_id）
         result = {}
         for rq_code, row in df.iterrows():
             gm_code = _rq_to_gm(str(rq_code))

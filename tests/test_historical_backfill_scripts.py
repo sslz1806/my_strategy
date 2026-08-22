@@ -50,7 +50,8 @@ def _full_a_share_minute_rows(order_book_id="000001.XSHE", trade_date=dt.date(20
 
 
 def test_rq_filter_to_stock_universe_removes_non_stock_codes():
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_filter_test")
+    from my_utils import rq_fun
+
     raw = pl.DataFrame(
         {
             "order_book_id": [
@@ -64,7 +65,7 @@ def test_rq_filter_to_stock_universe_removes_non_stock_codes():
             "close": [18.6, 3502.95, 137.73, 12.34, 9.69],
         }
     )
-    filtered = rq_update.filter_to_stock_universe(
+    filtered = rq_fun.filter_to_stock_universe(
         raw,
         ["000001.XSHE", "000001.XSHG", "H50066.XSHG", "302132.XSHE", "600000.XSHG"],
     )
@@ -72,7 +73,8 @@ def test_rq_filter_to_stock_universe_removes_non_stock_codes():
 
 
 def test_rq_fetch_day_range_keeps_only_allowed_trading_dates_and_a_shares():
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_day_filter_test")
+    from my_utils.rqdata import DDBData
+
     trade_date = dt.date(2021, 1, 4)
     holiday = dt.date(2021, 1, 3)
 
@@ -115,8 +117,7 @@ def test_rq_fetch_day_range_keeps_only_allowed_trading_dates_and_a_shares():
                 )
             raise AssertionError(f"unexpected query: {script}")
 
-    result = rq_update.fetch_day_range(
-        FakeSession(),
+    result = DDBData(session=FakeSession()).fetch_day_range(
         holiday,
         trade_date,
         rq_codes=["000001.XSHE", "600000.XSHG", "000001.XSHG", "H50066.XSHG", "302132.XSHE"],
@@ -128,19 +129,24 @@ def test_rq_fetch_day_range_keeps_only_allowed_trading_dates_and_a_shares():
 
 
 def test_rq_remove_existing_partitions_in_range_clears_only_target_dates(tmp_path):
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_partition_test")
-    rq_update.DATA_ROOT_DIR = str(tmp_path)
+    from my_utils import rq_fun
+
+    original_data_root = rq_fun.DATA_ROOT_DIR
+    rq_fun.DATA_ROOT_DIR = str(tmp_path)
     target = tmp_path / "rq_stock_all_data"
     for date_text in ["2021-02-10", "2021-02-11", "2021-02-12"]:
         partition = target / f"trading_date={date_text}"
         partition.mkdir(parents=True)
         (partition / "part.parquet").write_text("partition marker", encoding="utf-8")
 
-    rq_update.remove_existing_partitions_in_range(
-        "rq_stock_all_data",
-        dt.date(2021, 2, 11),
-        dt.date(2021, 2, 12),
-    )
+    try:
+        rq_fun.remove_existing_partitions_in_range(
+            "rq_stock_all_data",
+            dt.date(2021, 2, 11),
+            dt.date(2021, 2, 12),
+        )
+    finally:
+        rq_fun.DATA_ROOT_DIR = original_data_root
 
     assert (target / "trading_date=2021-02-10").exists()
     assert not (target / "trading_date=2021-02-11").exists()
@@ -165,15 +171,20 @@ def test_rq_batch_ranges_year_mode_splits_by_year():
 
 
 def test_rq_aggregate_right_aligned_15min_adds_gm_style_snapshots():
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_agg_test")
+    from my_utils import rq_fun
+
     raw = pl.DataFrame(_full_a_share_minute_rows())
 
-    result = rq_update.aggregate_right_aligned_15min(raw)
+    result = rq_fun.aggregate_right_aligned_15min(raw)
 
-    assert result.schema == rq_update.RQ_MIN_SCHEMA
+    assert result.schema == rq_fun.RQ_MIN_SCHEMA
     assert result.height == 18
     assert result["code"].unique().to_list() == ["SZSE.000001"]
     assert result["trading_date"].unique().to_list() == [dt.date(2021, 1, 4)]
+
+    empty_universe = rq_fun.aggregate_right_aligned_15min(raw, rq_codes=[])
+    assert empty_universe.is_empty()
+    assert empty_universe.schema == rq_fun.RQ_MIN_SCHEMA
     assert result["datetime"].dt.strftime("%H:%M:%S").to_list() == [
         "09:30:00",
         "09:45:00",
@@ -217,13 +228,14 @@ def test_rq_aggregate_right_aligned_15min_adds_gm_style_snapshots():
 
 
 def test_rq_aggregate_right_aligned_15min_filters_universe_and_dates():
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_filter_test")
+    from my_utils import rq_fun
+
     rows = _full_a_share_minute_rows("000001.XSHE", dt.date(2021, 1, 4))
     rows += _full_a_share_minute_rows("000001.XSHG", dt.date(2021, 1, 4))
     rows += _full_a_share_minute_rows("000001.XSHE", dt.date(2021, 1, 5))
     raw = pl.DataFrame(rows)
 
-    result = rq_update.aggregate_right_aligned_15min(
+    result = rq_fun.aggregate_right_aligned_15min(
         raw,
         rq_codes=["000001.XSHE"],
         allowed_dates={dt.date(2021, 1, 4)},
@@ -233,10 +245,84 @@ def test_rq_aggregate_right_aligned_15min_filters_universe_and_dates():
     assert result["code"].unique().to_list() == ["SZSE.000001"]
     assert result["trading_date"].unique().to_list() == [dt.date(2021, 1, 4)]
 
-    empty_universe = rq_update.aggregate_right_aligned_15min(raw, rq_codes=[])
-    assert empty_universe.is_empty()
-    assert empty_universe.schema == rq_update.RQ_MIN_SCHEMA
 
+def _full_market_right_aligned_sample(stock_count=100):
+    from my_utils import rq_fun
+
+    one_stock = rq_fun.aggregate_right_aligned_15min(
+        pl.DataFrame(_full_a_share_minute_rows())
+    )
+    return pl.concat(
+        [
+            one_stock.with_columns(pl.lit(f"SZSE.{index:06d}").alias("code"))
+            for index in range(stock_count)
+        ]
+    )
+
+
+def test_rq_minute_market_validation_accepts_full_right_aligned_schedule():
+    from my_utils import rq_fun
+
+    minute_data = _full_market_right_aligned_sample()
+
+    rq_fun.validate_minute_market_coverage(
+        minute_data,
+        rq_codes=[f"{index:06d}.XSHE" for index in range(100)],
+    )
+
+
+def test_rq_minute_market_validation_rejects_corrupted_snapshot():
+    from my_utils import rq_fun
+
+    snapshot_time = dt.datetime(2021, 1, 4, 9, 30)
+    minute_data = _full_market_right_aligned_sample().with_columns(
+        pl.when(
+            (pl.col("code") == "SZSE.000000")
+            & (pl.col("datetime") == snapshot_time)
+        )
+        .then(pl.col("high") + 1.0)
+        .otherwise(pl.col("high"))
+        .alias("high")
+    )
+
+    with pytest.raises(RuntimeError, match="minute snapshot invalid"):
+        rq_fun.validate_minute_market_coverage(
+            minute_data,
+            rq_codes=[f"{index:06d}.XSHE" for index in range(100)],
+        )
+
+
+def test_rq_day_market_validation_rejects_small_fraction_of_stock_universe():
+    from my_utils import rq_fun
+
+    trade_date = dt.date(2021, 1, 4)
+    day_data = rq_fun.align_schema(
+        pl.DataFrame(
+            {
+                "code": [f"SZSE.{index:06d}" for index in range(100)],
+                "trading_date": [trade_date] * 100,
+            }
+        ),
+        rq_fun.RQ_DAY_SCHEMA,
+    )
+
+    with pytest.raises(RuntimeError, match="day coverage too low"):
+        rq_fun.validate_day_market_coverage(
+            day_data,
+            rq_codes=[f"{index:06d}.XSHE" for index in range(5_000)],
+        )
+
+
+def test_rq_minute_market_validation_rejects_small_fraction_of_stock_universe():
+    from my_utils import rq_fun
+
+    minute_data = _full_market_right_aligned_sample()
+
+    with pytest.raises(RuntimeError, match="minute coverage too low"):
+        rq_fun.validate_minute_market_coverage(
+            minute_data,
+            rq_codes=[f"{index:06d}.XSHE" for index in range(5_000)],
+        )
 
 def test_rq_build_month_ranges_splits_by_natural_month():
     rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_month_ranges_test")
@@ -252,7 +338,6 @@ def test_rq_build_month_ranges_splits_by_natural_month():
 
 def test_rq_update_minute_all_reuses_trading_days_for_month_batches(monkeypatch):
     rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_allowed_dates_test")
-    session = object()
     trading_days = [
         dt.date(2021, 1, 15),
         dt.date(2021, 1, 29),
@@ -263,9 +348,15 @@ def test_rq_update_minute_all_reuses_trading_days_for_month_batches(monkeypatch)
     get_trading_days_calls = []
     month_calls = []
 
-    def fake_get_trading_days(session_arg, start_date, end_date):
-        get_trading_days_calls.append((session_arg, start_date, end_date))
-        return trading_days
+    class FakeSource:
+        def get_trading_days(self, start_date, end_date):
+            get_trading_days_calls.append((self, start_date, end_date))
+            return trading_days
+
+        def get_stock_universe(self):
+            return ["000001.XSHE"]
+
+    source = FakeSource()
 
     def fake_update_minute_range(
         session_arg,
@@ -287,22 +378,20 @@ def test_rq_update_minute_all_reuses_trading_days_for_month_batches(monkeypatch)
         )
         return len(allowed_dates or [])
 
-    monkeypatch.setattr(rq_update, "get_trading_days", fake_get_trading_days)
-    monkeypatch.setattr(rq_update, "get_stock_universe", lambda session_arg: ["000001.XSHE"])
     monkeypatch.setattr(rq_update, "update_minute_range", fake_update_minute_range)
 
     written = rq_update.update_minute_all(
-        session,
+        source,
         dt.date(2021, 1, 15),
         dt.date(2021, 3, 2),
         "update",
     )
 
     assert written == len(trading_days)
-    assert get_trading_days_calls == [(session, dt.date(2021, 1, 15), dt.date(2021, 3, 2))]
+    assert get_trading_days_calls == [(source, dt.date(2021, 1, 15), dt.date(2021, 3, 2))]
     assert month_calls == [
         (
-            session,
+            source,
             dt.date(2021, 1, 15),
             dt.date(2021, 1, 31),
             "update",
@@ -310,7 +399,7 @@ def test_rq_update_minute_all_reuses_trading_days_for_month_batches(monkeypatch)
             ["000001.XSHE"],
         ),
         (
-            session,
+            source,
             dt.date(2021, 2, 1),
             dt.date(2021, 2, 28),
             "update",
@@ -318,7 +407,7 @@ def test_rq_update_minute_all_reuses_trading_days_for_month_batches(monkeypatch)
             ["000001.XSHE"],
         ),
         (
-            session,
+            source,
             dt.date(2021, 3, 1),
             dt.date(2021, 3, 2),
             "update",
@@ -330,7 +419,6 @@ def test_rq_update_minute_all_reuses_trading_days_for_month_batches(monkeypatch)
 
 def test_rq_update_all_passes_trading_day_filter_to_day_batches(monkeypatch):
     rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_day_allowed_dates_test")
-    session = object()
     calls = []
     trading_days = [
         dt.date(2021, 1, 4),
@@ -358,12 +446,18 @@ def test_rq_update_all_passes_trading_day_filter_to_day_batches(monkeypatch):
         )
         return len(allowed_dates or [])
 
-    monkeypatch.setattr(rq_update, "get_trading_days", lambda *args: trading_days)
-    monkeypatch.setattr(rq_update, "get_stock_universe", lambda session_arg: ["000001.XSHE"])
+    class FakeSource:
+        def get_trading_days(self, start_date, end_date):
+            return trading_days
+
+        def get_stock_universe(self):
+            return ["000001.XSHE"]
+
+    source = FakeSource()
     monkeypatch.setattr(rq_update, "update_day_range", fake_update_day_range)
 
     written = rq_update.update_all(
-        session,
+        source,
         dt.date(2021, 1, 1),
         dt.date(2021, 2, 28),
         "update",
@@ -374,7 +468,7 @@ def test_rq_update_all_passes_trading_day_filter_to_day_batches(monkeypatch):
     assert written == 3
     assert calls == [
         (
-            session,
+            source,
             dt.date(2021, 1, 4),
             dt.date(2021, 1, 5),
             "update",
@@ -382,7 +476,7 @@ def test_rq_update_all_passes_trading_day_filter_to_day_batches(monkeypatch):
             [dt.date(2021, 1, 4), dt.date(2021, 1, 5)],
         ),
         (
-            session,
+            source,
             dt.date(2021, 2, 1),
             dt.date(2021, 2, 1),
             "update",
@@ -390,6 +484,70 @@ def test_rq_update_all_passes_trading_day_filter_to_day_batches(monkeypatch):
             [dt.date(2021, 2, 1)],
         ),
     ]
+
+
+def test_rq_update_day_range_rejects_missing_trading_day_before_cleanup(monkeypatch):
+    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_day_missing_guard_test")
+    present_date = dt.date(2026, 2, 24)
+    missing_date = dt.date(2026, 2, 25)
+    day_data = pl.DataFrame(
+        {
+            "code": [f"SZSE.{index:06d}" for index in range(150)],
+            "trading_date": [present_date] * 150,
+        }
+    )
+
+    class FakeSource:
+        def fetch_day_range(self, *args, **kwargs):
+            return day_data
+
+    monkeypatch.setattr(
+        rq_update,
+        "write_rq_day_and_adj_partitioned",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("missing day data must not be written")
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="day data missing trading days"):
+        rq_update.update_day_range(
+            FakeSource(),
+            present_date,
+            missing_date,
+            "update",
+            rq_codes=[f"{index:06d}.XSHE" for index in range(200)],
+            allowed_dates={present_date, missing_date},
+        )
+
+
+def test_rq_update_day_range_rejects_low_market_coverage_before_cleanup(monkeypatch):
+    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_day_coverage_guard_test")
+    trade_date = dt.date(2026, 2, 24)
+    day_data = pl.DataFrame(
+        {"code": ["SZSE.000001"], "trading_date": [trade_date]}
+    )
+
+    class FakeSource:
+        def fetch_day_range(self, *args, **kwargs):
+            return day_data
+
+    monkeypatch.setattr(
+        rq_update,
+        "write_rq_day_and_adj_partitioned",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("low-coverage day data must not be written")
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="day coverage too low"):
+        rq_update.update_day_range(
+            FakeSource(),
+            trade_date,
+            trade_date,
+            "update",
+            rq_codes=[f"{index:06d}.XSHE" for index in range(200)],
+            allowed_dates={trade_date},
+        )
 
 
 
@@ -433,24 +591,18 @@ def test_rq_update_minute_range_rejects_trading_day_with_too_few_codes(monkeypat
         schema=rq_update.RQ_MIN_SCHEMA,
     )
 
-    monkeypatch.setattr(
-        rq_update,
-        "fetch_minute_range",
-        lambda *args, **kwargs: one_stock_day,
-    )
-
-    def fail_if_cleared(*args, **kwargs):
-        raise AssertionError("bad minute data must not clear old partitions")
+    class FakeSource:
+        def fetch_minute_range(self, *args, **kwargs):
+            return one_stock_day
 
     def fail_if_written(*args, **kwargs):
         raise AssertionError("bad minute data must not be written")
 
-    monkeypatch.setattr(rq_update, "remove_existing_partitions_in_range", fail_if_cleared)
     monkeypatch.setattr(rq_update, "write_partitioned", fail_if_written)
 
     with pytest.raises(RuntimeError, match="minute coverage too low"):
         rq_update.update_minute_range(
-            object(),
+            FakeSource(),
             trade_date,
             trade_date,
             "update",
@@ -503,24 +655,18 @@ def test_rq_update_minute_range_rejects_missing_historical_trading_day(monkeypat
             )
     one_day_only = pl.DataFrame(rows, schema=rq_update.RQ_MIN_SCHEMA)
 
-    monkeypatch.setattr(
-        rq_update,
-        "fetch_minute_range",
-        lambda *args, **kwargs: one_day_only,
-    )
-
-    def fail_if_cleared(*args, **kwargs):
-        raise AssertionError("missing historical minute data must not clear old partitions")
+    class FakeSource:
+        def fetch_minute_range(self, *args, **kwargs):
+            return one_day_only
 
     def fail_if_written(*args, **kwargs):
         raise AssertionError("missing historical minute data must not be written")
 
-    monkeypatch.setattr(rq_update, "remove_existing_partitions_in_range", fail_if_cleared)
     monkeypatch.setattr(rq_update, "write_partitioned", fail_if_written)
 
     with pytest.raises(RuntimeError, match="minute data missing trading days"):
         rq_update.update_minute_range(
-            object(),
+            FakeSource(),
             present_date,
             missing_date,
             "update",
@@ -529,10 +675,50 @@ def test_rq_update_minute_range_rejects_missing_historical_trading_day(monkeypat
         )
 
 
+def test_rq_update_minute_range_rejects_incomplete_bars_before_cleanup(monkeypatch):
+    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_bar_guard_test")
+    trade_date = dt.date(2026, 2, 24)
+    rows = [
+        {
+            "code": f"SZSE.{index:06d}",
+            "datetime": dt.datetime.combine(trade_date, dt.time(9, 30)),
+            "open": 1.0,
+            "high": 1.0,
+            "low": 1.0,
+            "close": 1.0,
+            "volume": 1.0,
+            "trading_date": trade_date,
+        }
+        for index in range(150)
+    ]
+    incomplete_data = pl.DataFrame(rows, schema=rq_update.RQ_MIN_SCHEMA)
+
+    class FakeSource:
+        def fetch_minute_range(self, *args, **kwargs):
+            return incomplete_data
+
+    monkeypatch.setattr(
+        rq_update,
+        "write_partitioned",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            AssertionError("incomplete minute bars must not be written")
+        ),
+    )
+
+    with pytest.raises(RuntimeError, match="minute bar count incomplete"):
+        rq_update.update_minute_range(
+            FakeSource(),
+            trade_date,
+            trade_date,
+            "update",
+            allowed_dates={trade_date},
+            rq_codes=[f"{index:06d}.XSHE" for index in range(200)],
+        )
+
+
 
 def test_rq_update_minute_all_falls_back_to_daily_batches_after_month_failure(monkeypatch):
     rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_daily_fallback_test")
-    session = object()
     calls = []
     trading_days = [dt.date(2026, 2, 24), dt.date(2026, 2, 25)]
 
@@ -549,12 +735,18 @@ def test_rq_update_minute_all_falls_back_to_daily_batches_after_month_failure(mo
             raise RuntimeError("DDB 分钟线查询失败: Out of memory")
         return 10
 
-    monkeypatch.setattr(rq_update, "get_trading_days", lambda *args: trading_days)
-    monkeypatch.setattr(rq_update, "get_stock_universe", lambda session_arg: ["000001.XSHE"])
+    class FakeSource:
+        def get_trading_days(self, start_date, end_date):
+            return trading_days
+
+        def get_stock_universe(self):
+            return ["000001.XSHE"]
+
+    source = FakeSource()
     monkeypatch.setattr(rq_update, "update_minute_range", fake_update_minute_range)
 
     written = rq_update.update_minute_all(
-        session,
+        source,
         dt.date(2026, 2, 1),
         dt.date(2026, 2, 28),
         "update",
@@ -575,7 +767,8 @@ def test_rq_update_minute_all_falls_back_to_daily_batches_after_month_failure(mo
 
 
 def test_rq_fetch_minute_range_pushes_single_code_filter_into_ddb_query():
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_single_code_sql_test")
+    from my_utils.rqdata import DDBData
+
     sample_date = dt.date(2021, 1, 4)
 
     class FakeSession:
@@ -587,8 +780,7 @@ def test_rq_fetch_minute_range_pushes_single_code_filter_into_ddb_query():
 
     session = FakeSession()
 
-    result = rq_update.fetch_minute_range(
-        session,
+    result = DDBData(session=session).fetch_minute_range(
         sample_date,
         sample_date,
         allowed_dates={sample_date},
@@ -600,7 +792,8 @@ def test_rq_fetch_minute_range_pushes_single_code_filter_into_ddb_query():
 
 
 def test_rq_fetch_minute_range_raises_on_ddb_query_failure():
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_failure_test")
+    from my_utils.rqdata import DDBData
+
     sample_date = dt.date(2021, 1, 4)
 
     class FailingSession:
@@ -608,8 +801,7 @@ def test_rq_fetch_minute_range_raises_on_ddb_query_failure():
             raise RuntimeError("Out of memory")
 
     with pytest.raises(RuntimeError, match="DDB 分钟线查询失败"):
-        rq_update.fetch_minute_range(
-            FailingSession(),
+        DDBData(session=FailingSession()).fetch_minute_range(
             sample_date,
             sample_date,
             allowed_dates={sample_date},
@@ -633,14 +825,18 @@ def test_rq_main_minute_quality_check_only_uses_minute_gate(monkeypatch):
     rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_gate_route_test")
     calls = []
 
-    class FakeSession:
+    class FakeSource:
         closed = False
 
-        def close(self):
-            self.closed = True
+        def __enter__(self):
+            return self
 
-    session = FakeSession()
-    monkeypatch.setattr(rq_update, "create_ddb_session", lambda: session)
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.closed = True
+            return False
+
+    source = FakeSource()
+    monkeypatch.setattr(rq_update, "DDBData", lambda: source)
     monkeypatch.setattr(
         rq_update,
         "run_minute_quality_gate",
@@ -666,12 +862,13 @@ def test_rq_main_minute_quality_check_only_uses_minute_gate(monkeypatch):
     result = rq_update.main(["--mode", "update", "--data-type", "min", "--minute-quality-check-only"])
 
     assert result == 0
-    assert calls == [("minute_gate", session)]
-    assert session.closed is True
+    assert calls == [("minute_gate", source)]
+    assert source.closed is True
 
 
 def test_rq_minute_quality_gate_compares_gm_right_sample(tmp_path, monkeypatch):
-    rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_quality_gate_test")
+    from my_utils import rq_fun
+
     sample_date = dt.date(2021, 1, 4)
     sample_times = [
         dt.datetime(2021, 1, 4, 9, 30),
@@ -705,7 +902,7 @@ def test_rq_minute_quality_gate_compares_gm_right_sample(tmp_path, monkeypatch):
             "volume": [value * 100 for value in values],
             "trading_date": [sample_date] * len(sample_times),
         }
-    ).cast(rq_update.RQ_MIN_SCHEMA)
+    ).cast(rq_fun.RQ_MIN_SCHEMA)
     sample_df = sample_df.with_columns(
         [
             pl.when(pl.col("datetime") == dt.datetime(2021, 1, 4, 9, 30))
@@ -743,18 +940,26 @@ def test_rq_minute_quality_gate_compares_gm_right_sample(tmp_path, monkeypatch):
 
     calls = []
 
-    def fake_fetch_minute_range(session_arg, start_date, end_date, allowed_dates=None, rq_codes=None):
-        calls.append((session_arg, start_date, end_date, set(allowed_dates or []), list(rq_codes or [])))
-        return sample_df
+    class FakeSource:
+        def fetch_minute_range(
+            self,
+            start_date,
+            end_date,
+            allowed_dates=None,
+            rq_codes=None,
+        ):
+            calls.append(
+                (self, start_date, end_date, set(allowed_dates or []), list(rq_codes or []))
+            )
+            return sample_df
 
-    session = object()
-    monkeypatch.setattr(rq_update, "DATA_ROOT_DIR", str(tmp_path))
-    monkeypatch.setattr(rq_update, "fetch_minute_range", fake_fetch_minute_range)
+    source = FakeSource()
+    monkeypatch.setattr(rq_fun, "DATA_ROOT_DIR", str(tmp_path))
 
-    assert rq_update.run_minute_quality_gate(session) is True
+    assert rq_fun.run_minute_quality_gate(source) is True
     assert calls == [
         (
-            session,
+            source,
             sample_date,
             sample_date,
             {sample_date},
@@ -767,14 +972,18 @@ def test_rq_main_min_data_type_routes_to_minute_update(monkeypatch):
     rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_minute_update_route_test")
     calls = []
 
-    class FakeSession:
+    class FakeSource:
         closed = False
 
-        def close(self):
-            self.closed = True
+        def __enter__(self):
+            return self
 
-    session = FakeSession()
-    monkeypatch.setattr(rq_update, "create_ddb_session", lambda: session)
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.closed = True
+            return False
+
+    source = FakeSource()
+    monkeypatch.setattr(rq_update, "DDBData", lambda: source)
     monkeypatch.setattr(
         rq_update,
         "run_ddb_quality_gate",
@@ -813,29 +1022,33 @@ def test_rq_main_min_data_type_routes_to_minute_update(monkeypatch):
     )
 
     assert result == 0
-    assert calls == [(session, dt.date(2021, 1, 4), dt.date(2021, 1, 4), "update")]
-    assert session.closed is True
+    assert calls == [(source, dt.date(2021, 1, 4), dt.date(2021, 1, 4), "update")]
+    assert source.closed is True
 
 
 def test_rq_main_all_insert_uses_independent_day_and_minute_cursors(monkeypatch):
     rq_update = load_script("任务/米筐数据更新.py", "rq_update_for_all_insert_cursor_test")
     calls = []
 
-    class FakeSession:
+    class FakeSource:
         closed = False
 
-        def close(self):
-            self.closed = True
+        def __enter__(self):
+            return self
 
-    session = FakeSession()
-    monkeypatch.setattr(rq_update, "create_ddb_session", lambda: session)
+        def __exit__(self, exc_type, exc_value, traceback):
+            self.closed = True
+            return False
+
+    source = FakeSource()
+    monkeypatch.setattr(rq_update, "DDBData", lambda: source)
     monkeypatch.setattr(
         rq_update,
-        "get_existing_dates",
-        lambda save_dir: {
-            rq_update.RQ_DAY_DIR: [dt.date(2026, 7, 7)],
-            rq_update.RQ_MIN_DIR: [dt.date(2026, 7, 6)],
-        }.get(save_dir, []),
+        "infer_start_date",
+        lambda default_start, save_dir, mode, end_date=None: {
+            rq_update.RQ_DAY_DIR: None,
+            rq_update.RQ_MIN_DIR: dt.date(2026, 7, 7),
+        }[save_dir],
     )
     monkeypatch.setattr(
         rq_update,
@@ -852,8 +1065,8 @@ def test_rq_main_all_insert_uses_independent_day_and_minute_cursors(monkeypatch)
     result = rq_update.main(["--end-date", "2026-07-07"])
 
     assert result == 0
-    assert calls == [(session, dt.date(2026, 7, 7), dt.date(2026, 7, 7), "insert")]
-    assert session.closed is True
+    assert calls == [(source, dt.date(2026, 7, 7), dt.date(2026, 7, 7), "insert")]
+    assert source.closed is True
 
 def test_gm_parse_args_defaults_preserve_daily_run():
     source = (PROJECT_ROOT / "任务/数据更新v2.py").read_text(encoding="utf-8")

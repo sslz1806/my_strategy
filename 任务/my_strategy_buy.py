@@ -342,6 +342,7 @@ if __name__ == "__main__":
         sys.exit(0)
     logging.info(f"今日信号股票: {code_list}")
     add_rate = 0.006  # 买点上移0.6%，可以根据需要调整
+    cash_buffer = 0.02  # 计算股数时预留2%资金缓冲，覆盖向上取整误差+手续费+市价上浮（可调）
     # input 超时自动同意：09:29:30 前可手动输入，到点未输入则自动 y
     import msvcrt
     cutoff_time = dt.time(9, 29, 00)
@@ -375,27 +376,62 @@ if __name__ == "__main__":
                 elif order_vol>=80 and order_vol<100:
                     order_vol = 100  # 最小下单数量为100股
                 else:
-                    order_vol = round(allocated_cash / open_price / 100) * 100  # 四舍五入取整，按100股倍数下单
+                    # 用打折后的资金量计算股数（预留cash_buffer缓冲），保留向上取整
+                    order_vol = round(allocated_cash * (1 - cash_buffer) / open_price / 100) * 100
 
             else:
                 logging.info(f"无法下单 {code}，分配资金: {allocated_cash:.2f}, 开盘价: {open_price:.2f}")
                 continue  # 跳过这单
             
-            logging.info(f"第{i+1}单提交成功,代码:{code},名称：{name},订单数量：{order_vol},分配资金：{allocated_cash:.2f}")
+            logging.info(f"第{i+1}单准备提交,代码:{code},名称：{name},订单数量：{order_vol},分配资金：{allocated_cash:.2f}")
             # 异步下单：这行代码0.001秒就完成，只返回请求序号，不等待券商处理
             order_price = round(open_price * (1+add_rate), 2)
-            seq = xt_trader.order_stock_async(
-                account=ID,
-                stock_code=convert_code_format(code,format='suffix'),  # 转换成带后缀的格式
-                order_type=xtconstant.STOCK_BUY,
-                order_volume=order_vol,
-                price_type=xtconstant.FIX_PRICE,  #MARKET_PEER_PRICE_FIRST对手方最优,LATEST_PRICE最新价
-                price=order_price,
-                strategy_name="strategy1",
-                order_remark=f"async_order_{i+1}"
-            )
-            seq_list.append(seq)
-            logging.info(f"第{i+1}单提交成功，请求序号：{seq}")
+
+            # 兜底：向上取整后若按限价计算的下单金额仍超可用资金，逐档减100股，确保实盘不超支
+            while order_vol * order_price > allocated_cash and order_vol > 0:
+                order_vol -= 100
+            if order_vol <= 0:
+                logging.info(f"预留缓冲后仍无法下单 {code}，跳过")
+                continue
+
+            # 大单拆分：当委托数量>=200股时，拆成一半市价单+剩余限价单，提升成交概率
+            order_vol_int = int(order_vol)
+            if order_vol_int >= 200:
+                market_vol = (order_vol_int // 2 // 100) * 100  # 一半数量向下取整到100的倍数
+                limit_vol = order_vol_int - market_vol
+            else:
+                market_vol = 0
+                limit_vol = order_vol_int
+
+            # 提交市价单部分（对手方最优）
+            if market_vol > 0:
+                seq = xt_trader.order_stock_async(
+                    account=ID,
+                    stock_code=convert_code_format(code,format='suffix'),  # 转换成带后缀的格式
+                    order_type=xtconstant.STOCK_BUY,
+                    order_volume=market_vol,
+                    price_type=xtconstant.MARKET_PEER_PRICE_FIRST,  # 对手方最优市价单
+                    price=0,
+                    strategy_name="strategy1",
+                    order_remark=f"async_order_{i+1}_market"
+                )
+                seq_list.append(seq)
+                logging.info(f"第{i+1}单市价部分提交成功，数量：{market_vol}，请求序号：{seq}")
+
+            # 提交限价单部分
+            if limit_vol > 0:
+                seq = xt_trader.order_stock_async(
+                    account=ID,
+                    stock_code=convert_code_format(code,format='suffix'),  # 转换成带后缀的格式
+                    order_type=xtconstant.STOCK_BUY,
+                    order_volume=limit_vol,
+                    price_type=xtconstant.FIX_PRICE,  # 限价单
+                    price=order_price,
+                    strategy_name="strategy1",
+                    order_remark=f"async_order_{i+1}_limit"
+                )
+                seq_list.append(seq)
+                logging.info(f"第{i+1}单限价部分提交成功，数量：{limit_vol}，价格：{order_price}，请求序号：{seq}")
         
 
     # 计算提交5单的耗时

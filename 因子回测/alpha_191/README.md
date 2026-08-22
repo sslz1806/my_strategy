@@ -170,13 +170,22 @@ results = calc.compute_all([1, 5, 10, 20])
 
 ### batch_backtest.py — 批量回测脚本
 
-对所有因子（1-191）运行 5 日持仓期回测，采集 IC/IR 等指标。
+对所有因子（1-191）逐一调用本地 `因子回测.alpha.analyze_factor()`。批量脚本只做
+宽表转长表、公式调度与 HTML 组合；IC/RankIC、分组回测、净值、图表和绩效指标均由
+统一因子框架返回。
 
 **特性：**
-- 检查点机制（`batch_results.json`，可断点续跑）
-- 跳过标记为 SLOW 的重计算因子（约 30 个）
-- 生成 `alpha191_backtest_report.html` 报告
-- 支持邮件发送（通过 `my_utils.email_fun.send_email`）
+- 默认运行全部 191 个因子，不再按 SLOW 名单静默跳过
+- 报告按框架返回的 `rank_ic_mean` 降序，逐因子展示 IC/RankIC 表、分组统计和三类框架图
+- 公式、行业分类或数据无法复现时，仍保留该因子的报告条目并说明原因
+- 默认仅生成 `alpha191_backtest_report.html`；只有显式传入 `--send-email --receiver 邮箱` 才发送邮件
+
+```powershell
+E:\working\anaconda3\envs\quant\python.exe 因子回测\alpha_191\batch_backtest.py
+
+# 只验证部分因子，便于排查数据或公式
+E:\working\anaconda3\envs\quant\python.exe 因子回测\alpha_191\batch_backtest.py --alphas 1,5,10
+```
 
 ---
 
@@ -185,7 +194,8 @@ results = calc.compute_all([1, 5, 10, 20])
 ### 报告位置
 
 - HTML 报告：`因子回测/alpha_191/alpha191_backtest_report.html`
-- JSON 结果：`因子回测/alpha_191/batch_results.json`
+- 报告内的图表以 Base64 内嵌，不依赖额外 PNG 文件
+- 旧版 `batch_results.json` 是历史自算 IC 结果，不参与当前 `analyze_factor` 口径的批量报告
 
 ### 指标说明
 

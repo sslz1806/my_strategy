@@ -51,6 +51,7 @@ class Backtester:
         initial_cash: float = 100_000.0,
         commission: float = 0.001,
         slippage: float = 0.001,
+        max_single_position: float = None,
     ) -> None:
         """
         __init__ 的 参数说明
@@ -58,6 +59,9 @@ class Backtester:
         :param initial_cash: 初始资金
         :param commission: 佣金比例
         :param slippage: 滑点比例
+        :param max_single_position: 单票最大仓位上限（占总资金比例），None 表示不限制。
+            例如 0.24 表示单票买入金额不超过总资金的 24%。
+            该约束作用于每笔买入的资金分配上，与 orders 中的 cash_ratio（每日总仓位上限）独立。
         """
         if orders is None:
             raise ValueError("orders dataframe is required")
@@ -76,6 +80,9 @@ class Backtester:
         self.total_value = float(initial_cash)
         self.commission = float(commission)
         self.slippage = float(slippage)
+        self.max_single_position = (
+            float(max_single_position) if max_single_position is not None else None
+        )
 
         self.positions: Dict[str, Position] = {}
         self.price_cache: Dict[str, float] = {}
@@ -168,6 +175,11 @@ class Backtester:
         cash = min(cash, total_value * cash_ratio)
         num_buy = sum(1 for _, row in daily_orders.iterrows() if int(row["direction"]) == 1)
         alloc_per_buy = cash / num_buy if num_buy > 0 else 0.
+
+        # 单票仓位上限：凯利公式给出的最大单票风险暴露，约束每笔买入不超过总资金的 max_single_position
+        if self.max_single_position is not None and alloc_per_buy > 0:
+            single_cap = total_value * self.max_single_position
+            alloc_per_buy = min(alloc_per_buy, single_cap)
 
         # 先卖后买，避免同日换仓时先买入污染卖出匹配基准
         daily_orders_exec = daily_orders.sort_values("direction", ascending=True, kind="mergesort")

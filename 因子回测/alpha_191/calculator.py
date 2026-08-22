@@ -223,12 +223,12 @@ class Alpha191Calculator:
         group_num: int = 5,
     ) -> dict:
         """
-        使用本地 因子回测/alpha.py 的 analyze_factor() 进行因子分析。
+        使用本地 alpha.py 保留的旧宽表接口进行因子分析。
 
         这是极简版宽表分析，返回 IC/分组收益/净值等。
         """
         self._check_loaded()
-        from 因子回测.alpha import analyze_factor
+        from 因子回测.alpha import analyze_factor_bak
 
         # 获取因子值（宽表，index=日期, columns=股票）
         factor_df = self.compute_df(alpha_num)
@@ -238,7 +238,7 @@ class Alpha191Calculator:
         ret_data = close_df.shift(-return_period) / close_df - 1
 
         print(f"\n===== Alpha #{alpha_num} 宽表因子分析 =====")
-        result = analyze_factor(
+        result = analyze_factor_bak(
             factor_data=factor_df,
             ret_data=ret_data,
             start_date=factor_df.index[0].strftime('%Y-%m-%d'),

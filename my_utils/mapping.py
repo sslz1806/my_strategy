@@ -4,6 +4,7 @@ mapping.py - 数据清洗与转换：列名映射、股票代码格式转换、�
 """
 import pandas as pd
 import numpy as np
+import polars as pl
 column_mapping = {
         '代码': 'code',
         'ts_code':'code',
@@ -50,44 +51,106 @@ def convert_code_format(code,format='gm'):
     会过滤掉北交所代码。
 
     Args:
-        code: str或list，股票代码或股票代码列表
+        code: str、list、Pandas Series、整数或 Polars Expr
         format:gm,suffix,pure
 
     Returns:
-        str或list：转换后的代码格式，北交所代码返回None
+        与输入类型对应的转换结果；Polars Expr 输入返回 Polars Expr
     """
+    def _convert_polars_expr(code_expr, format='gm'):
+        """使用 Polars 原生表达式批量转换代码，避免逐行 Python UDF。"""
+        if format not in {'gm', 'suffix', 'pure'}:
+            raise ValueError(f"Unknown format: {format}")
+
+        raw_code = code_expr.cast(pl.String).str.to_uppercase()
+        # 标量整数接口会先补齐为 6 位；Expr 无法预先获知列类型，因此也对
+        # 1~6 位纯数字文本补零，保证整数列、数字字符串列与标量口径一致。
+        normalized = (
+            pl.when(raw_code.str.contains(r"^\d{1,6}$"))
+            .then(raw_code.str.zfill(6))
+            .otherwise(raw_code)
+        )
+        suffix_pattern = r"^(\d{6})\.(XSHE|XSHG|SZ|SH)$"
+        prefix_pattern = r"^(SZSE|SHSE)\.(\d{6})$"
+        compact_pattern = r"^(SZ|SH)(\d{6})$"
+        pure_pattern = r"^(\d{6})$"
+
+        suffix_code = normalized.str.extract(suffix_pattern, group_index=1)
+        suffix_market = normalized.str.extract(suffix_pattern, group_index=2)
+        prefix_market = normalized.str.extract(prefix_pattern, group_index=1)
+        prefix_code = normalized.str.extract(prefix_pattern, group_index=2)
+        compact_market = normalized.str.extract(compact_pattern, group_index=1)
+        compact_code = normalized.str.extract(compact_pattern, group_index=2)
+        pure_code = normalized.str.extract(pure_pattern, group_index=1)
+
+        code_num = pl.coalesce([suffix_code, prefix_code, compact_code, pure_code])
+        inferred_market = (
+            pl.when(code_num.str.slice(0, 1).cast(pl.Int8, strict=False) <= 3)
+            .then(pl.lit("SZ"))
+            .otherwise(pl.lit("SH"))
+        )
+        raw_market = pl.coalesce(
+            [suffix_market, prefix_market, compact_market, inferred_market]
+        )
+        market = (
+            pl.when(raw_market.is_in(["SH", "SHSE", "XSHG"]))
+            .then(pl.lit("SH"))
+            .when(raw_market.is_in(["SZ", "SZSE", "XSHE"]))
+            .then(pl.lit("SZ"))
+            .otherwise(pl.lit(None, dtype=pl.String))
+        )
+
+        if format == 'gm':
+            converted = (
+                pl.when(market == "SH")
+                .then(pl.lit("SHSE.") + code_num)
+                .otherwise(pl.lit("SZSE.") + code_num)
+            )
+        elif format == 'suffix':
+            converted = code_num + pl.lit(".") + market
+        else:
+            converted = code_num
+
+        valid = (
+            ~normalized.str.contains("BJ")
+            & code_num.is_not_null()
+            & market.is_not_null()
+        )
+        return pl.when(valid).then(converted).otherwise(pl.lit(None, dtype=pl.String))
+
     def _convert_single_code(code,format='gm'):
         # 过滤北交所代码
         if 'bj' in code.lower():
             return None
+        normalized_code = code.upper()
 
         # 1.处理输入代码
         # 处理带点的格式 (000001.SZ,SHSE.000001)
-        if '.' in code:
-            if '.XSHE' in code or '.XSHG' in code:
-                code_num, market = code.split('.')
+        if '.' in normalized_code:
+            if '.XSHE' in normalized_code or '.XSHG' in normalized_code:
+                code_num, market = normalized_code.split('.')
                 market = market.upper()
-            elif '.SZ' in code or '.SH' in code:
-                code_num, market = code.split('.')
+            elif '.SZ' in normalized_code or '.SH' in normalized_code:
+                code_num, market = normalized_code.split('.')
                 market = market.upper()
-            elif 'SZSE' in code or 'SHSE' in code:
-                market,code_num = code.split('.')
+            elif 'SZSE' in normalized_code or 'SHSE' in normalized_code:
+                market,code_num = normalized_code.split('.')
                 market = market.upper()
             else:
                 raise ValueError(f"Unknown market code: {code}")
         # 处理不带点的格式 (sz000001,SZ00001的8位数)
         else:
             # 提取市场代码和数字
-            if len(code) > 6:
-                market = code[:2].upper()
-                code_num = code[2:]
-            elif len(code) == 6:
+            if len(normalized_code) > 6:
+                market = normalized_code[:2]
+                code_num = normalized_code[2:]
+            elif len(normalized_code) == 6:
                 # code首位数字小于等于3为深圳市场，大于3为上海市场
-                if not code.isdigit():
+                if not normalized_code.isdigit():
                     raise ValueError(f"Unknown market code: {code}")
-                first_digit = int(code[0])
+                first_digit = int(normalized_code[0])
                 market = 'SZ' if first_digit <= 3 else 'SH'
-                code_num = code
+                code_num = normalized_code
             else:
                 raise ValueError(f"Unknown market code: {code}")
 
@@ -111,16 +174,13 @@ def convert_code_format(code,format='gm'):
         else:
             raise ValueError(f"Unknown format: {format}")
 
-
-    if isinstance(code, str):
+    if isinstance(code, pl.Expr):
+        return _convert_polars_expr(code, format=format)
+    elif isinstance(code, str):
         return _convert_single_code(code,format=format)
     elif isinstance(code, list) or isinstance(code, pd.Series):  # 这里使用直接的 list 类型检查
         # 转换并过滤None值
         converted = [_convert_single_code(c, format=format) for c in code]
-        return converted
-    elif isinstance(code, __builtins__.list):
-        # 转换并过滤None值
-        converted = [_convert_single_code(c,format=format) for c in code]
         return converted
     # 数字格式
     elif isinstance(code, int):

@@ -22,7 +22,7 @@ def test_backtest_timeseries_factor_basic():
     # 正常调用
     result = backtest_timeseries_factor(
         analysis_data, factor_col='factor', index_ret_col='ret',
-        q=5, hold_period=5, plot=False,
+        q=5, hold_period=5, window=20, plot=False,
     )
 
     # 验证返回键
@@ -44,7 +44,7 @@ def test_backtest_timeseries_factor_basic():
     assert '夏普比率' in result['group_performance'].columns
 
     # 验证 group_nav 结构
-    assert len(result['group_nav'].columns) <= 5
+    assert len(result['group_nav'].columns) <= 6  # 最多 q 组 + 1 列基准
     assert result['future_return_col'] == 'future_return_5d'
 
     # 验证 Figure 对象（plot=False 时不创建）
@@ -63,7 +63,7 @@ def test_backtest_timeseries_factor_sample_too_small():
     try:
         backtest_timeseries_factor(
             analysis_data, factor_col='factor', index_ret_col='ret',
-            q=5, hold_period=2, plot=False,
+            q=5, hold_period=2, window=1, plot=False,
         )
         assert False, "应抛出 ValueError"
     except ValueError:
@@ -81,7 +81,7 @@ def test_backtest_timeseries_factor_future_return():
 
     result = backtest_timeseries_factor(
         analysis_data, factor_col='factor', index_ret_col='ret',
-        q=2, hold_period=5, plot=False,
+        q=2, hold_period=5, window=1, plot=False,
     )
 
     fr_col = result['future_return_col']
@@ -114,7 +114,7 @@ def test_backtest_timeseries_factor_nan_ret():
     # 不应报错
     result = backtest_timeseries_factor(
         analysis_data, factor_col='factor', index_ret_col='ret',
-        q=5, hold_period=3, plot=False,
+        q=5, hold_period=3, window=5, plot=False,
     )
 
     assert result['group_stats'] is not None
@@ -124,11 +124,11 @@ def test_backtest_timeseries_factor_nan_ret():
 
 def test_backtest_timeseries_factor_default_q():
     """验证默认参数 q=5, hold_period=5 可正常执行"""
-    dates = pd.date_range('2020-01-01', periods=100, freq='D')
+    dates = pd.date_range('2020-01-01', periods=300, freq='D')
     np.random.seed(1)
     analysis_data = pd.DataFrame({
-        'factor': np.random.randn(100),
-        'ret': np.random.randn(100) * 0.4,
+        'factor': np.random.randn(300),
+        'ret': np.random.randn(300) * 0.4,
     }, index=dates)
 
     # 使用全部默认参数
@@ -137,7 +137,7 @@ def test_backtest_timeseries_factor_default_q():
         plot=False,
     )
 
-    assert len(result['group_nav'].columns) == 5
+    assert len(result['group_nav'].columns) == 6  # q 组 + 基准
     assert result['future_return_col'] == 'future_return_5d'
 
 
@@ -152,7 +152,7 @@ def test_backtest_timeseries_factor_plot_true():
 
     result = backtest_timeseries_factor(
         analysis_data, factor_col='factor', index_ret_col='ret',
-        q=5, hold_period=5, plot=True,
+        q=5, hold_period=5, window=10, plot=True,
     )
 
     assert result['fig_bar'] is not None
@@ -160,29 +160,6 @@ def test_backtest_timeseries_factor_plot_true():
     # Figure 对象应有 axes（即已绘制内容）
     assert len(result['fig_bar'].axes) > 0
     assert len(result['fig_nav'].axes) > 0
-
-
-def test_expanding_groups_do_not_use_future_factor_values():
-    """未来日期的因子变化不得改变此前日期的分组标签。"""
-    dates = pd.date_range('2024-01-02', periods=10, freq='B')
-    original = pd.Series(
-        [1.0, 4.0, 2.0, 5.0, 3.0, 6.0, 7.0, 8.0, 9.0, 10.0],
-        index=dates,
-    )
-    revised = original.copy()
-    revised.iloc[7:] = [-100.0, -200.0, -300.0]
-
-    original_groups = alpha._assign_expanding_factor_groups(
-        original, q=2, min_history=3,
-    )
-    revised_groups = alpha._assign_expanding_factor_groups(
-        revised, q=2, min_history=3,
-    )
-
-    pd.testing.assert_series_equal(
-        original_groups.iloc[:7], revised_groups.iloc[:7],
-    )
-    assert original_groups.iloc[:3].isna().all()
 
 
 def test_close_signal_only_earns_returns_after_the_signal_day():
@@ -203,7 +180,7 @@ def test_close_signal_only_earns_returns_after_the_signal_day():
         index_ret_col='ret',
         q=2,
         hold_period=1,
-        min_history=2,
+        window=3,
         plot=False,
         verbose=False,
     )
@@ -211,3 +188,60 @@ def test_close_signal_only_earns_returns_after_the_signal_day():
     # 2024-01-04 的 G1 信号按收盘成交，首个净值点应是下一日的 1% 收益。
     assert result['group_nav'].index[0] == dates[3]
     assert np.isclose(result['group_nav'].loc[dates[3], 'G1'], 1.01)
+
+
+def test_factor_groups_use_recent_window_including_current_day():
+    """分组必须使用截至 t 日的最近 window 期，而不是截至 t 日的全部历史。"""
+    dates = pd.date_range('2024-01-02', periods=7, freq='B')
+    analysis_data = pd.DataFrame(
+        {
+            # 2024-01-09 的最近 3 期为 [100, 90, 80]，中位数为 90，
+            # 因此当日 80 应属于 G1；若错误使用 expanding，中位数为 40，会落入 G2。
+            'factor': [0.0, 0.0, 0.0, 100.0, 90.0, 80.0, 0.0],
+            # 只让 2024-01-09 的信号在下一日产生收益，便于从净值反推分组。
+            'ret': [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 10.0],
+        },
+        index=dates,
+    )
+
+    result = backtest_timeseries_factor(
+        analysis_data,
+        factor_col='factor',
+        index_ret_col='ret',
+        q=2,
+        hold_period=1,
+        window=3,
+        plot=False,
+        verbose=False,
+    )
+
+    assert np.isclose(result['group_nav']['G1'].iloc[-1], 1.10)
+    assert np.isclose(result['group_nav']['G2'].iloc[-1], 1.00)
+
+
+def test_missing_factor_after_warmup_is_not_a_signal_or_a_missing_return_day():
+    """因子缺失日不能误入 G1，也不能从策略时间轴中删除并压缩持仓期。"""
+    dates = pd.date_range('2024-01-02', periods=7, freq='B')
+    analysis_data = pd.DataFrame(
+        {
+            'factor': [0.0, 2.0, 0.0, np.nan, 3.0, 4.0, 5.0],
+            # NaN 因子日的下一日有 10% 收益；若 NaN 被误标 G1，G1 会错误获得该收益。
+            'ret': [0.0, 0.0, 0.0, 0.0, 10.0, 0.0, 0.0],
+        },
+        index=dates,
+    )
+
+    result = backtest_timeseries_factor(
+        analysis_data,
+        factor_col='factor',
+        index_ret_col='ret',
+        q=2,
+        hold_period=1,
+        window=3,
+        plot=False,
+        verbose=False,
+    )
+
+    expected_nav_index = dates[3:]
+    assert result['group_nav'].index.equals(expected_nav_index)
+    assert np.isclose(result['group_nav']['G1'].iloc[-1], 1.00)

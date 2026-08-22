@@ -6,7 +6,7 @@ sys.path.append('D://桌面/策略')
 from my_utils.stock_api import *
 import pandas as pd
 import numpy as np
-from typing import Sequence
+from typing import Optional, Sequence
 api = stock_api()
 
 def add_future_return(
@@ -403,7 +403,7 @@ import warnings
 warnings.filterwarnings('ignore')
 
 
-def analyze_factor(
+def analyze_factor_bak(
     factor_data: pd.DataFrame,
     ret_data: pd.DataFrame,
     start_date: str,
@@ -427,6 +427,14 @@ def analyze_factor(
         本函数只做齐对、对齐和滤波后直接计算 IC/分组收益。
     start_date, end_date, adjust_freq, return_period, group_num, save_result
         参见原函数文档。
+
+    说明
+    ----
+    - IC/RankIC 仍按每个交易日截面计算。
+    - 分组收益与净值曲线只在 rebalance_dates（由 adjust_freq 决定）上计算，
+      不在非调仓日重新分组。
+    - 当 adjust_freq != return_period 时，相邻调仓收益会重叠，函数会发出
+      UserWarning，此时净值/年化/夏普仅作参考。
     """
     # ===================== 1. 数据预处理（纯宽表） =====================
     print(f"开始因子分析: {start_date} ~ {end_date} | 持仓{return_period}天 | 调仓{adjust_freq}天")
@@ -494,7 +502,7 @@ def analyze_factor(
 
     # ===================== 3. 宽表分组收益（纯向量化） =====================
     print("\n==== 二、分组收益分析 ====")
-    # 3.1 每日分组（宽表直接生成分组矩阵）
+    # 3.1 调仓日分组（宽表直接生成分组矩阵，仅在 rebalance_dates 上生效）
     def daily_group(factor_row: pd.Series) -> pd.Series:
         """单日期因子分组（返回分组标签）"""
         valid_mask = factor_row.notna()
@@ -515,6 +523,18 @@ def analyze_factor(
     # 生成分组矩阵（index=日期，columns=代码，values=分组标签）
     group_matrix = factor_wide.apply(daily_group, axis=1)
 
+    # 修正：只在调仓日进行分组，其余日期置为 NaN，避免每日分组与净值口径不一致
+    group_matrix = group_matrix.where(group_matrix.index.isin(rebalance_dates), np.nan)
+
+    # 收益周期与调仓频率不一致时提示：相邻调仓收益会重叠，净值/年化/夏普可能失真
+    if adjust_freq != return_period:
+        import warnings
+        warnings.warn(
+            f"adjust_freq({adjust_freq}) != return_period({return_period})，"
+            "相邻调仓收益会重叠，净值/年化/夏普可能失真，建议两者相等。",
+            UserWarning
+        )
+
     # 3.2 计算每日分组收益（宽表掩码+向量化）
     group_returns = {}
     for group in [f'G{i+1}' for i in range(group_num)]:
@@ -530,10 +550,13 @@ def analyze_factor(
 
     # 3.3 分组统计
     group_stats = []
+    # 每年调仓次数由调仓频率 adjust_freq 决定，而不是持仓周期 return_period
+    periods_per_year = 252 / adjust_freq
     for group in nav_wide.columns:
+        # 只取调仓日的收益用于统计（非调仓日已被置为 NaN）
         daily_ret = group_returns_wide[group].dropna()
-        annual_ret = daily_ret.mean() * 252 / return_period
-        sharpe = (annual_ret / daily_ret.std()) * np.sqrt(252 / return_period) if daily_ret.std() != 0 else np.nan
+        annual_ret = daily_ret.mean() * periods_per_year
+        sharpe = (annual_ret / daily_ret.std()) * np.sqrt(periods_per_year) if daily_ret.std() != 0 else np.nan
         peak = nav_wide[group].expanding().max()
         max_dd = ((nav_wide[group] - peak) / peak).min()
 
@@ -618,10 +641,431 @@ def analyze_factor(
     }
 
 
+def _group_backtest(
+    data: pl.DataFrame,
+    ret_col: str,
+    ret_windows: Sequence[int],
+    group_num: int,
+) -> pl.DataFrame:
+    """按 FactorAna 口径延续调仓日分组，并计算每日等权收益。"""
+    group_wide = (
+        data.select("trading_date", "code", "__group")
+        .pivot(on="code", index="trading_date", values="__group")
+        .sort("trading_date")
+    )
+    ret_wide = (
+        data.select("trading_date", "code", ret_col)
+        .pivot(on="code", index="trading_date", values=ret_col)
+        .sort("trading_date")
+    )
+    stock_cols = group_wide.columns[1:]
+    dates = group_wide["trading_date"].to_list()
+    group_matrix = group_wide.select(stock_cols).to_numpy()
+    ret_matrix = ret_wide.select(stock_cols).to_numpy()
+    time_index = np.arange(len(dates))
+
+    results = []
+    for window in ret_windows:
+        # 收益日 t 使用最近一个调仓日（严格早于 t）的分组；例如 w=3 时，
+        # 第 0 日分组依次作用于第 1、2、3 日收益，第 3 日收盘再调仓。
+        anchor = ((time_index[1:] - 1) // window) * window
+        held_groups = group_matrix[anchor]
+        for group in range(1, group_num + 1):
+            daily_return = np.nanmean(
+                np.where(held_groups == group, ret_matrix[1:], np.nan),
+                axis=1,
+            )
+            results.append(
+                pl.DataFrame(
+                    {
+                        "trading_date": dates[1:],
+                        "window": window,
+                        "group": f"G{group}",
+                        "return": daily_return,
+                    }
+                )
+            )
+
+    return (
+        pl.concat(results)
+        .filter(pl.col("return").is_finite())
+        .with_columns(
+            pl.col("group").str.slice(1).cast(pl.Int16).alias("__group_order")
+        )
+        .sort("window", "__group_order", "trading_date")
+        .with_columns(
+            (1 + pl.col("return"))
+            .cum_prod()
+            .over("window", "group")
+            .alias("nav")
+        )
+        .with_columns(
+            (
+                pl.col("nav")
+                / pl.max_horizontal(
+                    pl.lit(1.0),
+                    pl.col("nav").cum_max().over("window", "group"),
+                )
+                - 1
+            )
+            .alias("drawdown")
+        )
+        .drop("__group_order")
+    )
+
+
+def _plot_factor_analysis(
+    ic: pl.DataFrame,
+    group_returns: pl.DataFrame,
+    benchmark: Optional[pl.DataFrame],
+    ret_windows: Sequence[int],
+    ic_windows: Sequence[int],
+    ic_rolling_window: int,
+) -> dict:
+    """将净值、IC 和累计 IC 各画在一个多窗口 Figure 中。"""
+    plt.rcParams["font.family"] = ["SimHei"]
+    plt.rcParams["axes.unicode_minus"] = False
+
+    def make_axes(windows):
+        figure, axes = plt.subplots(
+            len(windows), 1, figsize=(12, 4 * len(windows)), squeeze=False
+        )
+        return figure, axes[:, 0]
+
+    figures = {}
+    figure, axes = make_axes(ret_windows)
+    for axis, window in zip(axes, ret_windows):
+        frame = group_returns.filter(pl.col("window") == window)
+        for group in sorted(
+            frame["group"].unique().to_list(), key=lambda value: int(value[1:])
+        ):
+            group_frame = frame.filter(pl.col("group") == group).sort("trading_date")
+            axis.plot(group_frame["trading_date"], group_frame["nav"], label=group)
+        if benchmark is not None:
+            axis.plot(
+                benchmark["trading_date"], benchmark["nav"],
+                label="Benchmark", color="#777777", linestyle="--",
+            )
+        axis.set_title(f"{window}期调仓：分组净值")
+        axis.grid(alpha=0.3)
+        axis.legend()
+    figure.tight_layout()
+    figures["nav"] = figure
+
+    figure, axes = make_axes(ic_windows)
+    for axis, window in zip(axes, ic_windows):
+        frame = ic.filter(pl.col("window") == window).sort("trading_date")
+        # 因子预热期过长、截面样本不足或因子为常量时，可能没有任何有效 IC。
+        # 此时仍返回框架图对象给调用方展示“无可用 IC”，而不是格式化 None 后中断整份报告。
+        if frame.is_empty():
+            axis.text(
+                0.5,
+                0.5,
+                "该窗口没有可用 IC / RankIC 样本",
+                horizontalalignment="center",
+                verticalalignment="center",
+                transform=axis.transAxes,
+            )
+            axis.axhline(0, color="black", linewidth=0.8)
+            axis.set_title(f"未来{window}期收益：IC / RankIC")
+            axis.grid(alpha=0.3)
+            continue
+        ic_line = axis.plot(
+            frame["trading_date"],
+            frame["ic"],
+            label="IC",
+            linewidth=0.7,
+            alpha=0.3,
+        )[0]
+        rank_ic_line = axis.plot(
+            frame["trading_date"],
+            frame["rank_ic"],
+            label="RankIC",
+            linewidth=0.7,
+            alpha=0.3,
+        )[0]
+        # 原始日频 IC 波动较大；滚动均值只用于平滑展示，不参与统计结果计算。
+        axis.plot(
+            frame["trading_date"],
+            frame["ic"].rolling_mean(ic_rolling_window, min_samples=1),
+            color=ic_line.get_color(),
+            linewidth=2,
+            alpha=0.8,
+            label=f"IC {ic_rolling_window}日滚动",
+        )
+        axis.plot(
+            frame["trading_date"],
+            frame["rank_ic"].rolling_mean(ic_rolling_window, min_samples=1),
+            color=rank_ic_line.get_color(),
+            linewidth=2,
+            alpha=0.8,
+            label=f"RankIC {ic_rolling_window}日滚动",
+        )
+        ic_mean = frame["ic"].mean()
+        rank_ic_mean = frame["rank_ic"].mean()
+        axis.axhline(
+            ic_mean,
+            color=ic_line.get_color(),
+            linestyle="--",
+            label=f"IC均值: {ic_mean:.4f}",
+        )
+        axis.axhline(
+            rank_ic_mean,
+            color=rank_ic_line.get_color(),
+            linestyle="--",
+            label=f"RankIC均值: {rank_ic_mean:.4f}",
+        )
+        axis.axhline(0, color="black", linewidth=0.8)
+        axis.set_title(f"未来{window}期收益：IC / RankIC")
+        axis.grid(alpha=0.3)
+        axis.legend()
+    figure.tight_layout()
+    figures["ic_series"] = figure
+
+    figure, axes = make_axes(ic_windows)
+    for axis, window in zip(axes, ic_windows):
+        frame = ic.filter(pl.col("window") == window).sort("trading_date")
+        if frame.is_empty():
+            axis.text(
+                0.5,
+                0.5,
+                "该窗口没有可用累计 IC / RankIC 样本",
+                horizontalalignment="center",
+                verticalalignment="center",
+                transform=axis.transAxes,
+            )
+            axis.axhline(0, color="black", linewidth=0.8)
+            axis.set_title(f"未来{window}期收益：累计IC")
+            axis.grid(alpha=0.3)
+            continue
+        axis.plot(frame["trading_date"], frame["cum_ic"], label="累计IC")
+        axis.plot(frame["trading_date"], frame["cum_rank_ic"], label="累计RankIC")
+        axis.axhline(0, color="black", linewidth=0.8)
+        axis.set_title(f"未来{window}期收益：累计IC")
+        axis.grid(alpha=0.3)
+        axis.legend()
+    figure.tight_layout()
+    figures["cumulative_ic"] = figure
+    return figures
+
+
+def analyze_factor(
+    data: pl.DataFrame,
+    factor_col: str,
+    ret_col: str = "daily_ret",
+    ret_windows: Sequence[int] = (1, 3, 5),
+    ic_windows: Sequence[int] = (1, 3, 5),
+    ic_rolling_window: int = 30,
+    group_num: int = 5,
+    plot: bool = True,
+    save_result: bool = False,
+) -> dict:
+    """
+    分析单张 Polars 长表中的截面因子。
+
+    输入固定包含 ``trading_date``、``code``、因子列和单期收益列；可选的
+    ``benchmark_ret`` 是同口径基准单期收益。``daily_ret[t]`` 表示 t-1 到 t
+    的收益，因此 t 日因子从 t+1 日收益开始生效。
+
+    ``ret_windows`` 是分组策略调仓间隔。调仓间隔内沿用同一组股票，并用
+    每日收益连续画净值，所以没有重叠收益或稀疏净值。``ic_windows`` 是 IC
+    对应的未来累计收益窗口。``ic_rolling_window`` 只控制 IC 时序图的平滑窗口。
+    """
+    # ===================== 1. 参数标准化与数据排序 =====================
+    # 窗口参数去重排序；data 按日期+代码排序，保证时序正确
+    ret_windows = tuple(sorted(set(ret_windows)))
+    ic_windows = tuple(sorted(set(ic_windows)))
+    data = data.sort("trading_date", "code")
+
+    # ===================== 2. 截面分组（每天独立排序等分） =====================
+    # 2.1 计算每个交易日因子值的截面排名（ordinal：1~N，不处理重复值）
+    rank = pl.col(factor_col).rank(method="ordinal").over("trading_date")
+    # 2.2 计算每个交易日的有效样本数，用于等比例分组
+    count = pl.col(factor_col).count().over("trading_date")
+    # 2.3 将排名映射到 1~group_num 组：G1 因子值最小，G{group_num} 最大
+    data = data.with_columns(
+        (((rank - 1) * group_num / count).floor() + 1)
+        .cast(pl.Int16)
+        .alias("__group")
+    )
+
+    # ===================== 3. 因子一阶自相关 =====================
+    # 对每只股票取上一交易日的因子值，再在每个交易日横截面计算 Spearman
+    # 相关系数；首日没有历史因子值，会在汇总均值时自然被过滤。
+    data = data.with_columns(
+        pl.col(factor_col).shift(1).over("code").alias("__previous_factor")
+    )
+    factor_autocorr = (
+        data.group_by("trading_date")
+        .agg(
+            pl.corr(
+                pl.col(factor_col),
+                pl.col("__previous_factor"),
+                method="spearman",
+            ).alias("factor_autocorr")
+        )
+        .filter(pl.col("factor_autocorr").is_finite())
+        .select(pl.col("factor_autocorr").mean())
+        .item()
+    )
+    data = data.drop("__previous_factor")
+
+    # ===================== 4. 计算 IC 所需的未来累计收益 =====================
+    # IC 需要看因子值与未来多期收益的相关性，一次性生成 ic_windows 对应的未来收益列
+    # 分组回测本身只使用单期收益 ret_col，未来收益由 _group_backtest 内部按窗口复利
+    data = add_future_return(
+        data,
+        ret_col=ret_col,
+        horizons=ic_windows,
+        date_col="trading_date",
+        code_col="code",
+    )
+
+    # ===================== 5. 截面 IC / RankIC 计算 =====================
+    # 4.1 对每个 ic_window，在每一天截面上计算因子与未来收益的 Pearson/Spearman 相关系数
+    ic_frames = []
+    for window in ic_windows:
+        future_col = f"future_{ret_col}_{window}d"
+        # 只保留因子值和未来收益都有限的样本，避免 NaN/inf 污染相关系数
+        valid = pl.col(factor_col).is_finite() & pl.col(future_col).is_finite()
+        paired_factor = pl.when(valid).then(pl.col(factor_col))
+        paired_return = pl.when(valid).then(pl.col(future_col))
+        ic_frames.append(
+            data.group_by("trading_date")
+            .agg(
+                pl.corr(paired_factor, paired_return).alias("ic"),
+                pl.corr(
+                    paired_factor, paired_return, method="spearman"
+                ).alias("rank_ic"),
+            )
+            .with_columns(pl.lit(window).alias("window"))
+        )
+    # 4.2 合并所有窗口结果，并过滤掉无效 IC
+    ic = pl.concat(ic_frames).filter(
+        pl.col("ic").is_finite() & pl.col("rank_ic").is_finite()
+    )
+    # 4.3 按窗口和日期排序后，计算累计 IC 曲线（用于观察因子持续性）
+    ic = (
+        ic.sort("window", "trading_date")
+        .with_columns(
+            pl.col("ic").cum_sum().over("window").alias("cum_ic"),
+            pl.col("rank_ic").cum_sum().over("window").alias("cum_rank_ic"),
+        )
+        .select("trading_date", "window", "ic", "rank_ic", "cum_ic", "cum_rank_ic")
+    )
+    # 4.4 IC 统计汇总：均值、标准差、IR、正占比（按窗口聚合）
+    ic_stats = (
+        ic.group_by("window")
+        .agg(
+            pl.col("ic").mean().alias("ic_mean"),
+            pl.col("ic").std().alias("ic_std"),
+            (pl.col("ic") > 0).mean().alias("ic_positive_ratio"),
+            pl.col("rank_ic").mean().alias("rank_ic_mean"),
+            pl.col("rank_ic").std().alias("rank_ic_std"),
+            (pl.col("rank_ic") > 0).mean().alias("rank_ic_positive_ratio"),
+        )
+        .with_columns(
+            pl.when(pl.col("ic_std") > 0)
+            .then(pl.col("ic_mean") / pl.col("ic_std"))
+            .otherwise(None)
+            .alias("ic_ir"),
+            pl.when(pl.col("rank_ic_std") > 0)
+            .then(pl.col("rank_ic_mean") / pl.col("rank_ic_std"))
+            .otherwise(None)
+            .alias("rank_ic_ir"),
+        )
+        .sort("window")
+    )
+
+    # ===================== 6. 分组回测收益计算 =====================
+    # 5.1 基于步骤 2 的分组标签，按 ret_windows 调仓，计算每组每日等权收益和净值
+    group_returns = _group_backtest(data, ret_col, ret_windows, group_num)
+    # 5.2 分组绩效统计：日均收益、年化收益、夏普、最大回撤、胜率
+    group_stats = (
+        group_returns.group_by("window", "group")
+        .agg(
+            pl.col("return").mean().alias("mean_return"),
+            (pl.col("nav").last().pow(252.0 / pl.len()) - 1).alias("annual_return"),
+            pl.when(pl.col("return").std() > 0)
+            .then(pl.col("return").mean() / pl.col("return").std() * np.sqrt(252))
+            .otherwise(None)
+            .alias("sharpe"),
+            pl.col("drawdown").min().alias("max_drawdown"),
+            (pl.col("return") > 0).mean().alias("positive_ratio"),
+        )
+        .with_columns(
+            pl.col("group").str.slice(1).cast(pl.Int16).alias("__group_order")
+        )
+        .sort("window", "__group_order")
+        .drop("__group_order")
+    )
+
+    # ===================== 7. 基准净值计算（可选） =====================
+    # 如果输入包含 benchmark_ret 列且存在有效值，则合成基准累计净值
+    benchmark = None
+    benchmark_values = (
+        data["benchmark_ret"].drop_nulls()
+        if "benchmark_ret" in data.columns
+        else None
+    )
+    if benchmark_values is not None and benchmark_values.is_finite().any():
+        benchmark = (
+            data.group_by("trading_date")
+            .agg(
+                pl.col("benchmark_ret")
+                .filter(pl.col("benchmark_ret").is_finite())
+                .first()
+                .alias("return")
+            )
+            .sort("trading_date")
+            .slice(1)  # 首日没有前一期收益，收益从第二日开始
+            .with_columns((1 + pl.col("return")).cum_prod().alias("nav"))
+        )
+
+    # ===================== 8. 可视化 =====================
+    # 需要展示或保存时，调用统一绘图函数生成四张图：分组收益、净值、IC序列、累计IC
+    figures = {}
+    if plot or save_result:
+        figures = _plot_factor_analysis(
+            ic,
+            group_returns,
+            benchmark,
+            ret_windows,
+            ic_windows,
+            ic_rolling_window,
+        )
+        if plot and "agg" not in plt.get_backend().lower():
+            plt.show()
+
+    # ===================== 9. 结果保存 =====================
+    if save_result:
+        output_dir = "因子分析结果"
+        os.makedirs(output_dir, exist_ok=True)
+        ic.write_csv(f"{output_dir}/ic.csv")
+        ic_stats.write_csv(f"{output_dir}/ic_stats.csv")
+        group_returns.write_csv(f"{output_dir}/group_returns.csv")
+        group_stats.write_csv(f"{output_dir}/group_stats.csv")
+        if benchmark is not None:
+            benchmark.write_csv(f"{output_dir}/benchmark.csv")
+        for name, figure in figures.items():
+            figure.savefig(f"{output_dir}/{name}.png", dpi=200, bbox_inches="tight")
+
+    # ===================== 10. 返回结果 =====================
+    return {
+        "factor_autocorr": factor_autocorr,
+        "ic": ic,
+        "ic_stats": ic_stats,
+        "group_returns": group_returns,
+        "group_stats": group_stats,
+        "nav": group_returns.select("trading_date", "window", "group", "nav"),
+        "benchmark": benchmark,
+        "figures": figures,
+    }
+
+
 # ============================================================
 # 时序因子分组回测
 # ============================================================
-
 
 def backtest_timeseries_factor(
     analysis_data: pd.DataFrame,
@@ -631,6 +1075,7 @@ def backtest_timeseries_factor(
     hold_period: int = 5,
     plot: bool = True,
     verbose: bool = True,
+    window: int = 252,
 ) -> dict:
     """
     时序因子分组回测：分组统计 + 每组独立策略回测 + 净值对比
@@ -658,6 +1103,9 @@ def backtest_timeseries_factor(
     verbose : bool
         是否打印分组统计和绩效汇总。批量调用（如跨指数/跨因子循环）时
         设为 False 以保持输出干净。
+    window : int
+        滚动分位数窗口长度，默认 252。t 日只使用最近 window 期（包含 t 日）
+        的有效因子值计算分位数边界；窗口不足时不分组。
 
     返回
     ----
@@ -670,7 +1118,8 @@ def backtest_timeseries_factor(
             columns=['累计收益(%)', '年化收益(%)', '夏普比率',
                      '最大回撤(%)', '胜率(%)', '持仓占比(%)']
         'group_nav': pd.DataFrame,
-            各分组策略净值宽表，columns=分组名，index=analysis_data.index
+            分组策略与买入持有基准的统一净值宽表，columns=G1~Gq + 买入持有基准，
+            index 从首个有效分组日的下一期开始。
         'future_return_col': str,
             内部生成的未来收益列名，格式 f'future_return_{hold_period}d'
         'fig_bar': plt.Figure | None,
@@ -683,30 +1132,66 @@ def backtest_timeseries_factor(
     ----
     - 内部保留 backtest_group_strategy 和 calculate_group_performance_metrics
       作为嵌套函数，与 notebook 原版实现一致。
-    - 未来收益从 index_ret_col 复利合成（替代原 nav.shift(-h)/nav-1）。
+    - 分组边界使用截至 t 日（包含 t 日）的最近 window 期因子，不使用未来数据。
+    - 未来收益从 index_ret_col 复利合成，区间为 t+1 至 t+h。
+    - t 日收盘信号在 t+1 起持有 hold_period 个收益期。
     - 有效样本数小于 q 时抛 ValueError。
     """
+    # ---------- 嵌套函数：滚动时序分组 ----------
+    def assign_groups(factor, q, window):
+        """按截至当日的滚动分位数边界，将因子划分到 G1~Gq。"""
+        if isinstance(q, bool) or not isinstance(q, (int, np.integer)) or q < 1:
+            raise ValueError("q 必须是正整数")
+        if (
+            isinstance(window, bool)
+            or not isinstance(window, (int, np.integer))
+            or window < 1
+        ):
+            raise ValueError("window 必须是正整数")
+
+        factor = pd.to_numeric(factor, errors="coerce").replace(
+            [np.inf, -np.inf], np.nan,
+        )
+        rolling = factor.rolling(window=window, min_periods=window)
+
+        # 每个分位数边界都由最近 window 期计算，rolling 默认包含当前 t 日。
+        # 当前值每超过一个边界，组号增加 1；等于边界时留在较低组。
+        group_number = pd.Series(1, index=factor.index, dtype="Int64")
+        for quantile in np.arange(1, q) / q:
+            boundary = rolling.quantile(quantile)
+            group_number += (factor > boundary).fillna(False).astype("Int64")
+
+        # 必须凑满一个完整有效窗口；当日因子缺失时也不能误标成 G1。
+        valid = factor.notna() & rolling.count().eq(window)
+        groups = pd.Series(pd.NA, index=factor.index, dtype="object")
+        groups.loc[valid] = "G" + group_number.loc[valid].astype(str)
+        return groups
+
     # ---------- 嵌套函数：单分组策略回测 ----------
     def backtest_group_strategy(data, group_col, target_group, hold_period):
         """单个分组策略回测"""
-        data = data.copy().dropna(subset=[group_col])
-        data['signal'] = (data[group_col] == target_group).astype(int)
+        data = data.copy()
+        # 预热结束后的因子缺失日仍保留在收益时间轴中，但不产生新信号。
+        data['signal'] = (data[group_col] == target_group).fillna(False).astype(int)
 
         signal_arr = data['signal'].to_numpy()
-        position = np.zeros(len(data), dtype=np.int8)
+        # t 日收盘按 close[t] 成交后，首个可获得的日收益是 ret[t+1]。
+        # position[i] 对应 data.iloc[i + 1] 的收益期，避免把已走完的 ret[t] 计入。
+        position = np.zeros(max(len(data) - 1, 0), dtype=np.int8)
         remaining_days = 0
 
-        for i, s in enumerate(signal_arr):
+        for i, s in enumerate(signal_arr[:-1]):
             if s == 1:
                 remaining_days = hold_period
             if remaining_days > 0:
                 position[i] = 1
                 remaining_days -= 1
 
-        data['position'] = position
-        data['strategy_return'] = data['position'] * data[index_ret_col] / 100
-        data['strategy_nav'] = (1 + data['strategy_return']).cumprod()
-        return data
+        strategy_data = data.iloc[1:].copy()
+        strategy_data['position'] = position
+        strategy_data['strategy_return'] = strategy_data['position'] * strategy_data[index_ret_col] / 100
+        strategy_data['strategy_nav'] = (1 + strategy_data['strategy_return']).cumprod()
+        return strategy_data
 
     # ---------- 嵌套函数：分组绩效指标 ----------
     def calculate_group_performance_metrics(data, group_name):
@@ -758,25 +1243,33 @@ def backtest_timeseries_factor(
     future_gross = gross.rolling(hold_period).apply(np.prod, raw=True).shift(-hold_period)
     analysis_data[future_return_col] = (future_gross - 1) * 100
 
-    # 2. 分组
-    analysis_data_clean = analysis_data.dropna(subset=[factor_col]).copy()
-    if len(analysis_data_clean) < q:
+    # 2. 分组 —— 最近 window 期滚动分位数包含 t 日，不使用 t+1 之后的数据
+    analysis_data['factor_group'] = assign_groups(
+        analysis_data[factor_col], q=q, window=window,
+    )
+    valid_group = analysis_data['factor_group'].notna()
+    valid_sample_count = int(valid_group.sum())
+    if valid_sample_count < q:
         raise ValueError(
-            f"有效样本数 ({len(analysis_data_clean)}) 小于分组数 ({q})，无法分组"
+            f"滚动窗口完成后的有效样本数 ({valid_sample_count}) "
+            f"小于分组数 ({q})，无法分组；window={window}"
         )
 
-    analysis_data_clean['factor_group'] = pd.qcut(
-        analysis_data_clean[factor_col],
-        q=q,
-        labels=[f'G{i+1}' for i in range(q)],
-        duplicates='drop',
+    # 分组统计只使用有标签的日期；策略回测则保留预热结束后的完整时间轴，
+    # 防止中间缺失因子把不相邻交易日压缩成相邻收益期。
+    analysis_data_grouped = analysis_data.loc[valid_group].copy()
+    first_valid_position = int(np.flatnonzero(valid_group.to_numpy())[0])
+    backtest_data = analysis_data.iloc[first_valid_position:].copy()
+
+    groups = sorted(
+        analysis_data_grouped['factor_group'].unique(),
+        key=lambda group: int(group[1:]),
     )
-    actual_groups = analysis_data_clean['factor_group'].nunique()
-    if actual_groups < q and verbose:
-        print(f"⚠ 因子重复值过多，实际分组数 {actual_groups} < {q}")
+    if len(groups) < q and verbose:
+        print(f"⚠ 因子重复值过多，部分 G 组为空（有效组数 {len(groups)} < {q}）")
 
     # 3. 分组未来收益统计
-    group_returns = analysis_data_clean.groupby('factor_group', observed=True)[future_return_col].agg(
+    group_returns = analysis_data_grouped.groupby('factor_group', observed=True)[future_return_col].agg(
         ['mean', 'std', 'count']
     )
     group_returns.columns = ['平均收益(%)', '收益标准差', '样本数']
@@ -815,34 +1308,40 @@ def backtest_timeseries_factor(
         fig_bar.tight_layout()
 
     # 5. 分组策略回测
-    groups = [f'G{i+1}' for i in range(actual_groups)]
     group_results = {}
     for group in groups:
         group_strategy = backtest_group_strategy(
-            analysis_data_clean, 'factor_group',
+            backtest_data, 'factor_group',
             target_group=group, hold_period=hold_period,
         )
         group_results[group] = group_strategy
 
     # 基准：买入持有
-    benchmark_data = analysis_data_clean.copy()
+    # 与分组策略相同：首个有效分组日只用于 t 日收盘决策，基准从 t+1 开始。
+    benchmark_data = backtest_data.iloc[1:].copy()
     benchmark_data['position'] = 1
     benchmark_data['strategy_return'] = benchmark_data[index_ret_col] / 100
     benchmark_data['strategy_nav'] = (1 + benchmark_data['strategy_return']).cumprod()
 
     # 绩效指标
     all_metrics = []
-    group_nav_dict = {}
     for group in groups:
         metrics = calculate_group_performance_metrics(group_results[group], group)
         all_metrics.append(metrics)
-        group_nav_dict[group] = group_results[group]['strategy_nav']
 
     benchmark_metrics = calculate_group_performance_metrics(benchmark_data, '买入持有基准')
     all_metrics.append(benchmark_metrics)
 
     performance_df = pd.DataFrame(all_metrics).set_index('分组')
-    group_nav_df = pd.DataFrame(group_nav_dict, index=analysis_data_clean.index)
+    # 所有净值先显式校验索引，再按位置写入同一宽表，避免 pandas 静默重排或补 NaN。
+    nav_index = benchmark_data.index
+    group_nav_df = pd.DataFrame(index=nav_index)
+    for group in groups:
+        group_nav = group_results[group]['strategy_nav']
+        if not group_nav.index.equals(nav_index):
+            raise RuntimeError(f"{group} 净值日期与基准日期不一致")
+        group_nav_df[group] = group_nav.to_numpy()
+    group_nav_df['买入持有基准'] = benchmark_data['strategy_nav'].to_numpy()
 
     display_df = performance_df.copy()
     for col in ['累计收益', '年化收益', '最大回撤', '胜率', '持仓占比']:
@@ -861,16 +1360,15 @@ def backtest_timeseries_factor(
     if plot:
         fig_nav, ax_nav = plt.subplots(figsize=(14, 8))
         nav_colors = colors[:len(groups)] + ['#888888']
-        nav_labels = [f'{g}' for g in groups] + ['买入持有基准']
 
         for i, group in enumerate(groups):
             ax_nav.plot(
                 group_nav_df.index, group_nav_df[group],
-                label=nav_labels[i], color=nav_colors[i], linewidth=2,
+                label=f'{group}', color=nav_colors[i], linewidth=2,
             )
 
         ax_nav.plot(
-            benchmark_data.index, benchmark_data['strategy_nav'],
+            group_nav_df.index, group_nav_df['买入持有基准'],
             label='买入持有基准', color='#888888', linewidth=2, linestyle='--',
         )
 

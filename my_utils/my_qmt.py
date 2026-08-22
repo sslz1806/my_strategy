@@ -8,6 +8,13 @@ from datetime import datetime #时间戳改为日期时间格式的时候使用
 # 回调类,处理账户状态
 from xtquant.xttrader import XtQuantTraderCallback
 from my_utils.fun import get_logger
+from my_utils.qmt_process import (
+    connect_trader_with_retry,
+    get_process_name_from_path,
+    is_process_running as qmt_is_process_running,
+    start_software,
+    stop_software,
+)
 logging = get_logger(log_file='log/实盘.log',inherit=False)
 
 class MyXtQuantTraderCallback(XtQuantTraderCallback):
@@ -128,18 +135,98 @@ def positions_df():
 #设置你的path='' 文件夹userdata_mini前面改为自己的QMT安装路径信息，acc=''引号内填入自己的账号
 path = r'F:\trading\东北证券NET专业版\userdata_mini'
 acct = "51318497"
-# 1.创建交易对象API实例
-session_id = int(time.time())
-xt_trader = XtQuantTrader(path, session_id)
-# 2.创建并注册回调实例
-callback = MyXtQuantTraderCallback()
-xt_trader.register_callback(callback)
+
+# QMT 客户端可执行文件路径（用于自动检测/启动客户端）
+QMT_CLIENT_EXE = r'F:\trading\东北证券NET专业版\bin.x64\XtItClient.exe'
+# XtItClient.exe 只是登录/启动器，登录后会退出并拉起长期运行的 XtMiniQmt.exe。
+# 健康检测必须跟踪后者，否则会把已运行的 QMT 误判为未启动并重复拉起。
+QMT_PROCESS_NAME = 'XtMiniQmt.exe'
 
 
-# 3.xttrader连接miniQMT终端
-xt_trader.start()
-if xt_trader.connect() == 0:logging.info('【软件终端连接成功！】')
-else: logging.info('【软件终端连接失败！】','\n 请运行并登录miniQMT.EXE终端。','\n path=改成你的QMT安装路径')
+def start_qmt_client(exe_path, process_name, max_wait=60, post_start_delay=2):
+    """
+    如果 QMT 客户端进程未运行，则启动它并等待初始化完成。
+
+    注意：本函数只能拉起客户端程序，无法自动完成账号登录/验证。
+    若 QMT 启动后需要手动登录，请在运行脚本前先登录，或等待登录完成后再继续。
+    """
+    process_name = process_name or get_process_name_from_path(exe_path)
+    if qmt_is_process_running(process_name):
+        logging.info(f'已检测到 QMT 客户端进程 [{process_name}]，无需启动')
+        return True
+
+    logging.info(f'未检测到 QMT 客户端，正在启动: {exe_path}')
+    if not start_software(
+        exe_path,
+        avoid_duplicate=True,
+        show_window=True,
+        process_name=process_name,
+        max_wait=max_wait,
+        poll_interval=2,
+    ):
+        logging.error(f'启动 QMT 客户端失败: {exe_path}')
+        return False
+
+    logging.info(f'QMT 主进程 [{process_name}] 已启动')
+
+    # 主进程出现后给交易服务少量初始化时间；真正的健康状态由 connect() 验证。
+    if post_start_delay > 0:
+        logging.info(f'QMT 客户端刚启动，等待 {post_start_delay} 秒完成初始化...')
+        time.sleep(post_start_delay)
+
+    return True
+
+
+def stop_qmt_client(target=QMT_CLIENT_EXE, force=False, timeout=5):
+    """
+    关闭 QMT 客户端进程
+
+    :param target: 进程名/EXE路径/快捷方式路径，默认使用 QMT_CLIENT_EXE
+    :param force: 是否强制终止
+    :param timeout: 等待进程终止的最大秒数
+    :return: 关闭成功的进程数
+    """
+    killed_count = stop_software(target, force=force, timeout=timeout)
+    if killed_count > 0:
+        logging.info(f'已关闭 QMT 客户端进程，共 {killed_count} 个')
+    else:
+        logging.info('未检测到运行中的 QMT 客户端进程')
+    return killed_count
+
+
+# 每次重试使用不同会话号。保留 session_id/callback 全局变量，兼容既有
+# ``from my_utils.my_qmt import *`` 调用方。
+_next_session_id = int(time.time())
+session_id = None
+callback = None
+
+
+def _create_xt_trader():
+    """在 QMT 主进程就绪后创建一个新的 xtquant 会话。"""
+    global _next_session_id, session_id, callback
+    session_id = _next_session_id
+    _next_session_id += 1
+    trader = XtQuantTrader(path, session_id)
+    callback = MyXtQuantTraderCallback()
+    trader.register_callback(callback)
+    return trader
+
+
+def _ensure_qmt_client():
+    """连接前及每次重试前重新检测 QMT，必要时自动拉起。"""
+    return start_qmt_client(QMT_CLIENT_EXE, QMT_PROCESS_NAME)
+
+
+# start() 只启动 xtquant 的异步线程；connect() 才执行真正的终端连接。
+# 失败时会清理当前 xtquant 会话、重新检测 QMT，并创建新会话重试。
+xt_trader = connect_trader_with_retry(
+    _create_xt_trader,
+    _ensure_qmt_client,
+    max_attempts=7,
+    retry_interval=4,
+    logger=logging,
+)
+logging.info('【软件终端连接成功！】')
 
 
 #——————————————————————————————————————————————————————————————————————————————————————————————————————

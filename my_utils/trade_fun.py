@@ -988,6 +988,60 @@ def mark_weight(回测结果, max_weight=0.4, min_weight=0.3):
 
     return 回测结果
 
+# 凯利公式仓位控制：单票上限与日总上限双层约束
+def adjust_weight_by_kelly(回测结果, max_single_weight=0.24, max_daily_weight=0.4, return_column='weight_kelly'):
+    """
+    凯利公式仓位约束：每只票买入资金不超过 max_single_weight，每日总资金占用不超过 max_daily_weight。
+
+    weight 语义为"当日总仓位预算比例"，同一天所有信号的 weight 值相同。
+    Stage 1 通过 mean() 天然等分到每只票；Stage 2 的 Backtester 通过 cash/N 完成等分，
+    两阶段行为保持一致。
+
+    示例（max_single_weight=0.24, max_daily_weight=0.4）:
+      - N=1 → weight=0.24（需求=0.24×1=0.24，≤日总上限，取 0.24，单票 24%）
+      - N=2 → weight=0.40（需求=0.24×2=0.48，>日总上限，取 0.40，每票 20%）
+      - N=3 → weight=0.40（需求=0.24×3=0.72，>日总上限，取 0.40，每票 13.3%）
+
+    :param 回测结果: pl.DataFrame 或 pd.DataFrame，需包含 trading_date 列
+    :param max_single_weight: 单票最大仓位比例（默认 0.24，即凯利公式结果）
+    :param max_daily_weight: 每日总仓位上限（默认 0.40）
+    :param return_column: 输出的权重列名
+    :return: 添加了 weight 列的 DataFrame（保持输入类型）
+    """
+    import polars as pl
+
+    is_polars = isinstance(回测结果, pl.DataFrame)
+    if not is_polars:
+        回测结果 = pl.from_pandas(回测结果)
+
+    回测结果 = 回测结果.sort('trading_date')
+
+    # 统计每日信号数量，计算当日总仓位预算
+    daily_counts = (
+        回测结果
+        .group_by('trading_date')
+        .agg(pl.len().alias('daily_n'))
+        .with_columns(
+            pl.min_horizontal(
+                (pl.col('daily_n') * max_single_weight),
+                pl.lit(max_daily_weight),
+                pl.lit(1.0),
+            ).alias(return_column)
+        )
+    )
+
+    # 通过 trading_date 关联，给每天的所有信号赋当天的总仓位预算
+    回测结果 = 回测结果.join(
+        daily_counts.select(['trading_date', return_column]),
+        on='trading_date',
+        how='left',
+    )
+
+    if not is_polars:
+        回测结果 = 回测结果.to_pandas()
+
+    return 回测结果
+
 #%% 回测结果汇报函数
 def report_backtest_full(
     result_df: pd.DataFrame,

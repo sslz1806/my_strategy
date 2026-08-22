@@ -1,22 +1,14 @@
 """五日涨跌停情绪因子的公共研究函数。"""
 
-import warnings
-from datetime import date
-from typing import Dict, List, Optional, Tuple
-
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import polars as pl
-import statsmodels.api as sm
-from scipy import stats
 
 THRESHOLD_QUANTILE = 0.60
 MIN_HISTORY = 252
 HORIZONS = (1, 3, 5, 10)
 ROLLING_IC_WINDOWS = (50, 100)
 ROLLING_IC_MIN_VALID_RATIO = 0.95
-IC_NEUTRAL_BAND = 0.02
 PRICE_TOLERANCE = 1e-6
 FACTOR_LABELS = {
     "limit_up_ratio": "涨停占比",
@@ -199,14 +191,19 @@ def build_daily_sentiment_factors(
                   / pl.col("n_down").rolling_sum(window, min_periods=window))
             .otherwise(None),
         # 收益 shift(1)：t 日涨停确认收益在 t+1，因子 t 只能看到 t-1 及以前的收益
-        limit_up_next_ret=(
+        # 分母为 0 时返回 None（防浮点噪声导致 inf）
+        limit_up_next_ret=pl.when(
+            pl.col("n_up").shift(1).rolling_sum(window, min_periods=window) > 0
+        ).then(
             pl.col("up_ret").shift(1).rolling_sum(window, min_periods=window)
             / pl.col("n_up").shift(1).rolling_sum(window, min_periods=window)
-        ),
-        limit_down_next_ret=(
+        ).otherwise(None),
+        limit_down_next_ret=pl.when(
+            pl.col("n_down").shift(1).rolling_sum(window, min_periods=window) > 0
+        ).then(
             pl.col("down_ret").shift(1).rolling_sum(window, min_periods=window)
             / pl.col("n_down").shift(1).rolling_sum(window, min_periods=window)
-        ),
+        ).otherwise(None),
     )
 
 
@@ -312,39 +309,17 @@ def compute_threshold(
     return result
 
 
-def annualized_metrics(daily_returns: pd.Series) -> dict[str, float]:
-    """
-    由日收益序列计算年化收益、最大回撤和零无风险利率夏普比率。
-
-    Parameters
-    ----------
-    daily_returns : pd.Series
-        日收益率序列（小数形式，如 0.01 = 1%）。
-
-    Returns
-    -------
-    dict[str, float]
-        含 annual_return, max_drawdown, sharpe 三个指标。
-    """
-    values = pd.Series(daily_returns, dtype=float).dropna()
-    nav = (1 + values).cumprod()
-    volatility = values.std(ddof=1)
-    return {
-        "annual_return": nav.iloc[-1] ** (252 / len(values)) - 1,
-        "max_drawdown": (nav / nav.cummax() - 1).min(),
-        "sharpe": values.mean() / volatility * np.sqrt(252) if volatility > 0 else np.nan,
-    }
-
-
-def run_timing(
+def run_time_backtest(
     data: pd.DataFrame,
     signal_column: str,
+    ret_column: str,
     horizon: int,
+    date_column: str = "trading_date",
     anchor_date: pd.Timestamp = None,
     require_complete_exit: bool = True,
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    信号驱动的连续持仓择时回测。
+    对单个指数收益序列运行信号驱动的连续持仓择时回测。
 
     信号触发即开仓/续期，持有 horizon 个交易日。
     预热期信号为 NaN 时不进入样本，不改变当前仓位状态。
@@ -355,12 +330,15 @@ def run_timing(
     Parameters
     ----------
     data : pd.DataFrame
-        含 trading_date、signal_column（数值型，1=持仓/0=空仓/NaN=无效）
-        和 market_daily_ret 的日频表。
+        已完成外部清洗的日频表，包含日期、信号和单个指数收益列。
     signal_column : str
-        信号列名。
+        二值信号列名，1=开仓或续期，0=不触发，NaN=预热期无效值。
+    ret_column : str
+        指数日收益列名，收益使用小数形式（0.01 = 1%）。
     horizon : int
         持有周期（交易日数），同时也是续期长度。
+    date_column : str
+        日期列名，默认 trading_date。
     anchor_date : pd.Timestamp, optional
         回测起始日。若为 None，从 signal_column 首个非空值所在行起算。
     require_complete_exit : bool
@@ -370,30 +348,82 @@ def run_timing(
     -------
     tuple[pd.DataFrame, pd.DataFrame]
         (daily, blocks)
-        - daily: 逐日明细，含 trading_date, position, market_daily_ret,
+        - daily: 逐日明细，含日期、position、ret_column、
                  strategy_daily_ret, strategy_nav, benchmark_nav
         - blocks: 连续持仓/空仓段明细，每行一个完整的持仓段或空仓段。
     """
-    ordered = data.copy().sort_values("trading_date").reset_index(drop=True)
-    ordered["trading_date"] = pd.to_datetime(ordered["trading_date"])
+    if not isinstance(data, pd.DataFrame):
+        raise TypeError("data 必须是 pandas.DataFrame")
+    if isinstance(horizon, bool) or not isinstance(horizon, (int, np.integer)) or horizon < 1:
+        raise ValueError("horizon 必须是正整数")
+
+    required_columns = {date_column, signal_column, ret_column}
+    missing_columns = sorted(required_columns.difference(data.columns))
+    if missing_columns:
+        raise ValueError(f"data 缺少必要字段：{missing_columns}")
+
+    ordered = data.copy()
+    ordered[date_column] = pd.to_datetime(ordered[date_column], errors="coerce")
+    if ordered[date_column].isna().any():
+        raise ValueError(f"{date_column} 包含无法解析的日期")
+    if ordered[date_column].duplicated().any():
+        raise ValueError(f"{date_column} 存在重复日期")
+
+    try:
+        ordered[ret_column] = pd.to_numeric(ordered[ret_column], errors="raise").astype(float)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{ret_column} 必须是数值型日收益") from exc
+    if not np.isfinite(ordered[ret_column].to_numpy()).all():
+        raise ValueError(f"{ret_column} 必须全部是有限数值，不允许 NaN 或 inf")
+
+    valid_signals = ordered[signal_column].dropna()
+    if not valid_signals.isin([0, 1]).all():
+        raise ValueError(f"{signal_column} 只能包含 0、1 或 NaN")
+
+    ordered = ordered.sort_values(date_column).reset_index(drop=True)
+    daily_columns = [
+        date_column,
+        "position",
+        ret_column,
+        "strategy_daily_ret",
+        "benchmark_nav",
+        "strategy_nav",
+    ]
+    block_columns = [
+        "block_id",
+        "position",
+        "decision_date",
+        "block_start_date",
+        "block_end_date",
+        "block_duration",
+        "benchmark_block_return",
+        "strategy_block_return",
+    ]
 
     # 确定锚点行索引
     if anchor_date is not None:
-        anchor_index = int(
-            ordered.index[ordered["trading_date"] == pd.Timestamp(anchor_date)][0]
-        )
+        anchor_timestamp = pd.to_datetime(anchor_date, errors="coerce")
+        if pd.isna(anchor_timestamp):
+            raise ValueError("anchor_date 无法解析为日期")
+        anchor_matches = ordered.index[ordered[date_column] == anchor_timestamp]
+        if len(anchor_matches) == 0:
+            raise ValueError("anchor_date 不在 data 的日期列中")
+        anchor_index = int(anchor_matches[0])
     else:
         first_valid = ordered[signal_column].first_valid_index()
         if first_valid is None:
-            return pd.DataFrame(), pd.DataFrame()
+            return pd.DataFrame(columns=daily_columns), pd.DataFrame(columns=block_columns)
         anchor_index = int(first_valid)
 
     n = len(ordered)
+    if anchor_index >= n - 1:
+        return pd.DataFrame(columns=daily_columns), pd.DataFrame(columns=block_columns)
 
     # ===== 第一遍：生成逐日仓位序列 =====
     # positions[i] 对应第 anchor_index + i 个决策日的次日仓位
     positions = np.zeros(n - 1 - anchor_index)
     holding_until_idx = -1
+    last_signal_idx = -1
 
     for offset, t_idx in enumerate(range(anchor_index, n - 1)):
         signal = ordered.iloc[t_idx][signal_column]
@@ -402,6 +432,7 @@ def run_timing(
             new_until = t_idx + horizon
             if new_until > holding_until_idx:
                 holding_until_idx = new_until
+            last_signal_idx = t_idx
 
         positions[offset] = 1.0 if t_idx + 1 <= holding_until_idx else 0.0
 
@@ -409,71 +440,85 @@ def run_timing(
     daily_rows = []
     for offset, t_idx in enumerate(range(anchor_index, n - 1)):
         daily_rows.append({
-            "trading_date": ordered.iloc[t_idx + 1]["trading_date"],
+            date_column: ordered.iloc[t_idx + 1][date_column],
             "position": positions[offset],
-            "market_daily_ret": ordered.iloc[t_idx + 1]["market_daily_ret"],
-            "strategy_daily_ret": positions[offset] * ordered.iloc[t_idx + 1]["market_daily_ret"],
+            ret_column: ordered.iloc[t_idx + 1][ret_column],
+            "strategy_daily_ret": positions[offset] * ordered.iloc[t_idx + 1][ret_column],
         })
-    daily = pd.DataFrame(daily_rows)
+    daily = pd.DataFrame(
+        daily_rows,
+        columns=[date_column, "position", ret_column, "strategy_daily_ret"],
+    )
 
     # ===== 第三遍：从仓位序列提取连续持仓/空仓段 =====
     block_rows = []
     seg_start = 0
     seg_position = positions[0]
 
+    def append_segment(seg_end: int, is_last: bool) -> None:
+        """把 positions 的闭区间 [seg_start, seg_end] 转成一条区段记录。"""
+        if (
+            is_last
+            and seg_position > 0.5
+            and require_complete_exit
+            and last_signal_idx + horizon >= n
+        ):
+            return
+
+        decision_idx = anchor_index + seg_start
+        return_start_idx = decision_idx + 1
+        return_end_idx = anchor_index + seg_end + 1
+        block_slice = ordered.iloc[return_start_idx : return_end_idx + 1]
+        benchmark_return = (1 + block_slice[ret_column]).prod() - 1
+        block_rows.append(
+            {
+                "block_id": decision_idx,
+                "position": seg_position,
+                "decision_date": ordered.iloc[decision_idx][date_column],
+                "block_start_date": ordered.iloc[return_start_idx][date_column],
+                "block_end_date": ordered.iloc[return_end_idx][date_column],
+                "block_duration": len(block_slice),
+                "benchmark_block_return": benchmark_return,
+                "strategy_block_return": seg_position * benchmark_return,
+            }
+        )
+
     for i in range(1, len(positions)):
         if positions[i] != seg_position:
-            # 仓位变化：结束当前段
-            start_tidx = anchor_index + seg_start
-            end_tidx = anchor_index + i - 1
-            is_holding = seg_position > 0.5
-            # 尾部持仓段不完整时跳过
-            incomplete = is_holding and require_complete_exit and (start_tidx + horizon >= n)
-            if not incomplete:
-                block_slice = ordered.iloc[start_tidx + 1 : end_tidx + 1]
-                if len(block_slice) > 0:
-                    bench_ret = (1 + block_slice["market_daily_ret"]).prod() - 1
-                    block_rows.append({
-                        "block_id": start_tidx,
-                        "position": seg_position,
-                        "decision_date": ordered.iloc[start_tidx]["trading_date"],
-                        "block_start_date": ordered.iloc[start_tidx + 1]["trading_date"],
-                        "block_end_date": ordered.iloc[end_tidx]["trading_date"],
-                        "block_duration": end_tidx - start_tidx,
-                        "benchmark_block_return": bench_ret,
-                        "strategy_block_return": seg_position * bench_ret,
-                    })
+            append_segment(i - 1, is_last=False)
             seg_start = i
             seg_position = positions[i]
 
     # 最后一个段
-    if seg_start < len(positions):
-        start_tidx = anchor_index + seg_start
-        end_tidx = anchor_index + len(positions) - 1
-        is_holding = seg_position > 0.5
-        incomplete = is_holding and require_complete_exit and (start_tidx + horizon >= n)
-        if not incomplete:
-            block_slice = ordered.iloc[start_tidx + 1 : end_tidx + 1]
-            if len(block_slice) > 0:
-                bench_ret = (1 + block_slice["market_daily_ret"]).prod() - 1
-                block_rows.append({
-                    "block_id": start_tidx,
-                    "position": seg_position,
-                    "decision_date": ordered.iloc[start_tidx]["trading_date"],
-                    "block_start_date": ordered.iloc[start_tidx + 1]["trading_date"],
-                    "block_end_date": ordered.iloc[end_tidx]["trading_date"],
-                    "block_duration": end_tidx - start_tidx,
-                    "benchmark_block_return": bench_ret,
-                    "strategy_block_return": seg_position * bench_ret,
-                })
+    append_segment(len(positions) - 1, is_last=True)
 
-    blocks = pd.DataFrame(block_rows)
+    blocks = pd.DataFrame(block_rows, columns=block_columns)
 
-    if len(daily) > 0:
-        daily["benchmark_nav"] = (1 + daily["market_daily_ret"]).cumprod()
-        daily["strategy_nav"] = (1 + daily["strategy_daily_ret"]).cumprod()
+    daily["benchmark_nav"] = (1 + daily[ret_column]).cumprod()
+    daily["strategy_nav"] = (1 + daily["strategy_daily_ret"]).cumprod()
 
     return daily, blocks
+
+
+def run_timing(
+    data: pd.DataFrame,
+    signal_column: str,
+    horizon: int,
+    anchor_date: pd.Timestamp = None,
+    require_complete_exit: bool = True,
+    ret_column: str = "market_daily_ret",
+    date_column: str = "trading_date",
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """兼容旧调用的别名；实际逻辑统一由 run_time_backtest 实现。"""
+    return run_time_backtest(
+        data=data,
+        signal_column=signal_column,
+        ret_column=ret_column,
+        horizon=horizon,
+        date_column=date_column,
+        anchor_date=anchor_date,
+        require_complete_exit=require_complete_exit,
+    )
 
 
 def summarize_timing(
@@ -481,6 +526,7 @@ def summarize_timing(
     blocks: pd.DataFrame,
     factor: str,
     horizon: int,
+    ret_column: str = "market_daily_ret",
 ) -> dict[str, object]:
     """
     汇总单因子择时的持仓胜率、择时命中率和风险收益指标。
@@ -522,8 +568,29 @@ def summarize_timing(
         holding_win_rate = np.nan
         timing_hit_rate = np.nan
 
-    strategy_metrics = annualized_metrics(daily["strategy_daily_ret"])
-    benchmark_metrics = annualized_metrics(daily["market_daily_ret"])
+    strategy_returns = pd.Series(daily["strategy_daily_ret"], dtype=float).dropna()
+    benchmark_returns = pd.Series(daily[ret_column], dtype=float).dropna()
+
+    if strategy_returns.empty:
+        annual_return = max_drawdown = sharpe = np.nan
+    else:
+        strategy_nav = (1 + strategy_returns).cumprod()
+        strategy_volatility = strategy_returns.std(ddof=1)
+        annual_return = strategy_nav.iloc[-1] ** (252 / len(strategy_returns)) - 1
+        max_drawdown = (strategy_nav / strategy_nav.cummax() - 1).min()
+        sharpe = (
+            strategy_returns.mean() / strategy_volatility * np.sqrt(252)
+            if strategy_volatility > 0
+            else np.nan
+        )
+
+    if benchmark_returns.empty:
+        benchmark_annual_return = np.nan
+    else:
+        benchmark_nav = (1 + benchmark_returns).cumprod()
+        benchmark_annual_return = (
+            benchmark_nav.iloc[-1] ** (252 / len(benchmark_returns)) - 1
+        )
 
     return {
         "factor": factor,
@@ -533,10 +600,10 @@ def summarize_timing(
         "holding_ratio": daily["position"].mean() if len(daily) > 0 else np.nan,
         "holding_win_rate": holding_win_rate,
         "timing_hit_rate": timing_hit_rate,
-        "annual_return": strategy_metrics["annual_return"],
-        "benchmark_annual_return": benchmark_metrics["annual_return"],
-        "max_drawdown": strategy_metrics["max_drawdown"],
-        "sharpe": strategy_metrics["sharpe"],
+        "annual_return": annual_return,
+        "benchmark_annual_return": benchmark_annual_return,
+        "max_drawdown": max_drawdown,
+        "sharpe": sharpe,
         "final_nav": daily["strategy_nav"].iloc[-1] if len(daily) > 0 else np.nan,
         "benchmark_final_nav": daily["benchmark_nav"].iloc[-1] if len(daily) > 0 else np.nan,
         "relative_final_nav": (
@@ -545,79 +612,12 @@ def summarize_timing(
     }
 
 
-def plot_timing_nav_comparison(
-    daily_results: dict[tuple[str, int], pd.DataFrame],
-    factor_columns: list[str] = FACTOR_COLUMNS,
-    horizons: tuple[int, ...] = HORIZONS,
-    start_date=None,
-) -> None:
-    """
-    逐因子对比四个调仓周期的择时净值与同期满仓基准。
-
-    daily_results 的键为 (factor, horizon)，值来自
-    run_timing 的逐日明细。两条净值曲线共享相同交易日，
-    因此图中的差异只来自仓位信号，不受样本区间错位影响。
-
-    Parameters
-    ----------
-    daily_results : dict[tuple[str, int], pd.DataFrame]
-        键为 (factor, horizon)，值为含 strategy_nav/benchmark_nav 的日净值表。
-    factor_columns : list[str]
-        因子列名列表。
-    horizons : tuple[int, ...]
-        未来收益周期列表。
-    start_date : str or pd.Timestamp, optional
-        绘图起始日期。若指定，所有子图只显示该日期之后的数据，并将两条
-        净值曲线重归一化到起始日 = 1.0。默认从数据起点开始。
-    """
-    for factor in factor_columns:
-        fig, axes = plt.subplots(2, 2, figsize=(15, 9), constrained_layout=True)
-        for axis, horizon in zip(axes.ravel(), horizons):
-            detail = daily_results[(factor, horizon)].copy()
-
-            # 若指定起始日期：过滤无效预热期、重归一化起点
-            if start_date is not None:
-                start = pd.Timestamp(start_date)
-                detail = detail[detail["trading_date"] >= start].copy()
-                if len(detail) > 0:
-                    detail["benchmark_nav"] /= detail["benchmark_nav"].iloc[0]
-                    detail["strategy_nav"] /= detail["strategy_nav"].iloc[0]
-
-            # 基准净值：黑色虚线
-            axis.plot(
-                detail["trading_date"],
-                detail["benchmark_nav"],
-                label="全 A 市值加权基准",
-                color="black",
-                linestyle="--",
-                linewidth=1.4,
-            )
-            # 策略净值：红色实线
-            axis.plot(
-                detail["trading_date"],
-                detail["strategy_nav"],
-                label="单因子择时",
-                color="#C44E52",
-                linewidth=1.6,
-            )
-            axis.set_title(
-                f"{horizon} 日调仓｜持仓比例 {detail['position'].mean():.1%}"
-            )
-            axis.grid(alpha=0.25)
-            axis.legend()
-
-        fig.suptitle(
-            f"{FACTOR_LABELS[factor]}：单因子择时净值与基准",
-            fontsize=15,
-        )
-        plt.show()
-
-
 def analyze_ic(
     data: pd.DataFrame,
     factor_columns: list[str] = FACTOR_COLUMNS,
     horizons: tuple[int, ...] = HORIZONS,
     factor_directions: dict[str, int] = FACTOR_DIRECTIONS,
+    ret_column: str = "market_daily_ret",
 ) -> pd.DataFrame:
     """
     计算各因子与不同周期未来收益的 Pearson、Spearman 时序 IC。
@@ -631,13 +631,16 @@ def analyze_ic(
     Parameters
     ----------
     data : pd.DataFrame
-        含因子列和 future_market_daily_ret_{n}d 列的研究数据。
+        含因子列和 future_{ret_column}_{n}d 列的研究数据。
     factor_columns : list[str]
         因子列名列表。
     horizons : tuple[int, ...]
         未来收益周期列表。
     factor_directions : dict[str, int]
         因子方向字典：+1=正向，-1=反向。
+    ret_column : str
+        add_future_return 使用的原始日收益列名；目标列按
+        future_{ret_column}_{horizon}d 推导。
 
     Returns
     -------
@@ -649,7 +652,7 @@ def analyze_ic(
         # 因子方向：用于计算方向调整 IC
         direction = factor_directions.get(factor, 1)
         for horizon in horizons:
-            target = f"future_market_daily_ret_{horizon}d"
+            target = f"future_{ret_column}_{horizon}d"
             # 剔除 inf/NaN 后再计算相关性
             sample = (
                 data[[factor, target]]
@@ -674,106 +677,14 @@ def analyze_ic(
     return pd.DataFrame(rows)
 
 
-def report_ic_summary(
-    summary: pd.DataFrame,
-    factor_columns: list[str] = FACTOR_COLUMNS,
-    horizons: tuple[int, ...] = HORIZONS,
-) -> None:
-    """
-    展示 IC 汇总表格，并绘制原始及方向调整后的 Pearson IC 热力图。
-
-    热力图左侧为原始 IC（反映真实相关方向），右侧为方向调整 IC（方便统一比较）。
-    颜色深浅映射 IC 绝对值大小，红色=正，蓝色=负。
-
-    Parameters
-    ----------
-    summary : pd.DataFrame
-        analyze_ic 的输出 DataFrame。
-    factor_columns : list[str]
-        因子列名列表（决定显示顺序）。
-    horizons : tuple[int, ...]
-        未来收益周期列表（决定 x 轴顺序）。
-    """
-    # 1. 展示汇总数字表
-    display_table = summary[
-        [
-            "factor_label", "horizon", "n_obs", "pearson_ic",
-            "spearman_ic", "directional_pearson_ic",
-        ]
-    ].rename(
-        columns={
-            "factor_label": "因子",
-            "horizon": "未来日数",
-            "n_obs": "样本数",
-            "pearson_ic": "Pearson IC",
-            "spearman_ic": "Spearman IC",
-            "directional_pearson_ic": "方向调整 IC",
-        }
-    )
-    display(
-        display_table.style.format(
-            {
-                "Pearson IC": "{:.4f}",
-                "Spearman IC": "{:.4f}",
-                "方向调整 IC": "{:.4f}",
-            }
-        )
-    )
-
-    # 2. 绘制热力图：原始 IC（左）和方向调整 IC（右）
-    factor_order = [FACTOR_LABELS.get(factor, factor) for factor in factor_columns]
-    heatmap_specs = (
-        ("pearson_ic", "原始 Pearson IC"),
-        ("directional_pearson_ic", "方向调整 Pearson IC"),
-    )
-    fig, axes = plt.subplots(1, 2, figsize=(15, 6), constrained_layout=True)
-    for axis, (metric, title) in zip(axes, heatmap_specs):
-        # pivot 成 6因子 × 4周期 的矩阵
-        matrix = (
-            summary.pivot(index="factor_label", columns="horizon", values=metric)
-            .reindex(index=factor_order, columns=horizons)
-        )
-        values = matrix.to_numpy(dtype=float)
-        # 自动确定色阶范围，避免极端值冲淡中间色调
-        finite_values = np.abs(values[np.isfinite(values)])
-        limit = max(0.05, float(finite_values.max())) if finite_values.size else 0.05
-        image = axis.imshow(
-            values, aspect="auto", cmap="coolwarm", vmin=-limit, vmax=limit
-        )
-        # 标记坐标轴
-        axis.set_xticks(
-            range(len(horizons)), [f"{horizon}日" for horizon in horizons]
-        )
-        axis.set_yticks(range(len(factor_order)), factor_order)
-        axis.set_title(title)
-        # 在每个格子中标注 IC 数值
-        for row_index, row in enumerate(values):
-            for column_index, value in enumerate(row):
-                label = f"{value:.3f}" if np.isfinite(value) else "—"
-                axis.text(
-                    column_index, row_index, label, ha="center", va="center"
-                )
-        fig.colorbar(image, ax=axis, shrink=0.82)
-    plt.show()
-
-
-def format_optional_date(value: object) -> str:
-    """
-    格式化可选日期；缺失日期在汇总表中显示为破折号。
-    
-    用于滚动 IC 汇总表的最新可用日列，若窗口尚未完整则显示 —。
-    """
-    if pd.isna(value):
-        return "—"
-    return pd.Timestamp(value).strftime("%Y-%m-%d")
-
-
-def compute_rolling_ic(
+def analyze_rolling_ic(
     data: pd.DataFrame,
     factor_columns: list[str] = FACTOR_COLUMNS,
     horizons: tuple[int, ...] = HORIZONS,
     windows: tuple[int, ...] = ROLLING_IC_WINDOWS,
     min_valid_ratio: float = ROLLING_IC_MIN_VALID_RATIO,
+    ret_column: str = "market_daily_ret",
+    date_column: str = "trading_date",
 ) -> pd.DataFrame:
     """
     计算滚动 Pearson IC，并同时记录窗口结束日和真实可用日。
@@ -787,7 +698,7 @@ def compute_rolling_ic(
     Parameters
     ----------
     data : pd.DataFrame
-        含因子列和 future_market_daily_ret_{n}d 列的研究数据。
+        含因子列和 future_{ret_column}_{n}d 列的研究数据。
     factor_columns : list[str]
         因子列名列表。
     horizons : tuple[int, ...]
@@ -796,6 +707,10 @@ def compute_rolling_ic(
         滚动窗口列表，每个窗口独立输出一条 IC 序列。
     min_valid_ratio : float
         窗口内最少有效配对比例（默认 0.95 = 95%）。
+    ret_column : str
+        生成未来收益时使用的原始收益列名。
+    date_column : str
+        因子观测日期列名。
 
     Returns
     -------
@@ -806,13 +721,13 @@ def compute_rolling_ic(
     if not 0 < min_valid_ratio <= 1:
         raise ValueError("min_valid_ratio 必须在 (0, 1] 范围内")
 
-    ordered = data.copy().sort_values("trading_date").reset_index(drop=True)
+    ordered = data.copy().sort_values(date_column).reset_index(drop=True)
     rows = []
     
     # 遍历因子 × 周期 × 窗口，生成每条 IC 序列
     for factor in factor_columns:
         for horizon in horizons:
-            target = f"future_market_daily_ret_{horizon}d"
+            target = f"future_{ret_column}_{horizon}d"
             # 剔除 inf 避免相关计算异常
             factor_values = ordered[factor].replace([np.inf, -np.inf], np.nan)
             target_values = ordered[target].replace([np.inf, -np.inf], np.nan)
@@ -848,8 +763,8 @@ def compute_rolling_ic(
                             "factor_label": FACTOR_LABELS.get(factor, factor),
                             "horizon": horizon,
                             "window": window,
-                            "factor_window_end_date": ordered["trading_date"],
-                            "available_date": ordered["trading_date"].shift(-horizon),
+                            "factor_window_end_date": ordered[date_column],
+                            "available_date": ordered[date_column].shift(-horizon),
                             "rolling_n_obs": rolling_n_obs,
                             "min_required_obs": min_required_obs,
                             "rolling_ic": rolling_ic,
@@ -857,396 +772,3 @@ def compute_rolling_ic(
                     )
                 )
     return pd.concat(rows, ignore_index=True)
-
-
-def build_non_overlapping_cumulative_ic(
-    series: pd.DataFrame,
-    window: int,
-) -> pd.DataFrame:
-    """
-    从滚动 IC 序列抽取互不重叠窗口，并计算区块 IC 累计和。
-
-    第一个区块覆盖第 1～window 个交易日，之后每隔 window 个交易日
-    取一次滚动 IC；因此相邻累计点使用的因子窗口没有交集。
-    这避免了滚动 IC 中相邻窗口高度重叠带来的视觉平滑假象。
-
-    Parameters
-    ----------
-    series : pd.DataFrame
-        单条滚动 IC 序列（已按 factor_window_end_date 排序）。
-    window : int
-        抽取步长（与滚动窗口大小一致）。
-
-    Returns
-    -------
-    pd.DataFrame
-        含 block_ic（非重叠区块 IC）和 cumulative_ic（累计和）的抽样结果。
-    """
-    if window <= 0:
-        raise ValueError("window 必须是正整数")
-
-    ordered = series.sort_values("factor_window_end_date").reset_index(drop=True)
-    # 每隔 window 个交易日取一个点
-    endpoints = ordered.iloc[window - 1 :: window].copy()
-    endpoints = endpoints.dropna(subset=["available_date"]).rename(
-        columns={"rolling_ic": "block_ic"}
-    )
-    endpoints["cumulative_ic"] = endpoints["block_ic"].cumsum()
-    return endpoints
-
-
-def plot_rolling_ic_history(
-    rolling_detail: pd.DataFrame,
-    full_ic_summary: pd.DataFrame,
-    factor_columns: list[str] = FACTOR_COLUMNS,
-    horizons: tuple[int, ...] = HORIZONS,
-    windows: tuple[int, ...] = ROLLING_IC_WINDOWS,
-    neutral_band: float = IC_NEUTRAL_BAND,
-) -> None:
-    """
-    逐因子绘制四个未来周期的滚动 IC 历史走势。
-
-    每张图包含四个周期子图（1/3/5/10 日）；左轴展示当前配置窗口的滚动 IC、
-    零轴和全样本 IC 参考线以及 ±0.02 中性区间，右轴展示非重叠区块 IC 累计和。
-    横轴固定使用 available_date，确保图中每个点只在未来收益已经完整兑现后出现。
-
-    Parameters
-    ----------
-    rolling_detail : pd.DataFrame
-        compute_rolling_ic 的输出，长格式 IC 序列。
-    full_ic_summary : pd.DataFrame
-        analyze_ic 的输出，用于在全样本 IC 参考线。
-    factor_columns : list[str]
-        因子列名列表。
-    horizons : tuple[int, ...]
-        未来收益周期列表。
-    windows : tuple[int, ...]
-        滚动窗口列表。
-    neutral_band : float
-        IC 中性区间半宽（默认 ±0.02）。
-    """
-    # 构建全样本 IC 查询表：(因子, 周期) → Pearson IC
-    full_ic_lookup = full_ic_summary.set_index(["factor", "horizon"])["pearson_ic"]
-    # 给每个窗口分配一个颜色
-    colors = {window: f"C{index}" for index, window in enumerate(windows)}
-
-    for factor in factor_columns:
-        fig, axes = plt.subplots(2, 2, figsize=(15, 9), constrained_layout=True)
-        for axis, horizon in zip(axes.ravel(), horizons):
-            # 创建右轴（非重叠累计 IC）
-            cumulative_axis = axis.twinx()
-            
-            for window in windows:
-                color = colors[window]
-                # 提取当前(因子, 周期, 窗口)的 IC 序列
-                series = rolling_detail[
-                    (rolling_detail["factor"] == factor)
-                    & (rolling_detail["horizon"] == horizon)
-                    & (rolling_detail["window"] == window)
-                ].sort_values("factor_window_end_date")
-                # 过滤尚未兑现的日期（available_date 为空），保留 IC 的 NaN
-                rolling_series = series.dropna(subset=["available_date"])
-                
-                # 左轴：滚动 IC 曲线
-                axis.plot(
-                    rolling_series["available_date"],
-                    rolling_series["rolling_ic"],
-                    label=f"{window} 日滚动 IC",
-                    color=color,
-                    linewidth=1.3 if window == min(windows) else 1.8,
-                )
-                
-                # 右轴：非重叠区块累计 IC（点线图）
-                cumulative = build_non_overlapping_cumulative_ic(series, window)
-                cumulative_axis.plot(
-                    cumulative["available_date"],
-                    cumulative["cumulative_ic"],
-                    label=f"{window} 日非重叠累计 IC",
-                    color=color,
-                    linestyle="--",
-                    marker="o",
-                    markersize=3.5,
-                    linewidth=1.1,
-                    alpha=0.85,
-                )
-
-            # 参考线：零轴、中性区间、全样本 IC
-            axis.axhline(0, color="black", linewidth=0.9)
-            axis.axhspan(-neutral_band, neutral_band, color="grey", alpha=0.12)
-            axis.axhline(
-                full_ic_lookup.loc[(factor, horizon)],
-                color="#55A868",
-                linestyle="--",
-                linewidth=1.0,
-                label="全样本 IC",
-            )
-            
-            axis.set_title(f"未来 {horizon} 日")
-            axis.set_ylabel("Pearson IC")
-            cumulative_axis.set_ylabel("非重叠累计 IC")
-            cumulative_axis.axhline(
-                0, color="grey", linestyle=":", linewidth=0.7, alpha=0.7
-            )
-            cumulative_axis.tick_params(axis="y", labelsize=8)
-            axis.grid(alpha=0.25)
-            
-            # 合并左右轴的图例
-            left_handles, left_labels = axis.get_legend_handles_labels()
-            right_handles, right_labels = cumulative_axis.get_legend_handles_labels()
-            axis.legend(
-                left_handles + right_handles,
-                left_labels + right_labels,
-                fontsize=8,
-            )
-
-        fig.suptitle(
-            f"{FACTOR_LABELS[factor]}：滚动时序 IC（按真实可用日期）",
-            fontsize=15,
-        )
-        plt.show()
-
-
-def run_multi_benchmark_timing(
-    factor_daily: pl.DataFrame,
-    benchmarks: List[str],
-    prepared_daily: pl.DataFrame,
-    calendar: pl.DataFrame,
-    start_date: date,
-    end_date: date,
-    horizons: Tuple[int, ...] = (1, 3, 5, 10),
-    lower_quantile: float = 0.65,
-    upper_quantile: float = 1.0,
-    min_history: int = 252,
-    factor_columns: List[str] = None,
-    factor_labels: Dict[str, str] = None,
-    benchmark_data_source: str = "auto",
-) -> dict:
-    """
-    对多个基准运行同一套情绪因子的择时回测。
-
-    返回:
-        summary: pd.DataFrame — 每行一个(基准, 因子, 持有期)的绩效汇总
-        daily: dict — {(基准, 因子, 持有期): 逐日明细}
-    """
-    from 因子回测.涨跌停情绪因子.benchmark_loader import load_benchmark
-    from 因子回测.alpha import add_future_return
-
-    # 空基准列表处理
-    if not benchmarks:
-        return {"summary": pd.DataFrame(), "daily": {}}
-
-    if factor_columns is None:
-        cols = [c for c in factor_daily.columns if c not in ("trading_date",)]
-        factor_columns = cols
-    if factor_labels is None:
-        factor_labels = {f: f for f in factor_columns}
-
-    factor_pd = factor_daily.to_pandas()
-    factor_pd["trading_date"] = pd.to_datetime(factor_pd["trading_date"])
-
-    daily_results = {}
-
-    for bench_name in benchmarks:
-        bench_ret = load_benchmark(
-            bench_name, start_date, end_date,
-            prepared_daily=prepared_daily, calendar=calendar,
-            source=benchmark_data_source,
-        )
-        data = factor_pd.merge(bench_ret, on="trading_date", how="inner")
-
-        data = add_future_return(data, ret_col="market_daily_ret", horizons=horizons)
-
-        data = compute_threshold(data, factor_columns,
-                                  lower_quantile=lower_quantile,
-                                  upper_quantile=upper_quantile,
-                                  min_history=min_history)
-        for factor in factor_columns:
-            data[f"signal_{factor}"] = (
-                (data[factor] >= data[f"lower_{factor}"])
-                & (data[factor] <= data[f"upper_{factor}"])
-            ).astype(float)
-
-        threshold_cols = [f"lower_{f}" for f in factor_columns]
-        common_valid = data[threshold_cols].notna().all(axis=1)
-        common_anchor = pd.Timestamp(data.loc[common_valid.idxmax(), "trading_date"])
-
-        for factor in factor_columns:
-            for horizon in horizons:
-                daily, _ = run_timing(data, signal_column=f"signal_{factor}",
-                                      horizon=horizon, anchor_date=common_anchor)
-                daily_results[(bench_name, factor, horizon)] = daily
-
-    summary_list = []
-    for (bench_name, factor, horizon), daily_detail in daily_results.items():
-        if len(daily_detail) == 0:
-            continue
-        strat_m = annualized_metrics(daily_detail["strategy_daily_ret"])
-        bench_m = annualized_metrics(daily_detail["market_daily_ret"])
-        summary_list.append({
-            "benchmark": bench_name,
-            "factor": factor,
-            "factor_label": factor_labels.get(factor, factor),
-            "horizon": horizon,
-            "holding_ratio": daily_detail["position"].mean(),
-            "annual_return": strat_m["annual_return"],
-            "benchmark_annual_return": bench_m["annual_return"],
-            "annual_excess_return": strat_m["annual_return"] - bench_m["annual_return"],
-            "sharpe": strat_m["sharpe"],
-            "max_drawdown": strat_m["max_drawdown"],
-            "final_nav": daily_detail["strategy_nav"].iloc[-1],
-            "benchmark_final_nav": daily_detail["benchmark_nav"].iloc[-1],
-            "relative_final_nav": (
-                daily_detail["strategy_nav"].iloc[-1]
-                / daily_detail["benchmark_nav"].iloc[-1] - 1
-            ),
-        })
-
-    summary = pd.DataFrame(summary_list)
-    return {"summary": summary, "daily": daily_results}
-
-def plot_multi_benchmark_summary(
-    multi_results: dict,
-    factor_columns: List[str],
-    factor_labels: Dict[str, str],
-    horizons: Tuple[int, ...] = (1, 3, 5, 10),
-    benchmarks: List[str] = None,
-    benchmark_labels: Dict[str, str] = None,
-) -> None:
-    """
-    绘制多基准择时对比。
-
-    1. 每个 (因子, 持有期) 画一张多折线净值对比图
-    2. 一张热力图：row=基准, column=因子(按持有期分面)，颜色=年化超额收益
-
-    Parameters
-    ----------
-    multi_results : dict
-        run_multi_benchmark_timing 返回的结果字典，含 daily 和 summary。
-    factor_columns : list[str]
-        因子列名列表。
-    factor_labels : dict[str, str]
-        因子显示标签映射。
-    horizons : tuple[int, ...]
-        持有周期列表。
-    benchmarks : list[str], optional
-        基准名称列表。用于确定热力图的显示顺序。
-        若为 None，从 daily 键中推断。
-    benchmark_labels : dict[str, str], optional
-        基准显示标签映射。若为 None，使用基准名称本身作为显示标签。
-    """
-    daily = multi_results["daily"]
-    summary = multi_results["summary"]
-
-    # 从 daily 键中推断 benchmarks（若未提供）
-    if benchmarks is None:
-        benchmarks = sorted(set(k[0] for k in daily.keys()))
-    if benchmark_labels is None:
-        benchmark_labels = {b: b for b in benchmarks} if benchmarks else {}
-
-    colors = ["#C44E52", "#1f77b4", "#2ca02c", "#9467bd"]
-
-    # ===== 1. 每个 (因子, 持有期) 的净值对比图 =====
-    for factor in factor_columns:
-        n_horizons_plot = len(horizons)
-        n_cols = min(2, n_horizons_plot)
-        n_rows = (n_horizons_plot + 1) // 2  # ceiling division
-        fig, axes = plt.subplots(
-            n_rows, n_cols, figsize=(15, 5 * n_rows), constrained_layout=True
-        )
-        # 统一展平处理，兼容 1x1 场景
-        if n_rows == 1 and n_cols == 1:
-            axes_flat = [axes]
-        else:
-            axes_flat = axes.ravel()
-
-        for ax_idx, horizon in enumerate(horizons):
-            if ax_idx >= len(axes_flat):
-                continue
-            ax = axes_flat[ax_idx]
-            for idx, bench in enumerate(benchmarks or []):
-                key = (bench, factor, horizon)
-                if key not in daily or len(daily[key]) == 0:
-                    continue
-                detail = daily[key]
-                ax.plot(
-                    detail["trading_date"],
-                    detail["benchmark_nav"],
-                    color=colors[idx % len(colors)],
-                    linestyle="--",
-                    linewidth=1.0,
-                    alpha=0.5,
-                )
-                ax.plot(
-                    detail["trading_date"],
-                    detail["strategy_nav"],
-                    label=benchmark_labels.get(bench, bench),
-                    color=colors[idx % len(colors)],
-                    linewidth=1.6,
-                )
-            ax.set_title(f"{horizon} 日持有期")
-            ax.grid(alpha=0.25)
-            ax.legend()
-
-        # 隐藏多余的空白子图
-        for ax_idx in range(len(horizons), len(axes_flat)):
-            axes_flat[ax_idx].set_visible(False)
-
-        fig.suptitle(
-            f"{factor_labels.get(factor, factor)}：多基准择时净值对比",
-            fontsize=15,
-        )
-        plt.show()
-
-    # ===== 2. 热力图：基准 x 因子（按持有期分面） =====
-    if len(summary) == 0:
-        print("无可用汇总数据，跳过热力图")
-        return
-
-    n_horizons = len(horizons)
-    heatmap_height = max(5, 0.5 * len(benchmarks)) if benchmarks else 5
-    fig, axes = plt.subplots(
-        1, n_horizons,
-        figsize=(5 * n_horizons, heatmap_height),
-        constrained_layout=True,
-    )
-    if n_horizons == 1:
-        axes = [axes]
-
-    for ax, horizon in zip(axes, horizons):
-        sub = summary[summary["horizon"] == horizon]
-        if len(sub) == 0:
-            ax.set_title(f"{horizon}日持有期 | 无数据")
-            ax.grid(alpha=0.25)
-            continue
-
-        pivot = sub.pivot(
-            index="benchmark", columns="factor", values="annual_excess_return"
-        )
-        if benchmarks:
-            pivot = pivot.reindex(
-                index=[b for b in benchmarks if b in pivot.index]
-            )
-        if factor_columns:
-            pivot = pivot.reindex(columns=factor_columns)
-
-        vals = pivot.to_numpy(dtype=float)
-        if vals.size > 0:
-            max_abs = float(np.nanmax(np.abs(vals)))
-            limit = max(0.01, max_abs) if not np.isnan(max_abs) else 0.05
-        else:
-            limit = 0.05
-
-        im = ax.imshow(vals, aspect="auto", cmap="RdYlGn", vmin=-limit, vmax=limit)
-        ax.set_xticks(
-            range(len(pivot.columns)),
-            [factor_labels.get(c, c) for c in pivot.columns],
-            fontsize=8,
-        )
-        ax.set_yticks(
-            range(len(pivot.index)),
-            [benchmark_labels.get(b, b) for b in pivot.index],
-        )
-        ax.set_title(f"{horizon}日持有期 | 年化超额收益")
-        fig.colorbar(im, ax=ax, shrink=0.8)
-
-    plt.show()

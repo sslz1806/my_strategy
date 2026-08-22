@@ -232,7 +232,9 @@ class Alpha191Formulas:
         返回:
             中性化后的因子值（残差）
         """
-        if self.industry_map is None:
+        # 空字典意味着本地与米筐均未取得行业分类；继续计算会悄悄跳过中性化，
+        # 产出不符合公式定义的因子值，因此必须显式失败并让批量报告标注不可复现。
+        if not self.industry_map:
             raise ValueError("缺少行业分类数据（industry_map），无法进行行业中性化")
 
         result = factor.copy()
